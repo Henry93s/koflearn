@@ -15,8 +15,10 @@ public:
 		: primaryKey(primaryKey) {}
 	virtual ~KoflearnPlatform() {}
 
-	virtual unsigned long long getPrimaryKey() = 0;
-	virtual void setPrimaryKey(unsigned long long primaryKey) = 0;
+	// getPrimaryKey 와 setPrimarykey 는 기능 자체는 동일한 기능이기 때문에 다형성과 거리가 있으므로
+	// 순수 가상 함수로 구현하지 않으나, 추후 유연성을 위해 일반 가상 함수로는 선언하였음.
+	virtual unsigned long long getPrimaryKey() const;
+	virtual void setPrimaryKey(unsigned long long primaryKey);
 };
 
 #endif // !_KOFLEARN_PLATFORM_

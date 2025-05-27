@@ -11,9 +11,6 @@ Member::Member(unsigned long long primaryKey, string nickName, string email
 {}
 
 // getter 함수 구현
-unsigned long long Member::getPrimaryKey() {
-	return this->primaryKey;
-}
 string Member::getNickName() {
 	return this->nickName;
 }
@@ -32,9 +29,6 @@ int Member::getIsManager() {
 
 
 // setter 함수 구현
-void Member::setPrimaryKey(unsigned long long primaryKey) {
-	this->primaryKey = primaryKey;
-}
 void Member::setNickName(string nickName) {
 	this->nickName = nickName;
 }
