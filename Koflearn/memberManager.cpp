@@ -7,6 +7,7 @@
 
 #include "member.h"
 #include "memberManager.h"
+#include "koflearnPlatform.h"
 
 #include "./external/dotenv.h"
 
@@ -206,6 +207,20 @@ int MemberManager::phoneDuplicationCheck(string phoneNumber)
     return 0;
 }
 
+void MemberManager::displayAllMembers() const {
+    if (memberList.empty()) {
+        cout << "등록된 멤버가 없습니다." << endl;
+        return;
+    }
+
+    cout << "    key      |            Email(ID)          |   nickName   |    Phone Number    |   isManager   |" << endl;
+    for (const auto& member : memberList) {
+        member.second->displayInfo(); // 단순 멤버 객체(Member) read 책임은 Member 클래스가 맡음
+    }
+    cout << endl << endl << endl;
+    cout << "[Enter] 키를 눌러 메뉴로 돌아가기" << endl;
+}
+
 void MemberManager::deleteMember(unsigned long long primaryKey)
 {
     memberList.erase(primaryKey);
@@ -228,22 +243,6 @@ void MemberManager::modifyMember(unsigned long long primaryKey)
 
     member->setNickName(nickName);
     memberList[primaryKey] = member;
-}
-
-void MemberManager::displayInfo()
-{
-    cout << "    key      |            Email(ID)          |   nickName   |    Phone Number    |   isManager   |" << endl;
-    for (const auto& v : memberList) {
-        Member* member = v.second;
-        cout << setw(11) << setfill('0') << right << member->getPrimaryKey() << "  | " << left;
-        cout << setw(29) << setfill(' ') << member->getEmail() << " | ";
-        cout << setw(12) << setfill(' ') << member->getNickName() << " | ";
-        cout << setw(18) << setfill(' ') << member->getPhoneNumber() << " | ";
-        cout << setw(13) << setfill(' ') << member->getIsManager() << " | ";
-        cout << endl;
-    }
-    cout << endl << endl << endl;
-    cout << "[Enter] 키를 눌러 메뉴로 돌아가기" << endl;
 }
 
 void MemberManager::addMember(Member* member)
@@ -310,7 +309,7 @@ void MemberManager::displayMenu()
         cin >> ch;
         switch (ch) {
         case 1: default:
-            displayInfo();
+            displayAllMembers();
             cin.ignore();
             while (getchar() != '\n');
             break;
@@ -318,13 +317,13 @@ void MemberManager::displayMenu()
             inputMember();
             break;
         case 3:
-            displayInfo();
+            displayAllMembers();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
             deleteMember(key);
             break;
         case 4:
-            displayInfo();
+            displayAllMembers();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
             modifyMember(key);

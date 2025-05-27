@@ -17,6 +17,7 @@ public:
 	string getPassword();
 	string getPhoneNumber();
 	int getIsManager();
+	void displayInfo() override;
 	
 	// setter Method
 	// void setPrimaryKey(unsigned long long primaryKey); KoflearnPlatform
