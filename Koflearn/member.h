@@ -11,15 +11,16 @@ public:
 		, string password, string phoneNumber, int isManager);
 
 	// getter Method
-	unsigned long long getPrimaryKey() override;
+	// unsigned long long getPrimaryKey(); KoflearnPlatform
 	string getNickName();
 	string getEmail(); 
 	string getPassword();
 	string getPhoneNumber();
 	int getIsManager();
+	void displayInfo() override;
 	
 	// setter Method
-	void setPrimaryKey(unsigned long long primaryKey) override;
+	// void setPrimaryKey(unsigned long long primaryKey); KoflearnPlatform
 	void setNickName(string nickName);
 	void setEmail(string email);
 	void setPassword(string password);
