@@ -9,8 +9,6 @@
 #include <sstream>
 #include <iomanip>
 
-#include "./external/dotenv.h"
-
 using namespace std;
 
 LectureManager::LectureManager() {

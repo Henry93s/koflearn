@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <vector>
 #include <algorithm>
 #include <fstream>
@@ -8,8 +7,6 @@
 #include "member.h"
 #include "memberManager.h"
 #include "koflearnPlatform.h"
-
-#include "./external/dotenv.h"
 
 using namespace std;
 
@@ -141,7 +138,6 @@ Member* MemberManager::inputMember()
     }
 
     string managerPassKey;
-    dotenv::init();
     int isManager = 0;
     while (1) {
         cout << "관리자일 경우 관리자 보안 키를 입력해주세요 : ";
@@ -150,12 +146,12 @@ Member* MemberManager::inputMember()
             cout << "'A' 키를 입력했으므로 일반 회원으로 가입을 계속 진행합니다." << endl;
             break;
         }
-        if (managerPassKey != string(dotenv::getenv("MANAGER_KEY"))) {
+        if (managerPassKey.compare(getManagerKey()) != 0) {
             cout << "관리자 키 값이 일치하지 않습니다. 다시 입력해주세요." << endl;
             cout << "일반 회원으로 가입을 계속 진행하실 경우 'A' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
             continue;
         }
-        else if (managerPassKey == getenv("MANAGER_KEY")) { 
+        else if (managerPassKey.compare(getManagerKey()) == 0) {
             isManager = 1;
             break; 
         }
@@ -274,6 +270,19 @@ unsigned long long MemberManager::makePrimaryKey()
         unsigned long long primaryKey = (--elem)->first;
         return ++primaryKey;
     }
+}
+
+string MemberManager::getManagerKey() {
+    ifstream file;
+    file.open("managerKey.txt");
+    if (!file.fail()) {
+        while (!file.eof()) {
+            vector<string> row = parseCSV(file, '\n');
+            return row[0];
+        }
+    }
+    file.close();
+    return "";
 }
 
 vector<string> MemberManager::parseCSV(istream& file, char delimiter)

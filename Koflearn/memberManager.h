@@ -25,6 +25,7 @@ public:
     void displayAllMembers() const;
 
     unsigned long long makePrimaryKey();
+    string getManagerKey();
     vector<string> parseCSV(istream&, char);
     void displayMenu();
 
