@@ -17,6 +17,8 @@ public:
     void deleteMember(unsigned long long key);
     void modifyMember(unsigned long long key);
     Member* searchMember(unsigned long long key);
+    // login 관련으로 이메일로 멤버 찾기 추가
+    Member* searchMember(string email);
     int nickNameDuplicationCheck(string nickName); // 닉네임 중복 검사
     int emailDuplicationCheck(string email); // 이메일 중복 검사
     int phoneDuplicationCheck(string phoneNumber); // 휴대폰 번호 중복 검사

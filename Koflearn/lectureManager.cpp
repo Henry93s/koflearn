@@ -40,7 +40,7 @@ LectureManager::~LectureManager() {
     if (!file.fail()) {
         for (const auto& v : lectureList) {
             Lecture* lecture = v.second;
-            file << lecture->getPrimaryKey() << ", "
+           file << lecture->getPrimaryKey() << ", "
                 << lecture->getLectureTitle() << ", "
                 << lecture->getInstructorName() << ", "
                 << lecture->getPrice() << ", "
@@ -57,11 +57,14 @@ void LectureManager::inputLecture() {
     string lectureTitle, instructorName, difficultyLevel;
     int price, enrolledStudentsCount, durationHours;
 
+    unsigned long long primaryKey = makePrimaryKey();
+
     cout << "강의 명 : ";
     getline(cin, lectureTitle, '\n');
     cout << "강사 명 : ";
-    cout << "testName\n"; // temp instructorName
+    // 싱글톤 객체받아서 getmember 넘겨야함.
     instructorName = "testName";
+    cout << "testName\n"; // temp instructorName
     cout << "가격 : ";
     cin >> price;
     enrolledStudentsCount = 0; // 기본 수강자 수는 0 부터 시작
@@ -86,7 +89,7 @@ void LectureManager::inputLecture() {
         break;
     }
 
-    unsigned long long primaryKey = makePrimaryKey();
+
     Lecture* lecture = new Lecture(primaryKey, lectureTitle, instructorName, price,
         enrolledStudentsCount, durationHours, difficultyLevel);
 

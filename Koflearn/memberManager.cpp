@@ -174,6 +174,18 @@ Member* MemberManager::searchMember(unsigned long long primaryKey)
     return memberList[primaryKey];
 }
 
+// login 관련으로 이메일로 멤버 찾기 추가
+Member* MemberManager::searchMember(string email)
+{
+    Member* ret = nullptr;
+    for (const auto& i : memberList) {
+        if (i.second->getEmail() == email) {
+            ret = i.second;
+        }
+    }
+    return ret;
+}
+
 // 닉네임 중복 검사 함수 정의
 int MemberManager::nickNameDuplicationCheck(string nickName)
 {
