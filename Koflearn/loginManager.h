@@ -1,7 +1,7 @@
 #ifndef _LOGIN_MANAGER_H_
 #define _LOGIN_MANAGER_H_
 
-#include "member.h"
+
 // koflearnPlatManager.h 주석 사유
 // loginManager 에서 싱글톤 객체를 가져오는 getInstance 를 사용함으로써 koflearnPlatManager.h 에도 koflearnPlatManager.h 를 include 할 경우
 // 계속 circular include 하는 "순환 참조" 현상이 발생한다. 

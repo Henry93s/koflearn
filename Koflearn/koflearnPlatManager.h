@@ -3,6 +3,7 @@
 #include "memberManager.h"
 #include "lectureManager.h"
 #include "loginManager.h"
+#include "myPageManager.h"
 
 #include <iostream>
 
@@ -18,6 +19,7 @@ public:
 	MemberManager memberManager;
 	LectureManager lectureManager;
 	LoginManager loginManager;
+	MyPageManager myPageManager;
 
 	// 전체 프로그램에서 로그인 유무에 따라 동작을 달리하기 위함(로그인 세션 관리)
 	Member* loginUser = nullptr;
