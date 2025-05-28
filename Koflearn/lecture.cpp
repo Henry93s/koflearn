@@ -33,13 +33,13 @@ string Lecture::getDifficultyLevel() {
 }
 // override 
 void Lecture::displayInfo() {
-	cout << setw(15) << setfill('0') << right << getPrimaryKey() << "  | " << left;
-	cout << setw(22) << setfill(' ') << this->lectureTitle << " | ";
-	cout << setw(12) << setfill(' ') << this->instructorName << " | ";
-	cout << setw(10) << setfill(' ') << this->price << " | ";
-	cout << setw(10) << setfill(' ') << this->enrolledStudentsCount << " | ";
-	cout << setw(11) << setfill(' ') << this->durationHours << " 시간 | ";
-	cout << setw(8) << setfill(' ') << this->difficultyLevel << " | ";
+	cout << setw(11) << setfill('0') << right << getPrimaryKey() << "  | " << left;
+	cout << setw(22) << setfill(' ') << this->lectureTitle << "    | ";
+	cout << setw(12) << setfill(' ') << this->instructorName << "| ";
+	cout << setw(10) << setfill(' ') << this->price << "  | ";
+	cout << setw(10) << setfill(' ') << this->enrolledStudentsCount << "   | ";
+	cout << setw(10) << setfill(' ') << this->durationHours  << "| ";
+	cout << setw(8) << setfill(' ') << this->difficultyLevel << "   | ";
 	cout << endl;
 }
 

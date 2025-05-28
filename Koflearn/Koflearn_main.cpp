@@ -8,7 +8,7 @@ int main()
     
     int ch, key;
     bool isContinue = true;
-
+    
     while (isContinue == true) {
         cout << "\033[2J\033[1;1H";
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
@@ -41,7 +41,7 @@ int main()
             program->memberManager.displayMenu();
             break;
         case 6:
-            // lecturemanager
+            program->lectureManager.displayMenu();
             break;
         case 7:
             isContinue = false;

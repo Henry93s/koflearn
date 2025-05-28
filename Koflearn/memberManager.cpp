@@ -16,7 +16,7 @@ using namespace std;
 MemberManager::MemberManager()
 { 
     ifstream file;
-    file.open("memberlist.txt");
+    file.open("memberList.txt");
     char* endptr;
     if (!file.fail()) {
         while (!file.eof()) {
@@ -36,7 +36,7 @@ MemberManager::MemberManager()
 MemberManager::~MemberManager()
 {
     ofstream file;
-    file.open("memberlist.txt");
+    file.open("memberList.txt");
     if (!file.fail()) {
         for (const auto& v : memberList) {
             Member* member = v.second;
@@ -238,8 +238,8 @@ void MemberManager::modifyMember(unsigned long long primaryKey)
     cout << endl;
 
     string nickName;
-    std::cout << "닉네임 수정 : "; 
-    std::cin >> nickName;
+    cout << "닉네임 수정 : "; 
+    cin >> nickName;
 
     member->setNickName(nickName);
     memberList[primaryKey] = member;
@@ -291,7 +291,8 @@ vector<string> MemberManager::parseCSV(istream& file, char delimiter)
 
 void MemberManager::displayMenu()
 {
-    int ch, key;
+    int ch;
+    unsigned long long key;
     bool isContinue = true;
 
     while (isContinue == true) {

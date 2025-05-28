@@ -13,7 +13,7 @@ public:
 	// getter Method
 	// unsigned long long getPrimaryKey(); KoflearnPlatform
 	string getLectureTitle();
-	string getInstructorName();
+	string getInstructorName(); // login user
 	int getPrice();
 	int getEnrolledStudentsCount();
 	int getDurationHours();
@@ -23,7 +23,7 @@ public:
 	// setter Method
 	// void setPrimaryKey(unsigned long long primaryKey); KoflearnPlatform
 	void setLectureTitle(string lectureTitle);
-	void setInstructorName(string instructorName);
+	void setInstructorName(string instructorName); // login user
 	void setPrice(int price);
 	void setEnrolledStudentsCount(int enrolledStudentCount);
 	void setDurationHours(int durationHours);
@@ -31,7 +31,7 @@ public:
 
 private:
 	string lectureTitle;
-	string instructorName;
+	string instructorName; // login user
 	int price;
 	int enrolledStudentsCount;
 	int durationHours;
