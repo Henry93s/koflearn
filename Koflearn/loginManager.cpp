@@ -17,7 +17,7 @@ void LoginManager::displayMenu()
     
     string email, password;
     Member* member = nullptr;
-    KoflearnPlatManager* program = nullptr;
+    KoflearnPlatManager* program = getInstance();
     
 
     while (isContinue == true) {
@@ -37,7 +37,6 @@ void LoginManager::displayMenu()
         case 1:
             cout << "ID : ";
             getline(cin, email, '\n');
-            program = getInstance();
             member = program->getMemberManager().searchMember(email);
             if (member == nullptr) {
                 cout << "가입되지 않은 이메일입니다." << endl;
@@ -61,9 +60,9 @@ void LoginManager::displayMenu()
                 }
             }
             break;
-        case 2:
-            cout << "회원 가입 테스트" << endl;
-            cout << "[Enter] 를 눌러 뒤로가기" << endl;
+        case 2: 
+            program->memberManager.inputMember();
+            cout << "[Enter] 를 눌러 로그인 화면으로 돌아가기" << endl;
             while (getchar() != '\n');
             break;
         case 3:

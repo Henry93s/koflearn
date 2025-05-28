@@ -53,7 +53,6 @@ MemberManager::~MemberManager()
 
 void MemberManager::inputMember()
 {
-    while (getchar() != '\n');
     string nickname, email, password, phoneNumber;
     string rePassword;
 
@@ -72,7 +71,7 @@ void MemberManager::inputMember()
             continue;
         }
 
-        isDuplicationNickName = nickNameDuplicationCheck(nickname);
+        isDuplicationNickName = this->nickNameDuplicationCheck(nickname);
         if (isDuplicationNickName == 1) {
             cout << "중복된 닉네임입니다. 다시 입력해주세요." << endl;
             cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
@@ -90,7 +89,7 @@ void MemberManager::inputMember()
             return;
         }
 
-        isDuplicationEmail = emailDuplicationCheck(email);
+        isDuplicationEmail = this->emailDuplicationCheck(email);
         if (isDuplicationEmail == 1) {
             cout << "이미 가입한 이메일입니다. 다시 입력해주세요." << endl;
             cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
@@ -132,7 +131,7 @@ void MemberManager::inputMember()
             return;
         }
 
-        isDuplicationPhone = phoneDuplicationCheck(phoneNumber);
+        isDuplicationPhone = this->phoneDuplicationCheck(phoneNumber);
         if (isDuplicationPhone == 1) {
             cout << "중복된 휴대폰 번호입니다. 다시 입력해주세요." << endl;
             cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
@@ -151,7 +150,7 @@ void MemberManager::inputMember()
             cout << "'A' 키를 입력했으므로 일반 회원으로 가입을 계속 진행합니다." << endl;
             break;
         }
-        if (managerPassKey != std::string(dotenv::getenv("MANAGER_KEY"))) {
+        if (managerPassKey != string(dotenv::getenv("MANAGER_KEY"))) {
             cout << "관리자 키 값이 일치하지 않습니다. 다시 입력해주세요." << endl;
             cout << "일반 회원으로 가입을 계속 진행하실 경우 'A' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
             continue;
@@ -162,11 +161,16 @@ void MemberManager::inputMember()
         }
     }
     
-    unsigned long long primaryKey = makePrimaryKey();
+    unsigned long long primaryKey = this->makePrimaryKey();
 
     Member* member = new Member(primaryKey, nickname, email,
                                 password, phoneNumber, isManager);
     memberList.insert({ primaryKey, member });
+    return;
+}
+
+map<unsigned long long, Member*> MemberManager::getMemberList() {
+    return memberList;
 }
 
 Member* MemberManager::searchMember(unsigned long long primaryKey)
@@ -200,6 +204,7 @@ int MemberManager::nickNameDuplicationCheck(string nickName)
 // 이메일 중복 검사 함수 정의
 int MemberManager::emailDuplicationCheck(string email)
 {
+    map<unsigned long long, Member*> memberList_copy = getMemberList();
     for (auto& i : memberList) {
         if (i.second->getEmail().compare(email) == 0) {
             return 1;
@@ -327,6 +332,7 @@ void MemberManager::displayMenu()
             while (getchar() != '\n');
             break;
         case 2:
+            while (getchar() != '\n');
             inputMember();
             break;
         case 3:

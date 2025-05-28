@@ -28,6 +28,8 @@ public:
     vector<string> parseCSV(istream&, char);
     void displayMenu();
 
+    map<unsigned long long, Member*> getMemberList();
+
 private:
     map<unsigned long long, Member*> memberList;
 };
