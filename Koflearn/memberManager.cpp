@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <vector>
 #include <algorithm>
 #include <fstream>
@@ -9,14 +8,12 @@
 #include "memberManager.h"
 #include "koflearnPlatform.h"
 
-#include "./external/dotenv.h"
-
 using namespace std;
 
 MemberManager::MemberManager()
 { 
     ifstream file;
-    file.open("memberlist.txt");
+    file.open("memberList.txt");
     char* endptr;
     if (!file.fail()) {
         while (!file.eof()) {
@@ -36,7 +33,7 @@ MemberManager::MemberManager()
 MemberManager::~MemberManager()
 {
     ofstream file;
-    file.open("memberlist.txt");
+    file.open("memberList.txt");
     if (!file.fail()) {
         for (const auto& v : memberList) {
             Member* member = v.second;
@@ -51,9 +48,8 @@ MemberManager::~MemberManager()
     file.close();
 }
 
-void MemberManager::inputMember()
+Member* MemberManager::inputMember()
 {
-    while (getchar() != '\n');
     string nickname, email, password, phoneNumber;
     string rePassword;
 
@@ -63,7 +59,7 @@ void MemberManager::inputMember()
         getline(cin, nickname, '\n');
         if (nickname.compare("F") == 0) {
             cout << "'F' 키를 입력했으므로 회원가입을 중단합니다." << endl;
-            return;
+            return nullptr;
         }
 
         else if (nickname.length() < 2) {
@@ -72,7 +68,7 @@ void MemberManager::inputMember()
             continue;
         }
 
-        isDuplicationNickName = nickNameDuplicationCheck(nickname);
+        isDuplicationNickName = this->nickNameDuplicationCheck(nickname);
         if (isDuplicationNickName == 1) {
             cout << "중복된 닉네임입니다. 다시 입력해주세요." << endl;
             cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
@@ -87,10 +83,10 @@ void MemberManager::inputMember()
         getline(cin, email, '\n');
         if (email.compare("F") == 0) {
             cout << "'F' 키를 입력했으므로 회원가입을 중단합니다." << endl;
-            return;
+            return nullptr;
         }
 
-        isDuplicationEmail = emailDuplicationCheck(email);
+        isDuplicationEmail = this->emailDuplicationCheck(email);
         if (isDuplicationEmail == 1) {
             cout << "이미 가입한 이메일입니다. 다시 입력해주세요." << endl;
             cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
@@ -104,7 +100,7 @@ void MemberManager::inputMember()
         getline(cin, password, '\n');
         if (password == "F") {
             cout << "'F' 키를 입력했으므로 회원가입을 중단합니다." << endl;
-            return;
+            return nullptr;
         }
         else if (password.length() < 8) {
             cout << "패스워드의 길이는 8자리 이상이어야 합니다." << endl;
@@ -129,10 +125,10 @@ void MemberManager::inputMember()
         getline(cin, phoneNumber, '\n');
         if (phoneNumber.compare("F") == 0) {
             cout << "'F' 키를 입력했으므로 회원가입을 중단합니다." << endl;
-            return;
+            return nullptr;
         }
 
-        isDuplicationPhone = phoneDuplicationCheck(phoneNumber);
+        isDuplicationPhone = this->phoneDuplicationCheck(phoneNumber);
         if (isDuplicationPhone == 1) {
             cout << "중복된 휴대폰 번호입니다. 다시 입력해주세요." << endl;
             cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
@@ -142,7 +138,6 @@ void MemberManager::inputMember()
     }
 
     string managerPassKey;
-    dotenv::init();
     int isManager = 0;
     while (1) {
         cout << "관리자일 경우 관리자 보안 키를 입력해주세요 : ";
@@ -151,27 +146,40 @@ void MemberManager::inputMember()
             cout << "'A' 키를 입력했으므로 일반 회원으로 가입을 계속 진행합니다." << endl;
             break;
         }
-        if (managerPassKey != std::string(dotenv::getenv("MANAGER_KEY"))) {
+        if (managerPassKey.compare(getManagerKey()) != 0) {
             cout << "관리자 키 값이 일치하지 않습니다. 다시 입력해주세요." << endl;
             cout << "일반 회원으로 가입을 계속 진행하실 경우 'A' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
             continue;
         }
-        else if (managerPassKey == getenv("MANAGER_KEY")) { 
+        else if (managerPassKey.compare(getManagerKey()) == 0) {
             isManager = 1;
             break; 
         }
     }
     
-    unsigned long long primaryKey = makePrimaryKey();
+    unsigned long long primaryKey = this->makePrimaryKey();
 
     Member* member = new Member(primaryKey, nickname, email,
                                 password, phoneNumber, isManager);
     memberList.insert({ primaryKey, member });
+    return member;
 }
 
 Member* MemberManager::searchMember(unsigned long long primaryKey)
 {
     return memberList[primaryKey];
+}
+
+// login 관련으로 이메일로 멤버 찾기 추가
+Member* MemberManager::searchMember(string email)
+{
+    Member* ret = nullptr;
+    for (const auto& i : memberList) {
+        if (i.second->getEmail() == email) {
+            ret = i.second;
+        }
+    }
+    return ret;
 }
 
 // 닉네임 중복 검사 함수 정의
@@ -238,8 +246,8 @@ void MemberManager::modifyMember(unsigned long long primaryKey)
     cout << endl;
 
     string nickName;
-    std::cout << "닉네임 수정 : "; 
-    std::cin >> nickName;
+    cout << "닉네임 수정 : "; 
+    cin >> nickName;
 
     member->setNickName(nickName);
     memberList[primaryKey] = member;
@@ -262,6 +270,19 @@ unsigned long long MemberManager::makePrimaryKey()
         unsigned long long primaryKey = (--elem)->first;
         return ++primaryKey;
     }
+}
+
+string MemberManager::getManagerKey() {
+    ifstream file;
+    file.open("managerKey.txt");
+    if (!file.fail()) {
+        while (!file.eof()) {
+            vector<string> row = parseCSV(file, '\n');
+            return row[0];
+        }
+    }
+    file.close();
+    return "";
 }
 
 vector<string> MemberManager::parseCSV(istream& file, char delimiter)
@@ -291,7 +312,8 @@ vector<string> MemberManager::parseCSV(istream& file, char delimiter)
 
 void MemberManager::displayMenu()
 {
-    int ch, key;
+    int ch;
+    unsigned long long key;
     bool isContinue = true;
 
     while (isContinue == true) {
@@ -314,6 +336,7 @@ void MemberManager::displayMenu()
             while (getchar() != '\n');
             break;
         case 2:
+            while (getchar() != '\n');
             inputMember();
             break;
         case 3:
