@@ -51,7 +51,7 @@ MemberManager::~MemberManager()
     file.close();
 }
 
-void MemberManager::inputMember()
+Member* MemberManager::inputMember()
 {
     string nickname, email, password, phoneNumber;
     string rePassword;
@@ -62,7 +62,7 @@ void MemberManager::inputMember()
         getline(cin, nickname, '\n');
         if (nickname.compare("F") == 0) {
             cout << "'F' 키를 입력했으므로 회원가입을 중단합니다." << endl;
-            return;
+            return nullptr;
         }
 
         else if (nickname.length() < 2) {
@@ -86,7 +86,7 @@ void MemberManager::inputMember()
         getline(cin, email, '\n');
         if (email.compare("F") == 0) {
             cout << "'F' 키를 입력했으므로 회원가입을 중단합니다." << endl;
-            return;
+            return nullptr;
         }
 
         isDuplicationEmail = this->emailDuplicationCheck(email);
@@ -103,7 +103,7 @@ void MemberManager::inputMember()
         getline(cin, password, '\n');
         if (password == "F") {
             cout << "'F' 키를 입력했으므로 회원가입을 중단합니다." << endl;
-            return;
+            return nullptr;
         }
         else if (password.length() < 8) {
             cout << "패스워드의 길이는 8자리 이상이어야 합니다." << endl;
@@ -128,7 +128,7 @@ void MemberManager::inputMember()
         getline(cin, phoneNumber, '\n');
         if (phoneNumber.compare("F") == 0) {
             cout << "'F' 키를 입력했으므로 회원가입을 중단합니다." << endl;
-            return;
+            return nullptr;
         }
 
         isDuplicationPhone = this->phoneDuplicationCheck(phoneNumber);
@@ -166,11 +166,7 @@ void MemberManager::inputMember()
     Member* member = new Member(primaryKey, nickname, email,
                                 password, phoneNumber, isManager);
     memberList.insert({ primaryKey, member });
-    return;
-}
-
-map<unsigned long long, Member*> MemberManager::getMemberList() {
-    return memberList;
+    return member;
 }
 
 Member* MemberManager::searchMember(unsigned long long primaryKey)
@@ -204,7 +200,6 @@ int MemberManager::nickNameDuplicationCheck(string nickName)
 // 이메일 중복 검사 함수 정의
 int MemberManager::emailDuplicationCheck(string email)
 {
-    map<unsigned long long, Member*> memberList_copy = getMemberList();
     for (auto& i : memberList) {
         if (i.second->getEmail().compare(email) == 0) {
             return 1;

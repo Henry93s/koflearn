@@ -18,7 +18,7 @@ void LoginManager::displayMenu()
     string email, password;
     Member* member = nullptr;
     KoflearnPlatManager* program = getInstance();
-    
+    Member* joinMember = nullptr;
 
     while (isContinue == true) {
         cout << "\033[2J\033[1;1H";
@@ -54,16 +54,29 @@ void LoginManager::displayMenu()
                 else {
                     cout << member->getNickName() + " 님 환영합니다." << endl;
                     program->setIs_login(true);
-                    cout << "[Enter] 를 눌러 메인 페이지로 돌아가기" << endl;
+                    program->loginUser = member;
+                    cout << "[Enter] 를 눌러 메인 페이지로 이동" << endl;
                     while (getchar() != '\n');
-                    program->displayMenu();
+                    isContinue = false;
                 }
             }
             break;
         case 2: 
-            program->memberManager.inputMember();
-            cout << "[Enter] 를 눌러 로그인 화면으로 돌아가기" << endl;
-            while (getchar() != '\n');
+            joinMember = program->memberManager.inputMember();
+            if (joinMember != nullptr)  {
+                cout << "회원 가입이 완료되었습니다." << endl;
+                program->setIs_login(true);
+                program->loginUser = joinMember;
+                cout << "[Enter] 를 눌러 메인 페이지로 자동 로그인됩니다." << endl;
+                while (getchar() != '\n');
+                isContinue = false;
+            }
+            else {
+                cout << "회원 가입이 취소되었습니다." << endl;
+                cout << "[Enter] 를 눌러 메인 페이지로 돌아가기" << endl;
+                while (getchar() != '\n');
+                isContinue = false;
+            }
             break;
         case 3:
             isContinue = false;

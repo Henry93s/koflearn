@@ -64,6 +64,7 @@ void KoflearnPlatManager::displayMenu() {
             if (this->getIs_login() == true) {
                 // 로그아웃
                 this->setIs_login(false);
+                this->loginUser = nullptr;
                 cout << "정상적으로 로그아웃 되었습니다. " << endl;
                 cout << "[Enter] 를 눌러 메인 페이지로 돌아가기" << endl;
                 while (getchar() != '\n');
