@@ -11,6 +11,7 @@ KoflearnPlatManager* KoflearnPlatManager::getInstance() {
     return instance;
 }
 
+
 MemberManager& KoflearnPlatManager::getMemberManager() {
     return this->memberManager;
 }

@@ -16,11 +16,12 @@ private:
 	Member* loginUser = nullptr;
 	KoflearnPlatManager(){};
 
+	// manager 컨트롤러 클래스들 초기화(1회)
 	MemberManager memberManager;
 	LectureManager lectureManager;
 	LoginManager loginManager;
-	MyPageManager myPageManager;
 	EnrollManager enrollManager;
+	MyPageManager myPageManager;
 
 public:
 	static KoflearnPlatManager* getInstance();

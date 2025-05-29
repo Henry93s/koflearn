@@ -24,7 +24,7 @@ EnrollManager::EnrollManager() {
                 int price = atoi(row[9].c_str());
                 int enrolledStudentsCount = atoi(row[10].c_str());
                 int durationHours = atoi(row[11].c_str());
-                Lecture* lecture = new Lecture(primaryKey, row[7], row[8], price, enrolledStudentsCount, durationHours, row[12]);
+                Lecture* lecture = new Lecture(primaryKey2, row[7], row[8], price, enrolledStudentsCount, durationHours, row[12]);
 
                 studentLectureList.insert({ member, lecture });
             }
@@ -48,7 +48,7 @@ EnrollManager::EnrollManager() {
                 int price = atoi(row[9].c_str());
                 int enrolledStudentsCount = atoi(row[10].c_str());
                 int durationHours = atoi(row[11].c_str());
-                Lecture* lecture = new Lecture(primaryKey, row[7], row[8], price, enrolledStudentsCount, durationHours, row[12]);
+                Lecture* lecture = new Lecture(primaryKey2, row[7], row[8], price, enrolledStudentsCount, durationHours, row[12]);
 
                 instructorLectureList.insert({ member, lecture });
             }
@@ -140,12 +140,14 @@ void EnrollManager::searchAndStudentEnrollLecture() {
     KoflearnPlatManager* program = getInstance();
     Lecture* lecture = nullptr;
 
-    cout << "수강할 강의 privateKey 를 입력하세요 : ";
-    cout << "('-1' : 취소)" << endl;
-    cin >> privateKey;
-    if (privateKey == -1) { return; }
-    while (getchar() != '\n');
-        
+    if (!program->getLectureManager().lectureList.empty()) {
+        cout << "수강할 강의 privateKey 를 입력하세요 : ";
+        cout << "('-1' : 취소)" << endl;
+        cin >> privateKey;
+        if (privateKey == -1) { return; }
+        while (getchar() != '\n');
+    }
+
     lecture = program->getLectureManager().searchLecture(privateKey);
     if (lecture == nullptr) {
         cout << "조회된 강의가 없습니다." << endl;
@@ -199,4 +201,12 @@ void EnrollManager::instructorEnrollLecture() {
         while (getchar() != '\n');
     }
     return;
+}
+
+map<Member*, Lecture*> EnrollManager::getStudentLectureList() {
+    return this->studentLectureList;
+}
+
+map<Member*, Lecture*> EnrollManager::getInstructorLectureList() {
+    return this->instructorLectureList;
 }

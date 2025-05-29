@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <sstream>
 
 #include "member.h"
 #include "koflearnPlatManager.h"
@@ -252,7 +253,7 @@ void MemberManager::modifyMember(unsigned long long primaryKey)
 {
     Member* member = searchMember(primaryKey);
     if (member != nullptr) {
-        cout << "    key      |            Email(ID)             |   nickName   |    Phone Number    |   isManager   |" << endl;
+        cout << "    key     |            Email(ID)          |   nickName   |    Phone Number    |   isManager   |" << endl;
         cout << setw(11) << setfill('0') << right << member->getPrimaryKey() << " | " << left;
         cout << setw(29) << setfill(' ') << member->getEmail() << " | ";
         cout << setw(12) << setfill(' ') << member->getNickName() << " | ";
@@ -260,12 +261,35 @@ void MemberManager::modifyMember(unsigned long long primaryKey)
         cout << setw(13) << setfill(' ') << member->getIsManager() << " | ";
         cout << endl;
 
-        string nickName;
-        cout << "닉네임 수정 : ";
-        cin >> nickName;
-        while (getchar() != '\n');
+        string password;
+        string rePassword;
 
-        member->setNickName(nickName);
+        while (1) {
+            cout << "패스워드 : ";
+            getline(cin, password, '\n');
+            if (password == "F") {
+                cout << "'F' 키를 입력했으므로 수정을 중단합니다." << endl;
+                return;
+            }
+            else if (password.length() < 8) {
+                cout << "패스워드의 길이는 8자리 이상이어야 합니다." << endl;
+                cout << "수정을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
+                continue;
+            }
+            cout << "패스워드 확인 : ";
+            getline(cin, rePassword, '\n');
+            if (password.compare(rePassword) != 0) {
+                cout << "패스워드 입력 값이 일치하지 않습니다. 다시 입력해주세요." << endl;
+                cout << "수정을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
+                continue;
+            }
+            else {
+                cout << "수정이 정상적으로 완료되었습니다." << endl;
+                break;
+            }
+        }
+
+        member->setPassword(password);
         memberList[primaryKey] = member;
     }
     else {
@@ -283,7 +307,7 @@ unsigned long long MemberManager::makePrimaryKey()
     if (memberList.size() == 0) {
         // member 의 고유 key 값은 1 부터 시작 *(최대 10,000,000,000 100 억)
         // lecture 의 고유 key 값은 10,000,000,001 부터 시작
-        return 0;
+        return 1;
     }
     else {
         auto elem = memberList.end();
@@ -329,6 +353,9 @@ vector<string> MemberManager::parseCSV(istream& file, char delimiter)
     return row;
 }
 
+map<unsigned long long, Member*> MemberManager::getMemberList() {
+    return this->memberList;
+}
 
 void MemberManager::displayMenu()
 {

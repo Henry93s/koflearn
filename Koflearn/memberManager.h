@@ -32,6 +32,8 @@ public:
     vector<string> parseCSV(istream&, char);
     void displayMenu();
 
+    map<unsigned long long, Member*> getMemberList();
+
     KoflearnPlatManager* getInstance() const;
 
 private:

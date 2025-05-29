@@ -96,6 +96,8 @@ Lecture* LectureManager::inputLecture() {
         enrolledStudentsCount, durationHours, difficultyLevel);
 
     lectureList.insert({ primaryKey, lecture });
+    // 강의를 등록했을 때 "내 강의 보기" 리스트를 출력하기 위한 instructor(강의자) 기준 리스트에 데이터 추가
+    program->getEnrollManager().instructorLectureList.insert({program->getLoginUser(), lecture});
     return lecture;
 }
 
@@ -236,6 +238,10 @@ vector<string> LectureManager::parseCSV(istream& file, char delimiter)
         }
     }
     return row;
+}
+
+map<unsigned long long, Lecture*> LectureManager::getLectureList() {
+    return this->lectureList;
 }
 
 void LectureManager::displayMenu()
