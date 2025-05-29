@@ -95,7 +95,14 @@ Lecture* LectureManager::inputLecture() {
 }
 
 Lecture* LectureManager::searchLecture(unsigned long long primaryKey) {
-    return lectureList[primaryKey];
+    Lecture* lecture = nullptr;
+    lecture = lectureList[primaryKey];
+    if (lecture != nullptr) {
+        return lecture;
+    }
+    else {
+        return nullptr;
+    }
     // none : nullptr 반환
 }
 

@@ -147,18 +147,37 @@ void EnrollManager::searchAndStudentEnrollLecture() {
     while (getchar() != '\n');
 
     lecture = program->getLectureManager().searchLecture(privateKey);
-    if (lecture != nullptr) {
+    if (lecture == nullptr) {
+        cout << "조회된 강의가 없습니다." << endl;
+        cout << "[Enter] 를 눌러 뒤로가기" << endl;
+        cin.ignore();
+        return;
+    }
+    bool is_duplication = this->isDuplicationStudentEnrollLecture(program->getLoginUser(), lecture);
+    if (is_duplication == false && lecture != nullptr) {
         cout << "수강 신청이 완료되었습니다." << endl;
         this->studentLectureList.insert({ program->getLoginUser(), lecture });
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
         while (getchar() != '\n');
     }
-    else {
-        cout << "조회된 강의가 없습니다." << endl;
+    else if (is_duplication == true && lecture != nullptr) {
+        cout << "이미 수강 신청한 강의입니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
         while (getchar() != '\n');
     }
+
     return;
+}
+
+bool EnrollManager::isDuplicationStudentEnrollLecture(Member* member, Lecture* lecture) {
+    KoflearnPlatManager* program = getInstance();
+    for (const auto& i : program->getEnrollManager().studentLectureList) {
+        if (i.first->getPrimaryKey() == member->getPrimaryKey()
+            && i.second->getPrimaryKey() == lecture->getPrimaryKey()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void EnrollManager::instructorEnrollLecture() {
@@ -179,5 +198,3 @@ void EnrollManager::instructorEnrollLecture() {
     }
     return;
 }
-
-

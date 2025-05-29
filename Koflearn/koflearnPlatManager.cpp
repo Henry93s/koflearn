@@ -71,10 +71,11 @@ void KoflearnPlatManager::displayMenu() {
         else {
             cout << "  1. 로그인 / 회원가입                            " << endl;
         }
-        cout << "  2. 강의 조회 하기 [로그인 필요]                   " << endl;
-        cout << "  3. Koflearn 멤버(회원) 관리 프로그램                           " << endl;
-        cout << "  4. Koflearn 강의(제품) 관리 프로그램                           " << endl;
-        cout << "  5. 종료                              " << endl;
+        cout << "  2. 강의 조회 / 신청 하기 [로그인 필요]                   " << endl;
+        cout << "  3. 강의 등록 하기 [로그인 필요]                   " << endl;
+        cout << "  4. Koflearn 멤버(회원) 관리 시스템 [관리자 접근 필요]                           " << endl;
+        cout << "  5. Koflearn 강의(제품) 관리 시스템 [관리자 접근 필요]                          " << endl;
+        cout << "  6. 종료                              " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << " 기능을 선택하세요 : ";
         cin >> ch;
@@ -108,18 +109,45 @@ void KoflearnPlatManager::displayMenu() {
                 this->enrollManager.searchAndStudentEnrollLecture();
             }
             else {
-                cout << "로그인 후 확인이 필요합니다." << endl;
+                cout << "로그인 후 강의 조회 및 신청이 가능합니다." << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 while (getchar() != '\n');
             }
             break;
         case 3:
-            this->memberManager.displayMenu();
+            if (this->getIs_login() == true) {
+                this->lectureManager.inputLecture();
+                cout << "강의를 신규 등록하였습니다." << endl;
+                cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                while (getchar() != '\n');
+            }
+            else {
+                cout << "로그인 후 강의 등록이 가능합니다." << endl;
+                cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                while (getchar() != '\n');
+            }
             break;
         case 4:
-            this->lectureManager.displayMenu();
+            if (this->getIs_login() == true && this->getIs_admin() == true) {
+                this->memberManager.displayMenu();
+            }
+            else {
+                cout << "멤버(회원) 통합 관리 시스템은 관리자만 접근 가능합니다." << endl;
+                cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                while (getchar() != '\n');
+            }
             break;
         case 5:
+            if (this->getIs_login() == true && this->getIs_admin() == true) {
+                this->lectureManager.displayMenu();
+            }
+            else {
+                cout << "강의(제품) 통합 관리 시스템은 관리자만 접근 가능합니다." << endl;
+                cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                while (getchar() != '\n');
+            }
+            break;
+        case 6:
             isContinue = false;
             break;
         default:
