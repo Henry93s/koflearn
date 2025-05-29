@@ -17,12 +17,36 @@ LectureManager& KoflearnPlatManager::getLectureManager() {
     return this->lectureManager;
 }
 
+LoginManager& KoflearnPlatManager::getLoginManager() {
+    return this->loginManager;
+}
+
+MyPageManager& KoflearnPlatManager::getMyPageManager() {
+    return this->myPageManager;
+}
+
+Member* KoflearnPlatManager::getLoginUser() {
+    return this->loginUser;
+}
+
+void KoflearnPlatManager::setLoginUser(Member* member) {
+    this->loginUser = member;
+}
+
 bool KoflearnPlatManager::getIs_login() {
     return this->is_login;
 }
 
 void KoflearnPlatManager::setIs_login(bool boolean) {
     this->is_login = boolean;
+}
+
+bool KoflearnPlatManager::getIs_admin() {
+    return this->is_admin;
+}
+
+void KoflearnPlatManager::setIs_admin(bool boolean) {
+    this->is_admin = boolean;
 }
 
 void KoflearnPlatManager::displayMenu() {
@@ -56,6 +80,7 @@ void KoflearnPlatManager::displayMenu() {
         switch (ch) {
         case 0:
             if (this->getIs_login() == true) {
+                
                 cout << "마이페이지 테스트" << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 while (getchar() != '\n');
@@ -66,6 +91,8 @@ void KoflearnPlatManager::displayMenu() {
                 // 로그아웃
                 this->setIs_login(false);
                 this->loginUser = nullptr;
+                this->setIs_admin(false);
+
                 cout << "정상적으로 로그아웃 되었습니다. " << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 while (getchar() != '\n');

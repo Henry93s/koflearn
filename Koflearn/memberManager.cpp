@@ -21,8 +21,8 @@ MemberManager::MemberManager()
             if (row.size()) {
                 // strtoull : str to Unsigned Long Long
                 unsigned long long primaryKey = strtoull(row[0].c_str(), &endptr, 10);
-                int isManager = atoi(row[5].c_str());
-                Member* member = new Member(primaryKey, row[1], row[2], row[3], row[4], isManager);
+                
+                Member* member = new Member(primaryKey, row[1], row[2], row[3], row[4], row[5]);
                 memberList.insert({ primaryKey, member });
             }
         }
@@ -138,7 +138,7 @@ Member* MemberManager::inputMember()
     }
 
     string managerPassKey;
-    int isManager = 0;
+    string isManager = "false";
     while (1) {
         cout << "관리자일 경우 관리자 보안 키를 입력해주세요 : ";
         getline(cin, managerPassKey, '\n');
@@ -152,7 +152,7 @@ Member* MemberManager::inputMember()
             continue;
         }
         else if (managerPassKey.compare(getManagerKey()) == 0) {
-            isManager = 1;
+            isManager = "true";
             break; 
         }
     }

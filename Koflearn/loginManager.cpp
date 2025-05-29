@@ -16,6 +16,7 @@ void LoginManager::displayMenu()
     bool isContinue = true;
     
     string email, password;
+    Member* loginMember = nullptr;
     Member* member = nullptr;
     KoflearnPlatManager* program = getInstance();
     Member* joinMember = nullptr;
@@ -37,8 +38,8 @@ void LoginManager::displayMenu()
         case 1:
             cout << "ID : ";
             getline(cin, email, '\n');
-            member = program->getMemberManager().searchMember(email);
-            if (member == nullptr) {
+            loginMember = program->getMemberManager().searchMember(email);
+            if (loginMember == nullptr) {
                 cout << "가입되지 않은 이메일입니다." << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 while (getchar() != '\n');
@@ -46,15 +47,19 @@ void LoginManager::displayMenu()
             else {
                 cout << "비밀번호 : ";
                 getline(cin, password, '\n');
-                if (password != member->getPassword()) {
+                if (password != loginMember->getPassword()) {
                     cout << "패스워드를 다시 확인해주세요." << endl;
                     cout << "[Enter] 를 눌러 뒤로가기" << endl;
                     while (getchar() != '\n');
                 }
                 else {
-                    cout << member->getNickName() + " 님 환영합니다." << endl;
+                    cout << loginMember->getNickName() + " 님 환영합니다." << endl;
                     program->setIs_login(true);
-                    program->loginUser = member;
+                    program->setLoginUser(loginMember);
+
+                    if (loginMember->getIsManager() == "true") {
+                        program->setIs_admin(true);
+                    }
                     cout << "[Enter] 를 눌러 메인 페이지로 이동" << endl;
                     while (getchar() != '\n');
                     isContinue = false;
@@ -62,11 +67,15 @@ void LoginManager::displayMenu()
             }
             break;
         case 2: 
-            joinMember = program->memberManager.inputMember();
+            joinMember = program->getMemberManager().inputMember();
             if (joinMember != nullptr)  {
                 cout << "회원 가입이 완료되었습니다." << endl;
                 program->setIs_login(true);
-                program->loginUser = joinMember;
+                program->setLoginUser(joinMember);
+                member = program->getLoginUser();
+                if (member->getIsManager() == "true") {
+                    program->setIs_admin(true);
+                }
                 cout << "[Enter] 를 눌러 메인 페이지로 자동 로그인됩니다." << endl;
                 while (getchar() != '\n');
                 isContinue = false;

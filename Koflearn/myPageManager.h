@@ -16,6 +16,4 @@ public:
 	void displayMenu();
 };
 
-
-
 #endif // !_MYPAGE_MANAGER_H_

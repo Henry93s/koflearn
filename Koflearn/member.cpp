@@ -6,7 +6,7 @@ using namespace std;
 
 // member 자식 클래스 생성자에서 부모 클래스 생성자 포함
 Member::Member(unsigned long long primaryKey, string nickName, string email
-	, string password, string phoneNumber, int isManager)
+	, string password, string phoneNumber, string isManager)
 	: KoflearnPlatform(primaryKey), nickName(nickName), email(email)
 	, password(password), phoneNumber(phoneNumber), isManager(isManager)
 {}
@@ -24,7 +24,7 @@ string Member::getPassword() {
 string Member::getPhoneNumber() {
 	return this->phoneNumber;
 }
-int Member::getIsManager() {
+string Member::getIsManager() {
 	return this->isManager;
 }
 // override 
@@ -51,6 +51,6 @@ void Member::setPassword(string password) {
 void Member::setPhoneNumber(string phoneNumber) {
 	this->phoneNumber = phoneNumber;
 }
-void Member::setIsManager(int isManager) {
+void Member::setIsManager(string isManager) {
 	this->isManager = isManager;
 }
