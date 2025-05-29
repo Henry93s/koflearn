@@ -167,8 +167,13 @@ Member* MemberManager::inputMember()
 
 Member* MemberManager::searchMember(unsigned long long primaryKey)
 {
-    return memberList[primaryKey];
-    // none : nullptr 반환
+    Member* ret = nullptr;
+    for (const auto& i : memberList) {
+        if (i.first == primaryKey) {
+            return i.second;
+        }
+    }
+    return nullptr;
 }
 
 // login 관련으로 이메일로 멤버 찾기 추가

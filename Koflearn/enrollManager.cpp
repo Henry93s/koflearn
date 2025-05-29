@@ -145,25 +145,27 @@ void EnrollManager::searchAndStudentEnrollLecture() {
     cin >> privateKey;
     if (privateKey == -1) { return; }
     while (getchar() != '\n');
-
+        
     lecture = program->getLectureManager().searchLecture(privateKey);
     if (lecture == nullptr) {
         cout << "조회된 강의가 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        cin.ignore();
+        while (getchar() != '\n');
         return;
     }
-    bool is_duplication = this->isDuplicationStudentEnrollLecture(program->getLoginUser(), lecture);
-    if (is_duplication == false && lecture != nullptr) {
-        cout << "수강 신청이 완료되었습니다." << endl;
-        this->studentLectureList.insert({ program->getLoginUser(), lecture });
-        cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-    }
-    else if (is_duplication == true && lecture != nullptr) {
-        cout << "이미 수강 신청한 강의입니다." << endl;
-        cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
+    else {
+        bool is_duplication = this->isDuplicationStudentEnrollLecture(program->getLoginUser(), lecture);
+        if (is_duplication == false) {
+            cout << "수강 신청이 완료되었습니다." << endl;
+            this->studentLectureList.insert({ program->getLoginUser(), lecture });
+            cout << "[Enter] 를 눌러 뒤로가기" << endl;
+            while (getchar() != '\n');
+        }
+        else if (is_duplication == true) {
+            cout << "이미 수강 신청한 강의입니다." << endl;
+            cout << "[Enter] 를 눌러 뒤로가기" << endl;
+            while (getchar() != '\n');
+        }
     }
 
     return;

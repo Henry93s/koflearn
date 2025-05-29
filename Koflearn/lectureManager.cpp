@@ -50,7 +50,6 @@ LectureManager::~LectureManager() {
 }
 
 Lecture* LectureManager::inputLecture() {
-    while (getchar() != '\n');
     string lectureTitle, instructorName, difficultyLevel;
     int price, enrolledStudentsCount, durationHours;
 
@@ -60,8 +59,7 @@ Lecture* LectureManager::inputLecture() {
     getline(cin, lectureTitle, '\n');
     cout << "강사 명 : ";
     // 싱글톤 객체받아서 getmember 넘겨야함.
-    instructorName = "testName";
-    cout << "testName\n"; // temp instructorName
+    instructorName = "testname";
     cout << "가격 : ";
     cin >> price;
     enrolledStudentsCount = 0; // 기본 수강자 수는 0 부터 시작
@@ -95,15 +93,15 @@ Lecture* LectureManager::inputLecture() {
 }
 
 Lecture* LectureManager::searchLecture(unsigned long long primaryKey) {
-    Lecture* lecture = nullptr;
-    lecture = lectureList[primaryKey];
-    if (lecture != nullptr) {
-        return lecture;
+    // lecture = lectureList[primaryKey] 로 lecture 객체 포인터를 찾을 때
+    // 객체 포인터가 없을 때 nullptr 이 해당 primary key 값 인덱스에 "실제 맵" 에 저장될 수 있음 !
+    // => 따라서 lecture를 찾는 방법을 전체 lectureList 를 순회하면서 요소의 first 와 primarykey가 동일한 lecture 를 반환하도록 함
+    for (const auto& i : lectureList) {
+        if (i.first == primaryKey) {
+            return i.second;
+        }
     }
-    else {
-        return nullptr;
-    }
-    // none : nullptr 반환
+    return nullptr;
 }
 
 void LectureManager::displayAllLecture() const {
@@ -119,6 +117,7 @@ void LectureManager::displayAllLecture() const {
         lecture.second->displayInfo(); // 단순 강의 객체(Lecture()) read 책임은 Lecture 클래스에서 처리
     }
     cout << endl << endl << endl;
+    return;
 }
 
 void LectureManager::deleteLecture(unsigned long long primaryKey){
@@ -140,26 +139,31 @@ void LectureManager::modifyLecture(unsigned long long primaryKey) {
     while (1) {
         cout << "수정할 항목을 선택하세요. \n(강의 명 : 1, 가격 : 2, 강의 시간 : 3, 난이도 : 4, [수정 종료] : 5) : ";
         cin >> op;
+        while (getchar() != '\n');
+
         switch (op)
         {
         case 1:
             cout << "강의 명 수정 : ";
-            cin >> lectureTitle;
+            getline(cin, lectureTitle, '\n');
             lecture->setLectureTitle(lectureTitle);
             break;
         case 2:
             cout << "가격 수정 : ";
             cin >> price;
+            while (getchar() != '\n');
             lecture->setPrice(price);
             break;
         case 3:
             cout << "강의 시간 수정 : ";
             cin >> durationHours;
+            while (getchar() != '\n');
             lecture->setDurationHours(durationHours);
             break;
         case 4:
             cout << "난이도 수정(1 : 쉬움, 2: 보통, 3 : 어려움) : ";
             cin >> integerLevel;
+            while (getchar() != '\n');
             
             if (integerLevel == 1) {
                 difficultyLevel = "쉬움";
@@ -240,10 +244,11 @@ void LectureManager::displayMenu()
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << " 기능을 선택하세요 : ";
         cin >> ch;
+        while (getchar() != '\n');
+
         switch (ch) {
         case 1: default:
             displayAllLecture();
-            cin.ignore();
             while (getchar() != '\n');
             break;
         case 2:
