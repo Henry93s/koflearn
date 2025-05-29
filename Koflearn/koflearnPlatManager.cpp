@@ -1,13 +1,16 @@
 #include "koflearnPlatManager.h"
+#include <sstream>
 
 // 소스 코드 파일(cpp)에서 singleton 인스턴스 초기화
 KoflearnPlatManager* KoflearnPlatManager::instance = nullptr;
 
 KoflearnPlatManager* KoflearnPlatManager::getInstance() {
-    if (!instance)
+    if (!instance) {
         instance = new KoflearnPlatManager();
+    }
     return instance;
 }
+
 
 MemberManager& KoflearnPlatManager::getMemberManager() {
     return this->memberManager;
@@ -17,12 +20,40 @@ LectureManager& KoflearnPlatManager::getLectureManager() {
     return this->lectureManager;
 }
 
+LoginManager& KoflearnPlatManager::getLoginManager() {
+    return this->loginManager;
+}
+
+MyPageManager& KoflearnPlatManager::getMyPageManager() {
+    return this->myPageManager;
+}
+
+EnrollManager& KoflearnPlatManager::getEnrollManager() {
+    return this->enrollManager;
+}
+
+Member* KoflearnPlatManager::getLoginUser() {
+    return this->loginUser;
+}
+
+void KoflearnPlatManager::setLoginUser(Member* member) {
+    this->loginUser = member;
+}
+
 bool KoflearnPlatManager::getIs_login() {
     return this->is_login;
 }
 
 void KoflearnPlatManager::setIs_login(bool boolean) {
     this->is_login = boolean;
+}
+
+bool KoflearnPlatManager::getIs_admin() {
+    return this->is_admin;
+}
+
+void KoflearnPlatManager::setIs_admin(bool boolean) {
+    this->is_admin = boolean;
 }
 
 void KoflearnPlatManager::displayMenu() {
@@ -42,12 +73,11 @@ void KoflearnPlatManager::displayMenu() {
         else {
             cout << "  1. 로그인 / 회원가입                            " << endl;
         }
-        cout << "  2. 모든 강의 보기 [로그인 필요]                   " << endl;
-        cout << "  3. 신청한 강의 보기                         " << endl;
-        cout << "  4. 강의 등록하기                     " << endl;
-        cout << "  5. Koflearn 멤버(회원) 관리 프로그램                           " << endl;
-        cout << "  6. Koflearn 강의(제품) 관리 프로그램                           " << endl;
-        cout << "  7. 종료                              " << endl;
+        cout << "  2. 강의 조회 / 신청 하기 [로그인 필요]                   " << endl;
+        cout << "  3. 강의 등록 하기 [로그인 필요]                   " << endl;
+        cout << "  4. Koflearn 멤버(회원) 관리 시스템 [관리자 접근 필요]                           " << endl;
+        cout << "  5. Koflearn 강의(제품) 관리 시스템 [관리자 접근 필요]                          " << endl;
+        cout << "  6. 종료                              " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << " 기능을 선택하세요 : ";
         cin >> ch;
@@ -56,9 +86,7 @@ void KoflearnPlatManager::displayMenu() {
         switch (ch) {
         case 0:
             if (this->getIs_login() == true) {
-                cout << "마이페이지 테스트" << endl;
-                cout << "[Enter] 를 눌러 뒤로가기" << endl;
-                while (getchar() != '\n');
+                this->myPageManager.displayMenu();
             }
             break;
         case 1:
@@ -66,6 +94,8 @@ void KoflearnPlatManager::displayMenu() {
                 // 로그아웃
                 this->setIs_login(false);
                 this->loginUser = nullptr;
+                this->setIs_admin(false);
+
                 cout << "정상적으로 로그아웃 되었습니다. " << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 while (getchar() != '\n');
@@ -76,31 +106,50 @@ void KoflearnPlatManager::displayMenu() {
             }
             break;
         case 2:
-            // all lecture(); -> Order(강의 구매) 클래스 의 all_displaymenu 로 진입 -> 강의 수강 신청 가능 메소드 추가 예정
             if (this->getIs_login() == true) {
-                cout << "모든 강의 보기 테스트" << endl;
-                cout << "[Enter] 를 눌러 뒤로가기" << endl;
-                while (getchar() != '\n');
+                this->lectureManager.displayAllLecture();
+                this->enrollManager.searchAndStudentEnrollLecture();
             }
             else {
-                cout << "로그인 후 확인이 필요합니다." << endl;
+                cout << "로그인 후 강의 조회 및 신청이 가능합니다." << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 while (getchar() != '\n');
             }
             break;
         case 3:
-            // my lecture(); (로그인 시 접근 가능 메뉴) -> order 클래스의 my_displaymenu 로 진입
+            if (this->getIs_login() == true) {
+                this->lectureManager.inputLecture();
+                cout << "강의를 신규 등록하였습니다." << endl;
+                cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                while (getchar() != '\n');
+            }
+            else {
+                cout << "로그인 후 강의 등록이 가능합니다." << endl;
+                cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                while (getchar() != '\n');
+            }
             break;
         case 4:
-            // upload lecture(); (로그인 시 접근 가능 메뉴) -> order 클래스의 have_displaymenu 로 진입
+            if (this->getIs_login() == true && this->getIs_admin() == true) {
+                this->memberManager.displayMenu();
+            }
+            else {
+                cout << "멤버(회원) 통합 관리 시스템은 관리자만 접근 가능합니다." << endl;
+                cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                while (getchar() != '\n');
+            }
             break;
         case 5:
-            this->memberManager.displayMenu();
+            if (this->getIs_login() == true && this->getIs_admin() == true) {
+                this->lectureManager.displayMenu();
+            }
+            else {
+                cout << "강의(제품) 통합 관리 시스템은 관리자만 접근 가능합니다." << endl;
+                cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                while (getchar() != '\n');
+            }
             break;
         case 6:
-            this->lectureManager.displayMenu();
-            break;
-        case 7:
             isContinue = false;
             break;
         default:
@@ -109,6 +158,6 @@ void KoflearnPlatManager::displayMenu() {
     }
 
     // ! 싱글톤 인스턴스를 동적으로 할당했다면, 프로그램 종료 전에 반드시 delete !
-    // getInstance() 내부에서 new KoflearnPlatManager()를 사용했으므로, 여기서 delete 해야 합니다.
+    // getInstance() 내부에서 new KoflearnPlatManager()를 사용했으므로, 여기서 delete !!!
     delete this;
 }

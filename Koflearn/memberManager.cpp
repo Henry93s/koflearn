@@ -3,9 +3,12 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <sstream>
 
 #include "member.h"
-#include "memberManager.h"
+#include "koflearnPlatManager.h"
+// koflearnPlatManager 에 mamberManager 포함
+// #include "memberManager.h"
 #include "koflearnPlatform.h"
 
 using namespace std;
@@ -21,8 +24,8 @@ MemberManager::MemberManager()
             if (row.size()) {
                 // strtoull : str to Unsigned Long Long
                 unsigned long long primaryKey = strtoull(row[0].c_str(), &endptr, 10);
-                int isManager = atoi(row[5].c_str());
-                Member* member = new Member(primaryKey, row[1], row[2], row[3], row[4], isManager);
+                
+                Member* member = new Member(primaryKey, row[1], row[2], row[3], row[4], row[5]);
                 memberList.insert({ primaryKey, member });
             }
         }
@@ -46,6 +49,10 @@ MemberManager::~MemberManager()
         }
     }
     file.close();
+}
+
+KoflearnPlatManager* MemberManager::getInstance() const {
+    return KoflearnPlatManager::getInstance();
 }
 
 Member* MemberManager::inputMember()
@@ -138,7 +145,7 @@ Member* MemberManager::inputMember()
     }
 
     string managerPassKey;
-    int isManager = 0;
+    string isManager = "false";
     while (1) {
         cout << "관리자일 경우 관리자 보안 키를 입력해주세요 : ";
         getline(cin, managerPassKey, '\n');
@@ -152,7 +159,7 @@ Member* MemberManager::inputMember()
             continue;
         }
         else if (managerPassKey.compare(getManagerKey()) == 0) {
-            isManager = 1;
+            isManager = "true";
             break; 
         }
     }
@@ -167,7 +174,13 @@ Member* MemberManager::inputMember()
 
 Member* MemberManager::searchMember(unsigned long long primaryKey)
 {
-    return memberList[primaryKey];
+    Member* ret = nullptr;
+    for (const auto& i : memberList) {
+        if (i.first == primaryKey) {
+            return i.second;
+        }
+    }
+    return nullptr;
 }
 
 // login 관련으로 이메일로 멤버 찾기 추가
@@ -218,6 +231,8 @@ int MemberManager::phoneDuplicationCheck(string phoneNumber)
 void MemberManager::displayAllMembers() const {
     if (memberList.empty()) {
         cout << "등록된 멤버가 없습니다." << endl;
+        cout << "[Enter] 를 눌러 뒤로가기" << endl;
+        while (getchar() != '\n');
         return;
     }
 
@@ -225,32 +240,61 @@ void MemberManager::displayAllMembers() const {
     for (const auto& member : memberList) {
         member.second->displayInfo(); // 단순 멤버 객체(Member) read 책임은 Member 클래스가 맡음
     }
-    cout << endl << endl << endl;
-    cout << "[Enter] 키를 눌러 메뉴로 돌아가기" << endl;
+    cout << endl << endl;
 }
 
 void MemberManager::deleteMember(unsigned long long primaryKey)
 {
+    // erase : primaryKey 인덱스에 value 가 있으면 pair 를 지우고, value 가 없으면 그냥 넘어감
     memberList.erase(primaryKey);
 }
 
 void MemberManager::modifyMember(unsigned long long primaryKey)
 {
     Member* member = searchMember(primaryKey);
-    cout << "    key      |            Email(ID)             |   nickName   |    Phone Number    |   isManager   |" << endl;
-    cout << setw(11) << setfill('0') << right << member->getPrimaryKey() << " | " << left;
-    cout << setw(29) << setfill(' ') << member->getEmail() << " | ";
-    cout << setw(12) << setfill(' ') << member->getNickName() << " | ";
-    cout << setw(18) << setfill(' ') << member->getPhoneNumber() << " | ";
-    cout << setw(13) << setfill(' ') << member->getIsManager() << " | ";
-    cout << endl;
+    if (member != nullptr) {
+        cout << "    key     |            Email(ID)          |   nickName   |    Phone Number    |   isManager   |" << endl;
+        cout << setw(11) << setfill('0') << right << member->getPrimaryKey() << " | " << left;
+        cout << setw(29) << setfill(' ') << member->getEmail() << " | ";
+        cout << setw(12) << setfill(' ') << member->getNickName() << " | ";
+        cout << setw(18) << setfill(' ') << member->getPhoneNumber() << " | ";
+        cout << setw(13) << setfill(' ') << member->getIsManager() << " | ";
+        cout << endl;
 
-    string nickName;
-    cout << "닉네임 수정 : "; 
-    cin >> nickName;
+        string password;
+        string rePassword;
 
-    member->setNickName(nickName);
-    memberList[primaryKey] = member;
+        while (1) {
+            cout << "패스워드 : ";
+            getline(cin, password, '\n');
+            if (password == "F") {
+                cout << "'F' 키를 입력했으므로 수정을 중단합니다." << endl;
+                return;
+            }
+            else if (password.length() < 8) {
+                cout << "패스워드의 길이는 8자리 이상이어야 합니다." << endl;
+                cout << "수정을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
+                continue;
+            }
+            cout << "패스워드 확인 : ";
+            getline(cin, rePassword, '\n');
+            if (password.compare(rePassword) != 0) {
+                cout << "패스워드 입력 값이 일치하지 않습니다. 다시 입력해주세요." << endl;
+                cout << "수정을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
+                continue;
+            }
+            else {
+                cout << "수정이 정상적으로 완료되었습니다." << endl;
+                break;
+            }
+        }
+
+        member->setPassword(password);
+        memberList[primaryKey] = member;
+    }
+    else {
+        cout << "입력한 primaryKey 로 조회되는 멤버가 없습니다." << endl;
+    }
 }
 
 void MemberManager::addMember(Member* member)
@@ -263,7 +307,7 @@ unsigned long long MemberManager::makePrimaryKey()
     if (memberList.size() == 0) {
         // member 의 고유 key 값은 1 부터 시작 *(최대 10,000,000,000 100 억)
         // lecture 의 고유 key 값은 10,000,000,001 부터 시작
-        return 0;
+        return 1;
     }
     else {
         auto elem = memberList.end();
@@ -309,6 +353,9 @@ vector<string> MemberManager::parseCSV(istream& file, char delimiter)
     return row;
 }
 
+map<unsigned long long, Member*> MemberManager::getMemberList() {
+    return this->memberList;
+}
 
 void MemberManager::displayMenu()
 {
@@ -329,27 +376,39 @@ void MemberManager::displayMenu()
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << " 기능을 선택하세요 : ";
         cin >> ch;
+        while (getchar() != '\n');
+
         switch (ch) {
         case 1: default:
             displayAllMembers();
-            cin.ignore();
+            cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
             break;
         case 2:
-            while (getchar() != '\n');
             inputMember();
+            cout << "회원가입이 완료되었습니다." << endl;
+            cout << "[Enter] 를 눌러 뒤로가기" << endl;
+            while (getchar() != '\n');
             break;
         case 3:
             displayAllMembers();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
+            while (getchar() != '\n');
             deleteMember(key);
+            cout << "멤버 삭제 작업이 종료되었습니다." << endl;
+            cout << "[Enter] 를 눌러 뒤로가기" << endl;
+            while (getchar() != '\n');
             break;
         case 4:
             displayAllMembers();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
+            while (getchar() != '\n');
             modifyMember(key);
+            cout << "멤버 수정 작업이 종료되었습니다." << endl;
+            cout << "[Enter] 를 눌러 뒤로가기" << endl;
+            while (getchar() != '\n');
             break;
         case 5:
             isContinue = false;

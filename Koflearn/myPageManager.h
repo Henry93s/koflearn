@@ -11,11 +11,13 @@ class MyPageManager {
 public:
 	MyPageManager();
 	~MyPageManager();
-
+	        
 	KoflearnPlatManager* getInstance() const;
 	void displayMenu();
+	void myStudentLecturePrint();
+	void myInstructorLecturePrint();
+	bool selfDeleteID();
+	void allDeletedUserData();
 };
-
-
 
 #endif // !_MYPAGE_MANAGER_H_
