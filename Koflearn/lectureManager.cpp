@@ -1,6 +1,8 @@
 #include "koflearnPlatform.h"
 #include "lecture.h"
-#include "lectureManager.h"
+#include "koflearnPlatManager.h"
+// koflearnPlatManager 에 lectureManager.h 포함
+// #include "lectureManager.h"
 
 #include <vector>
 #include <algorithm>
@@ -49,6 +51,10 @@ LectureManager::~LectureManager() {
     file.close();
 }
 
+KoflearnPlatManager* LectureManager::getInstance() const {
+    return KoflearnPlatManager::getInstance();
+}
+
 Lecture* LectureManager::inputLecture() {
     string lectureTitle, instructorName, difficultyLevel;
     int price, enrolledStudentsCount, durationHours;
@@ -58,7 +64,6 @@ Lecture* LectureManager::inputLecture() {
     cout << "강의 명 : ";
     getline(cin, lectureTitle, '\n');
     cout << "강사 명 : ";
-    // 싱글톤 객체받아서 getmember 넘겨야함.
     instructorName = "testname";
     cout << "가격 : ";
     cin >> price;

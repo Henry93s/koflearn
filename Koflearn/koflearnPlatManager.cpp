@@ -5,8 +5,9 @@
 KoflearnPlatManager* KoflearnPlatManager::instance = nullptr;
 
 KoflearnPlatManager* KoflearnPlatManager::getInstance() {
-    if (!instance)
+    if (!instance) {
         instance = new KoflearnPlatManager();
+    }
     return instance;
 }
 
@@ -156,6 +157,6 @@ void KoflearnPlatManager::displayMenu() {
     }
 
     // ! 싱글톤 인스턴스를 동적으로 할당했다면, 프로그램 종료 전에 반드시 delete !
-    // getInstance() 내부에서 new KoflearnPlatManager()를 사용했으므로, 여기서 delete 해야 합니다.
+    // getInstance() 내부에서 new KoflearnPlatManager()를 사용했으므로, 여기서 delete !!!
     delete this;
 }

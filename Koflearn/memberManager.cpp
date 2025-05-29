@@ -5,7 +5,9 @@
 #include <iomanip>
 
 #include "member.h"
-#include "memberManager.h"
+#include "koflearnPlatManager.h"
+// koflearnPlatManager 에 mamberManager 포함
+// #include "memberManager.h"
 #include "koflearnPlatform.h"
 
 using namespace std;
@@ -46,6 +48,10 @@ MemberManager::~MemberManager()
         }
     }
     file.close();
+}
+
+KoflearnPlatManager* MemberManager::getInstance() const {
+    return KoflearnPlatManager::getInstance();
 }
 
 Member* MemberManager::inputMember()

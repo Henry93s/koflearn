@@ -7,6 +7,9 @@
 #include <iostream>
 using namespace std;
 
+// KoflearnPlatManager 전방 선언
+class KoflearnPlatManager;
+
 class LectureManager {
 public:
 	LectureManager();
@@ -22,6 +25,8 @@ public:
 	unsigned long long makePrimaryKey();
 	vector<string> parseCSV(istream&, char);
 	void displayMenu();
+
+	KoflearnPlatManager* getInstance() const;
 
 private:
 	map<unsigned long long, Lecture*> lectureList;
