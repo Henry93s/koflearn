@@ -4,6 +4,7 @@
 #include "lectureManager.h"
 #include "loginManager.h"
 #include "myPageManager.h"
+#include "enrollManager.h"
 
 #include <iostream>
 
@@ -11,26 +12,35 @@ class KoflearnPlatManager {
 private:
 	static KoflearnPlatManager* instance;
 	bool is_login = false;
+	bool is_admin = false;
+	Member* loginUser = nullptr;
 	KoflearnPlatManager(){};
+
+	// manager 컨트롤러 클래스들 초기화(1회)
+	MemberManager memberManager;
+	LectureManager lectureManager;
+	LoginManager loginManager;
+	EnrollManager enrollManager;
+	MyPageManager myPageManager;
 
 public:
 	static KoflearnPlatManager* getInstance();
 
-	MemberManager memberManager;
-	LectureManager lectureManager;
-	LoginManager loginManager;
-	MyPageManager myPageManager;
-
 	// 전체 프로그램에서 로그인 유무에 따라 동작을 달리하기 위함(로그인 세션 관리)
-	Member* loginUser = nullptr;
+	Member* getLoginUser();
+	void setLoginUser(Member* member);
 	bool getIs_login();
 	void setIs_login(bool isTrue);
+	bool getIs_admin();
+	void setIs_admin(bool isTrue);
 
 	// 한 manager 클래스에서 다른 manager 클래스에 접근하도록 생성한 
 	// manager 들에 대해 get 함수를 선언함
-
 	MemberManager& getMemberManager();
 	LectureManager& getLectureManager();
+	LoginManager& getLoginManager();
+	MyPageManager& getMyPageManager();
+	EnrollManager& getEnrollManager();
 
 	void displayMenu();
 };

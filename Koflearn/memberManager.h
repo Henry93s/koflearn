@@ -7,6 +7,9 @@
 #include <iostream>
 using namespace std;
 
+// KoflearnPlatManager 전방 선언
+class KoflearnPlatManager;
+
 class MemberManager {
 public:
     MemberManager();               // 생성자 선언
@@ -28,6 +31,10 @@ public:
     string getManagerKey();
     vector<string> parseCSV(istream&, char);
     void displayMenu();
+
+    map<unsigned long long, Member*> getMemberList();
+
+    KoflearnPlatManager* getInstance() const;
 
 private:
     map<unsigned long long, Member*> memberList;
