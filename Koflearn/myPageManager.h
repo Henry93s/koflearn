@@ -11,7 +11,7 @@ class MyPageManager {
 public:
 	MyPageManager();
 	~MyPageManager();
-
+	        
 	KoflearnPlatManager* getInstance() const;
 	void displayMenu();
 };
