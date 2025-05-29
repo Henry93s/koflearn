@@ -60,11 +60,13 @@ Lecture* LectureManager::inputLecture() {
     int price, enrolledStudentsCount, durationHours;
 
     unsigned long long primaryKey = makePrimaryKey();
+    KoflearnPlatManager* program = getInstance();
 
     cout << "강의 명 : ";
     getline(cin, lectureTitle, '\n');
     cout << "강사 명 : ";
-    instructorName = "testname";
+    instructorName = program->getLoginUser()->getNickName();
+    cout << instructorName << endl;
     cout << "가격 : ";
     cin >> price;
     enrolledStudentsCount = 0; // 기본 수강자 수는 0 부터 시작
@@ -126,67 +128,73 @@ void LectureManager::displayAllLecture() const {
 }
 
 void LectureManager::deleteLecture(unsigned long long primaryKey){
+    // erase : primaryKey 인덱스에 value 가 있으면 pair 를 지우고, value 가 없으면 그냥 넘어감
     lectureList.erase(primaryKey);
 }
 
 void LectureManager::modifyLecture(unsigned long long primaryKey) {
     Lecture* lecture = searchLecture(primaryKey);
-    cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
-    lecture->displayInfo();
+    if (lecture != nullptr) {
+        cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+        lecture->displayInfo();
 
-    int op = -1;
-    string lectureTitle;
-    int price;
-    int durationHours;
-    int integerLevel = 2;
-    string difficultyLevel = "보통";
+        int op = -1;
+        string lectureTitle;
+        int price;
+        int durationHours;
+        int integerLevel = 2;
+        string difficultyLevel = "보통";
 
-    while (1) {
-        cout << "수정할 항목을 선택하세요. \n(강의 명 : 1, 가격 : 2, 강의 시간 : 3, 난이도 : 4, [수정 종료] : 5) : ";
-        cin >> op;
-        while (getchar() != '\n');
+        while (1) {
+            cout << "수정할 항목을 선택하세요. \n(강의 명 : 1, 가격 : 2, 강의 시간 : 3, 난이도 : 4, [수정 종료] : 5) : ";
+            cin >> op;
+            while (getchar() != '\n');
 
-        switch (op)
-        {
-        case 1:
-            cout << "강의 명 수정 : ";
-            getline(cin, lectureTitle, '\n');
-            lecture->setLectureTitle(lectureTitle);
-            break;
-        case 2:
-            cout << "가격 수정 : ";
-            cin >> price;
-            while (getchar() != '\n');
-            lecture->setPrice(price);
-            break;
-        case 3:
-            cout << "강의 시간 수정 : ";
-            cin >> durationHours;
-            while (getchar() != '\n');
-            lecture->setDurationHours(durationHours);
-            break;
-        case 4:
-            cout << "난이도 수정(1 : 쉬움, 2: 보통, 3 : 어려움) : ";
-            cin >> integerLevel;
-            while (getchar() != '\n');
-            
-            if (integerLevel == 1) {
-                difficultyLevel = "쉬움";
+            switch (op)
+            {
+            case 1:
+                cout << "강의 명 수정 : ";
+                getline(cin, lectureTitle, '\n');
+                lecture->setLectureTitle(lectureTitle);
+                break;
+            case 2:
+                cout << "가격 수정 : ";
+                cin >> price;
+                while (getchar() != '\n');
+                lecture->setPrice(price);
+                break;
+            case 3:
+                cout << "강의 시간 수정 : ";
+                cin >> durationHours;
+                while (getchar() != '\n');
+                lecture->setDurationHours(durationHours);
+                break;
+            case 4:
+                cout << "난이도 수정(1 : 쉬움, 2: 보통, 3 : 어려움) : ";
+                cin >> integerLevel;
+                while (getchar() != '\n');
+
+                if (integerLevel == 1) {
+                    difficultyLevel = "쉬움";
+                }
+                else if (integerLevel == 3) {
+                    difficultyLevel = "어려움";
+                }
+                else {
+                    difficultyLevel = "보통";
+                }
+                lecture->setDifficultyLevel(difficultyLevel);
+                break;
+            default:
+                break;
             }
-            else if (integerLevel == 3) {
-                difficultyLevel = "어려움";
-            }
-            else {
-                difficultyLevel = "보통";
-            }
-            lecture->setDifficultyLevel(difficultyLevel);
-            break;
-        default:
-            break;
+            if (op == 5) { break; }
         }
-        if (op == 5) { break; }
+        lectureList[primaryKey] = lecture;
     }
-    lectureList[primaryKey] = lecture;
+    else {
+        cout << "primaryKey 로 조회된 강의가 없습니다." << endl;
+    }
 }
 
 void LectureManager::addLecture(Lecture* lecture) {
@@ -254,22 +262,34 @@ void LectureManager::displayMenu()
         switch (ch) {
         case 1: default:
             displayAllLecture();
+            cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
             break;
         case 2:
             inputLecture();
+            cout << "강의 등록이 완료되었습니다." << endl;
+            cout << "[Enter] 를 눌러 뒤로가기" << endl;
+            while (getchar() != '\n');
             break;
         case 3:
             displayAllLecture();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
+            while (getchar() != '\n');
             deleteLecture(key);
+            cout << "강의 삭제 작업이 종료되었습니다." << endl;
+            cout << "[Enter] 를 눌러 뒤로가기" << endl;
+            while (getchar() != '\n');
             break;
         case 4:
             displayAllLecture();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
+            while (getchar() != '\n');
             modifyLecture(key);
+            cout << "강의 수정 작업이 종료되었습니다." << endl;
+            cout << "[Enter] 를 눌러 뒤로가기" << endl;
+            while (getchar() != '\n');
             break;
         case 5:
             isContinue = false;
