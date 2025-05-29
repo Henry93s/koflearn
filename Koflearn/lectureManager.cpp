@@ -49,7 +49,7 @@ LectureManager::~LectureManager() {
     file.close();
 }
 
-void LectureManager::inputLecture() {
+Lecture* LectureManager::inputLecture() {
     while (getchar() != '\n');
     string lectureTitle, instructorName, difficultyLevel;
     int price, enrolledStudentsCount, durationHours;
@@ -91,15 +91,19 @@ void LectureManager::inputLecture() {
         enrolledStudentsCount, durationHours, difficultyLevel);
 
     lectureList.insert({ primaryKey, lecture });
+    return lecture;
 }
 
 Lecture* LectureManager::searchLecture(unsigned long long primaryKey) {
     return lectureList[primaryKey];
+    // none : nullptr 반환
 }
 
 void LectureManager::displayAllLecture() const {
     if (lectureList.empty()) {
         cout << "등록된 강의가 없습니다." << endl;
+        cout << "[Enter] 를 눌러 뒤로가기" << endl;
+        while (getchar() != '\n');
         return;
     }
 
@@ -108,7 +112,6 @@ void LectureManager::displayAllLecture() const {
         lecture.second->displayInfo(); // 단순 강의 객체(Lecture()) read 책임은 Lecture 클래스에서 처리
     }
     cout << endl << endl << endl;
-    cout << "[Enter] 키를 눌러 메뉴로 돌아가기" << endl;
 }
 
 void LectureManager::deleteLecture(unsigned long long primaryKey){
@@ -118,14 +121,7 @@ void LectureManager::deleteLecture(unsigned long long primaryKey){
 void LectureManager::modifyLecture(unsigned long long primaryKey) {
     Lecture* lecture = searchLecture(primaryKey);
     cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
-    cout << setw(11) << setfill('0') << right << lecture->getPrimaryKey() << " | " << left;
-    cout << setw(29) << setfill(' ') << lecture->getLectureTitle() << " | ";
-    cout << setw(12) << setfill(' ') << lecture->getInstructorName() << " | ";
-    cout << setw(10) << setfill(' ') << lecture->getPrice() << " | ";
-    cout << setw(10) << setfill(' ') << lecture->getEnrolledStudentsCount() << " | ";
-    cout << setw(10) << setfill(' ') << lecture->getDurationHours() << " 시간 | ";
-    cout << setw(10) << setfill(' ') << lecture->getDifficultyLevel() << " | ";
-    cout << endl;
+    lecture->displayInfo();
 
     int op = -1;
     string lectureTitle;

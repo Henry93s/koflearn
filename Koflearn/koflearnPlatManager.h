@@ -4,6 +4,7 @@
 #include "lectureManager.h"
 #include "loginManager.h"
 #include "myPageManager.h"
+#include "enrollManager.h"
 
 #include <iostream>
 
@@ -19,6 +20,7 @@ private:
 	LectureManager lectureManager;
 	LoginManager loginManager;
 	MyPageManager myPageManager;
+	EnrollManager enrollManager;
 
 public:
 	static KoflearnPlatManager* getInstance();
@@ -33,11 +35,11 @@ public:
 
 	// 한 manager 클래스에서 다른 manager 클래스에 접근하도록 생성한 
 	// manager 들에 대해 get 함수를 선언함
-
 	MemberManager& getMemberManager();
 	LectureManager& getLectureManager();
 	LoginManager& getLoginManager();
 	MyPageManager& getMyPageManager();
+	EnrollManager& getEnrollManager();
 
 	void displayMenu();
 };

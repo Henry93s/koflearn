@@ -12,7 +12,7 @@ public:
 	LectureManager();
 	~LectureManager();
 
-	void inputLecture();
+	Lecture* inputLecture();
 	void addLecture(Lecture* lecture);
 	void deleteLecture(unsigned long long key);
 	void modifyLecture(unsigned long long key);

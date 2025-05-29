@@ -168,6 +168,7 @@ Member* MemberManager::inputMember()
 Member* MemberManager::searchMember(unsigned long long primaryKey)
 {
     return memberList[primaryKey];
+    // none : nullptr 반환
 }
 
 // login 관련으로 이메일로 멤버 찾기 추가
@@ -218,6 +219,8 @@ int MemberManager::phoneDuplicationCheck(string phoneNumber)
 void MemberManager::displayAllMembers() const {
     if (memberList.empty()) {
         cout << "등록된 멤버가 없습니다." << endl;
+        cout << "[Enter] 를 눌러 뒤로가기" << endl;
+        while (getchar() != '\n');
         return;
     }
 

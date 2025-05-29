@@ -14,6 +14,8 @@ public:
 	        
 	KoflearnPlatManager* getInstance() const;
 	void displayMenu();
+	void myStudentLecturePrint();
+	void myInstructorLecturePrint();
 };
 
 #endif // !_MYPAGE_MANAGER_H_

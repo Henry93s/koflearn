@@ -1,4 +1,5 @@
 #include "koflearnPlatManager.h"
+#include <sstream>
 
 // 소스 코드 파일(cpp)에서 singleton 인스턴스 초기화
 KoflearnPlatManager* KoflearnPlatManager::instance = nullptr;
@@ -23,6 +24,10 @@ LoginManager& KoflearnPlatManager::getLoginManager() {
 
 MyPageManager& KoflearnPlatManager::getMyPageManager() {
     return this->myPageManager;
+}
+
+EnrollManager& KoflearnPlatManager::getEnrollManager() {
+    return this->enrollManager;
 }
 
 Member* KoflearnPlatManager::getLoginUser() {
@@ -66,12 +71,10 @@ void KoflearnPlatManager::displayMenu() {
         else {
             cout << "  1. 로그인 / 회원가입                            " << endl;
         }
-        cout << "  2. 모든 강의 보기 [로그인 필요]                   " << endl;
-        cout << "  3. 신청한 강의 보기                         " << endl;
-        cout << "  4. 강의 등록하기                     " << endl;
-        cout << "  5. Koflearn 멤버(회원) 관리 프로그램                           " << endl;
-        cout << "  6. Koflearn 강의(제품) 관리 프로그램                           " << endl;
-        cout << "  7. 종료                              " << endl;
+        cout << "  2. 강의 조회 하기 [로그인 필요]                   " << endl;
+        cout << "  3. Koflearn 멤버(회원) 관리 프로그램                           " << endl;
+        cout << "  4. Koflearn 강의(제품) 관리 프로그램                           " << endl;
+        cout << "  5. 종료                              " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << " 기능을 선택하세요 : ";
         cin >> ch;
@@ -80,10 +83,7 @@ void KoflearnPlatManager::displayMenu() {
         switch (ch) {
         case 0:
             if (this->getIs_login() == true) {
-                
-                cout << "마이페이지 테스트" << endl;
-                cout << "[Enter] 를 눌러 뒤로가기" << endl;
-                while (getchar() != '\n');
+                this->myPageManager.displayMenu();
             }
             break;
         case 1:
@@ -103,11 +103,9 @@ void KoflearnPlatManager::displayMenu() {
             }
             break;
         case 2:
-            // all lecture(); -> Order(강의 구매) 클래스 의 all_displaymenu 로 진입 -> 강의 수강 신청 가능 메소드 추가 예정
             if (this->getIs_login() == true) {
-                cout << "모든 강의 보기 테스트" << endl;
-                cout << "[Enter] 를 눌러 뒤로가기" << endl;
-                while (getchar() != '\n');
+                this->lectureManager.displayAllLecture();
+                this->enrollManager.searchAndStudentEnrollLecture();
             }
             else {
                 cout << "로그인 후 확인이 필요합니다." << endl;
@@ -116,18 +114,12 @@ void KoflearnPlatManager::displayMenu() {
             }
             break;
         case 3:
-            // my lecture(); (로그인 시 접근 가능 메뉴) -> order 클래스의 my_displaymenu 로 진입
-            break;
-        case 4:
-            // upload lecture(); (로그인 시 접근 가능 메뉴) -> order 클래스의 have_displaymenu 로 진입
-            break;
-        case 5:
             this->memberManager.displayMenu();
             break;
-        case 6:
+        case 4:
             this->lectureManager.displayMenu();
             break;
-        case 7:
+        case 5:
             isContinue = false;
             break;
         default:
