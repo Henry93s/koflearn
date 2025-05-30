@@ -1,18 +1,28 @@
-#include "koflearnPlatform.h"
 #include "lecture.h"
-#include "koflearnPlatManager.h"
-// koflearnPlatManager 에 lectureManager.h 포함
-// #include "lectureManager.h"
+#include "lectureManager.h"
+#include "IKoflearnPlatManager.h"
+// program_interface 를 통해서 접근하려는 모든 
+// Manager 클래스들이 필요한 헤더 파일이 include 되어 있어야 함. 
+// why? 순환참조 방지로 IKoflearnPlatManager 에서 Manager 클래스들을 include 하지 않고
+//      전방선언 처리했으므로
+#include "sessionManager.h"
+#include "enrollManager.h"
 
 #include <vector>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-
 using namespace std;
 
-LectureManager::LectureManager() {
+// 생성자에서 인터페이스 타입의 의존성을 주입받음
+LectureManager::LectureManager(IKoflearnPlatManager* program) 
+    : program_interface(program)
+{
+    if (!program_interface) {
+        cerr << "오류: MyPageManager에 유효한 IKoflearnPlatManager가 주입되지 않았습니다!\n";
+    }
+
 	ifstream file;
 	file.open("lectureList.txt");
     char* endptr;
@@ -51,22 +61,17 @@ LectureManager::~LectureManager() {
     file.close();
 }
 
-KoflearnPlatManager* LectureManager::getInstance() const {
-    return KoflearnPlatManager::getInstance();
-}
-
 Lecture* LectureManager::inputLecture() {
     string lectureTitle, instructorName, difficultyLevel;
     int price, enrolledStudentsCount, durationHours;
 
     unsigned long long primaryKey = makePrimaryKey();
-    KoflearnPlatManager* program = getInstance();
+
 
     cout << "강의 명 : ";
     getline(cin, lectureTitle, '\n');
     cout << "강사 명 : ";
-    instructorName = program->getLoginUser()->getNickName();
-    cout << instructorName << endl;
+    cout << program_interface->getSessionManager().getLoginUser()->getNickName() << endl;
     cout << "가격 : ";
     cin >> price;
     enrolledStudentsCount = 0; // 기본 수강자 수는 0 부터 시작
@@ -97,7 +102,8 @@ Lecture* LectureManager::inputLecture() {
 
     lectureList.insert({ primaryKey, lecture });
     // 강의를 등록했을 때 "내 강의 보기" 리스트를 출력하기 위한 instructor(강의자) 기준 리스트에 데이터 추가
-    program->getEnrollManager().instructorLectureList.insert({program->getLoginUser(), lecture});
+    Member* member = program_interface->getSessionManager().getLoginUser();
+    program_interface->getEnrollManager().getInstructorLectureList().insert({ member, lecture});
     return lecture;
 }
 
@@ -118,6 +124,7 @@ void LectureManager::displayAllLecture() const {
         cout << "등록된 강의가 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
         while (getchar() != '\n');
+
         return;
     }
 
@@ -152,6 +159,7 @@ void LectureManager::modifyLecture(unsigned long long primaryKey) {
             cin >> op;
             while (getchar() != '\n');
 
+
             switch (op)
             {
             case 1:
@@ -163,18 +171,21 @@ void LectureManager::modifyLecture(unsigned long long primaryKey) {
                 cout << "가격 수정 : ";
                 cin >> price;
                 while (getchar() != '\n');
+
                 lecture->setPrice(price);
                 break;
             case 3:
                 cout << "강의 시간 수정 : ";
                 cin >> durationHours;
                 while (getchar() != '\n');
+
                 lecture->setDurationHours(durationHours);
                 break;
             case 4:
                 cout << "난이도 수정(1 : 쉬움, 2: 보통, 3 : 어려움) : ";
                 cin >> integerLevel;
                 while (getchar() != '\n');
+
 
                 if (integerLevel == 1) {
                     difficultyLevel = "쉬움";
@@ -265,37 +276,44 @@ void LectureManager::displayMenu()
         cin >> ch;
         while (getchar() != '\n');
 
+
         switch (ch) {
         case 1: default:
             displayAllLecture();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
+
             break;
         case 2:
             inputLecture();
             cout << "강의 등록이 완료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
+
             break;
         case 3:
             displayAllLecture();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
             while (getchar() != '\n');
+
             deleteLecture(key);
             cout << "강의 삭제 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
+
             break;
         case 4:
             displayAllLecture();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
             while (getchar() != '\n');
+
             modifyLecture(key);
             cout << "강의 수정 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
+
             break;
         case 5:
             isContinue = false;

@@ -5,44 +5,39 @@
 #include "loginManager.h"
 #include "myPageManager.h"
 #include "enrollManager.h"
-
+#include "sessionManager.h"
+#include "IKoflearnPlatManager.h"
 #include <iostream>
 
-class KoflearnPlatManager {
+// 인터페이스를 상속받은 구현체
+class KoflearnPlatManager : public IKoflearnPlatManager {
 private:
-	static KoflearnPlatManager* instance;
-	bool is_login = false;
-	bool is_admin = false;
-	Member* loginUser = nullptr;
-	KoflearnPlatManager(){};
-
-	// manager 컨트롤러 클래스들 초기화(1회)
+	// 실제 manager 객체들 선언
+	// KoflearnPlatManager 메인 컨트롤러 Manager 클래스의 객체가 만들어 질 때
+	// 이미 실제 manager 객체들이 KoflearnPlatManager() 생성자의 초기화 리스트에서 
+	// 'this' 포인터를 사용하여 각 매니저의 생성자에 주입 !!
+	// 해당 객체들은 KoflearnPlatManager 메인 컨트롤러와 수명 주기를 함께한다.
 	MemberManager memberManager;
 	LectureManager lectureManager;
 	LoginManager loginManager;
 	EnrollManager enrollManager;
 	MyPageManager myPageManager;
+	SessionManager sessionManager;
 
 public:
-	static KoflearnPlatManager* getInstance();
+	KoflearnPlatManager();
 
-	// 전체 프로그램에서 로그인 유무에 따라 동작을 달리하기 위함(로그인 세션 관리)
-	Member* getLoginUser();
-	void setLoginUser(Member* member);
-	bool getIs_login();
-	void setIs_login(bool isTrue);
-	bool getIs_admin();
-	void setIs_admin(bool isTrue);
+	// 메인 컨트롤러 Manager 클래스에 있는 특정 멤버 변수에 대한 reference value 반환을 위함
+	MemberManager& getMemberManager() override;
+	LectureManager& getLectureManager() override;
+	LoginManager& getLoginManager() override;
+	MyPageManager& getMyPageManager() override;
+	EnrollManager& getEnrollManager() override;
+	SessionManager& getSessionManager() override;
 
-	// 한 manager 클래스에서 다른 manager 클래스에 접근하도록 생성한 
-	// manager 들에 대해 get 함수를 선언함
-	MemberManager& getMemberManager();
-	LectureManager& getLectureManager();
-	LoginManager& getLoginManager();
-	MyPageManager& getMyPageManager();
-	EnrollManager& getEnrollManager();
-
-	void displayMenu();
+	// main 에서 KoflearnPlatManager 를 한 번 생성하므로 displayMenu() 멤버 함수는 
+	// 종합 컨트롤러 Manager(인터페이스 구현체) 에서 선언 !
+	void displayMenu(IKoflearnPlatManager* program);
 };
 
 #endif // !_KOFLEARN_MANAGER_

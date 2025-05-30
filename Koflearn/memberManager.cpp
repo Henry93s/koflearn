@@ -1,20 +1,20 @@
+#include "member.h"
+#include "memberManager.h"
+
 #include <vector>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-#include <sstream>
-
-#include "member.h"
-#include "koflearnPlatManager.h"
-// koflearnPlatManager 에 mamberManager 포함
-// #include "memberManager.h"
-#include "koflearnPlatform.h"
-
 using namespace std;
 
-MemberManager::MemberManager()
+// 생성자에서 인터페이스 타입의 의존성을 주입받음
+MemberManager::MemberManager(IKoflearnPlatManager* program)
+    : program_interface(program)
 { 
+    if (!program_interface) {
+        cerr << "오류: MyPageManager에 유효한 IKoflearnPlatManager가 주입되지 않았습니다!\n";
+    }
     ifstream file;
     file.open("memberList.txt");
     char* endptr;
@@ -49,10 +49,6 @@ MemberManager::~MemberManager()
         }
     }
     file.close();
-}
-
-KoflearnPlatManager* MemberManager::getInstance() const {
-    return KoflearnPlatManager::getInstance();
 }
 
 Member* MemberManager::inputMember()
@@ -233,6 +229,7 @@ void MemberManager::displayAllMembers() const {
         cout << "등록된 멤버가 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
         while (getchar() != '\n');
+
         return;
     }
 
@@ -378,37 +375,44 @@ void MemberManager::displayMenu()
         cin >> ch;
         while (getchar() != '\n');
 
+
         switch (ch) {
         case 1: default:
             displayAllMembers();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
+
             break;
         case 2:
             inputMember();
             cout << "회원가입이 완료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
+
             break;
         case 3:
             displayAllMembers();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
             while (getchar() != '\n');
+
             deleteMember(key);
             cout << "멤버 삭제 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
+
             break;
         case 4:
             displayAllMembers();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
             while (getchar() != '\n');
+
             modifyMember(key);
             cout << "멤버 수정 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
+
             break;
         case 5:
             isContinue = false;

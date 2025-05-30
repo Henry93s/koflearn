@@ -1,24 +1,22 @@
 #ifndef _LECTURE_MANAGER_H_
 #define _LECTURE_MANAGER_H_
 
+#include "lecture.h"
+#include "IKoflearnPlatManager.h"
 #include <vector>
 #include <map>
-#include "lecture.h"
 #include <iostream>
 using namespace std;
 
-// KoflearnPlatManager 전방 선언
-class KoflearnPlatManager;
-
 class LectureManager {
-public:
-	LectureManager();
-	~LectureManager();
+private:
+	// Manager 가 인터페이스에 의존하도록 인터페이스 포인터 선언
+	IKoflearnPlatManager* program_interface;
 
-	// EnrollManager::searchAndStudentEnrollLecture() 에서 lectureList 직접 사용
-	friend class EnrollManager;
-	// MyPageManager::allDeletedUserData: 회원 삭제 시 연관된 데이터를 지우기 위한 friend
-	friend class MyPageManager;
+public:
+	// 생성자에서 인터페이스 타입 의존성을 주입받음
+	LectureManager(IKoflearnPlatManager* program);
+	~LectureManager();
 
 	Lecture* inputLecture();
 	void addLecture(Lecture* lecture);
@@ -32,8 +30,6 @@ public:
 	void displayMenu();
 
 	map<unsigned long long, Lecture*> getLectureList();
-
-	KoflearnPlatManager* getInstance() const;
 
 private:
 	map<unsigned long long, Lecture*> lectureList;

@@ -1,16 +1,15 @@
 #include "koflearnPlatManager.h"
 #include <sstream>
 
-// 소스 코드 파일(cpp)에서 singleton 인스턴스 초기화
-KoflearnPlatManager* KoflearnPlatManager::instance = nullptr;
-
-KoflearnPlatManager* KoflearnPlatManager::getInstance() {
-    if (!instance) {
-        instance = new KoflearnPlatManager();
-    }
-    return instance;
-}
-
+KoflearnPlatManager::KoflearnPlatManager()
+    : // 초기화 리스트에서 'this' 포인터를 사용하여 각 매니저의 생성자에 의존성 주입
+    memberManager(this),
+    lectureManager(this),
+    loginManager(this),
+    enrollManager(this),
+    myPageManager(this),
+    sessionManager(this)
+{};
 
 MemberManager& KoflearnPlatManager::getMemberManager() {
     return this->memberManager;
@@ -32,31 +31,11 @@ EnrollManager& KoflearnPlatManager::getEnrollManager() {
     return this->enrollManager;
 }
 
-Member* KoflearnPlatManager::getLoginUser() {
-    return this->loginUser;
+SessionManager& KoflearnPlatManager::getSessionManager() {
+    return this->sessionManager;
 }
 
-void KoflearnPlatManager::setLoginUser(Member* member) {
-    this->loginUser = member;
-}
-
-bool KoflearnPlatManager::getIs_login() {
-    return this->is_login;
-}
-
-void KoflearnPlatManager::setIs_login(bool boolean) {
-    this->is_login = boolean;
-}
-
-bool KoflearnPlatManager::getIs_admin() {
-    return this->is_admin;
-}
-
-void KoflearnPlatManager::setIs_admin(bool boolean) {
-    this->is_admin = boolean;
-}
-
-void KoflearnPlatManager::displayMenu() {
+void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
     int ch;
     bool isContinue = true;
 
@@ -65,8 +44,8 @@ void KoflearnPlatManager::displayMenu() {
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << "          Koflearn Main page                 " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        if (this->getIs_login() == true) {
-            cout << this->loginUser->getNickName() + " 님 안녕하세요. 현재 수강중인 강의가 있어요 !" << endl << endl;
+        if (program->getSessionManager().getIs_login() == true) {
+            cout << program->getSessionManager().getLoginUser()->getNickName() + " 님 안녕하세요. 현재 수강중인 강의가 있어요 !" << endl << endl;
             cout << "  0. 마이페이지                            " << endl;
             cout << "  1. 로그아웃                              " << endl;
         }
@@ -85,68 +64,74 @@ void KoflearnPlatManager::displayMenu() {
 
         switch (ch) {
         case 0:
-            if (this->getIs_login() == true) {
+            if (program->getSessionManager().getIs_login() == true) {
                 this->myPageManager.displayMenu();
             }
             break;
         case 1:
-            if (this->getIs_login() == true) {
+            if (program->getSessionManager().getIs_login() == true) {
                 // 로그아웃
-                this->setIs_login(false);
-                this->loginUser = nullptr;
-                this->setIs_admin(false);
+                program->getSessionManager().setIs_login(false);
+                program->getSessionManager().setLoginUser(nullptr);
+                program->getSessionManager().setIs_admin(false);
 
                 cout << "정상적으로 로그아웃 되었습니다. " << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 while (getchar() != '\n');
+
             }
             else {
                 // 로그인 화면 이동
-                this->loginManager.displayMenu();
+                program->getLoginManager().displayMenu();
             }
             break;
         case 2:
-            if (this->getIs_login() == true) {
-                this->lectureManager.displayAllLecture();
-                this->enrollManager.searchAndStudentEnrollLecture();
+            if (program->getSessionManager().getIs_login() == true) {
+                program->getLectureManager().displayAllLecture();
+                program->getEnrollManager().searchAndStudentEnrollLecture();
             }
             else {
                 cout << "로그인 후 강의 조회 및 신청이 가능합니다." << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 while (getchar() != '\n');
+
             }
             break;
         case 3:
-            if (this->getIs_login() == true) {
-                this->lectureManager.inputLecture();
+            if (program->getSessionManager().getIs_login() == true) {
+                program->getLectureManager().inputLecture();
                 cout << "강의를 신규 등록하였습니다." << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 while (getchar() != '\n');
+
             }
             else {
                 cout << "로그인 후 강의 등록이 가능합니다." << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 while (getchar() != '\n');
+
             }
             break;
         case 4:
-            if (this->getIs_login() == true && this->getIs_admin() == true) {
-                this->memberManager.displayMenu();
+            if (program->getSessionManager().getIs_login() == true && program->getSessionManager().getIs_admin() == true) {
+                program->getMemberManager().displayMenu();
             }
             else {
                 cout << "멤버(회원) 통합 관리 시스템은 관리자만 접근 가능합니다." << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 while (getchar() != '\n');
+
             }
             break;
         case 5:
-            if (this->getIs_login() == true && this->getIs_admin() == true) {
-                this->lectureManager.displayMenu();
+            if (program->getSessionManager().getIs_login() == true && program->getSessionManager().getIs_admin() == true) {
+                program->getLectureManager().displayMenu();
             }
             else {
                 cout << "강의(제품) 통합 관리 시스템은 관리자만 접근 가능합니다." << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 while (getchar() != '\n');
+
             }
             break;
         case 6:
@@ -156,8 +141,4 @@ void KoflearnPlatManager::displayMenu() {
             break;
         }
     }
-
-    // ! 싱글톤 인스턴스를 동적으로 할당했다면, 프로그램 종료 전에 반드시 delete !
-    // getInstance() 내부에서 new KoflearnPlatManager()를 사용했으므로, 여기서 delete !!!
-    delete this;
 }

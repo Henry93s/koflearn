@@ -1,12 +1,27 @@
-#include "koflearnPlatManager.h"
+#include "enrollManager.h"
+// program_interface 를 통해서 접근하려는 모든 
+// Manager 클래스들이 필요한 헤더 파일이 include 되어 있어야 함. 
+// why? 순환참조 방지로 IKoflearnPlatManager 에서 Manager 클래스들을 include 하지 않고
+//      전방선언 처리했으므로
+#include "lectureManager.h"
+#include "sessionManager.h"
+
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+using namespace std;
 
-EnrollManager::EnrollManager() {
+// 생성자에서 인터페이스 타입의 의존성을 주입받음
+EnrollManager::EnrollManager(IKoflearnPlatManager* program) 
+    : program_interface(program)
+{
+    if (!program_interface) {
+        cerr << "오류: MyPageManager에 유효한 IKoflearnPlatManager가 주입되지 않았습니다!\n";
+    }
+
     ifstream file1, file2;
     file1.open("studentLectureList.txt");
     char* endptr;
@@ -131,42 +146,42 @@ vector<string> EnrollManager::parseCSV(istream& file, char delimiter)
     return row;
 }
 
-KoflearnPlatManager* EnrollManager::getInstance() const {
-	return KoflearnPlatManager::getInstance();
-}
-
 void EnrollManager::searchAndStudentEnrollLecture() {
     unsigned long long privateKey = 0;
-    KoflearnPlatManager* program = getInstance();
     Lecture* lecture = nullptr;
-
-    if (!program->getLectureManager().lectureList.empty()) {
+    
+    if (!program_interface->getLectureManager().getLectureList().empty()) {
         cout << "수강할 강의 privateKey 를 입력하세요 : ";
         cout << "('-1' : 취소)" << endl;
         cin >> privateKey;
         if (privateKey == -1) { return; }
         while (getchar() != '\n');
+
     }
 
-    lecture = program->getLectureManager().searchLecture(privateKey);
+    lecture = program_interface->getLectureManager().searchLecture(privateKey);
     if (lecture == nullptr) {
         cout << "조회된 강의가 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
         while (getchar() != '\n');
+
         return;
     }
     else {
-        bool is_duplication = this->isDuplicationStudentEnrollLecture(program->getLoginUser(), lecture);
+        bool is_duplication = this->isDuplicationStudentEnrollLecture(program_interface->getSessionManager().getLoginUser(), lecture);
         if (is_duplication == false) {
             cout << "수강 신청이 완료되었습니다." << endl;
-            this->studentLectureList.insert({ program->getLoginUser(), lecture });
+            Member* member = program_interface->getSessionManager().getLoginUser();
+            this->studentLectureList.insert({ member, lecture });
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
+
         }
         else if (is_duplication == true) {
             cout << "이미 수강 신청한 강의입니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
+
         }
     }
 
@@ -174,8 +189,8 @@ void EnrollManager::searchAndStudentEnrollLecture() {
 }
 
 bool EnrollManager::isDuplicationStudentEnrollLecture(Member* member, Lecture* lecture) {
-    KoflearnPlatManager* program = getInstance();
-    for (const auto& i : program->getEnrollManager().studentLectureList) {
+    
+    for (const auto& i : program_interface->getEnrollManager().studentLectureList) {
         if (i.first->getPrimaryKey() == member->getPrimaryKey()
             && i.second->getPrimaryKey() == lecture->getPrimaryKey()) {
             return true;
@@ -185,20 +200,22 @@ bool EnrollManager::isDuplicationStudentEnrollLecture(Member* member, Lecture* l
 }
 
 void EnrollManager::instructorEnrollLecture() {
-    KoflearnPlatManager* program = getInstance();
     Lecture* lecture = nullptr;
 
-    lecture = program->getLectureManager().inputLecture();
+    lecture = program_interface->getLectureManager().inputLecture();
     if (lecture != nullptr) {
         cout << "강의 등록이 완료되었습니다." << endl;
-        this->instructorLectureList.insert({ program->getLoginUser(), lecture });
+        Member* member = program_interface->getSessionManager().getLoginUser();
+        this->instructorLectureList.insert({ member, lecture });
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
         while (getchar() != '\n');
+
     }
     else {
         cout << "강의가 정상적으로 생성되지 않았습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
         while (getchar() != '\n');
+
     }
     return;
 }

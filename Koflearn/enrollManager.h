@@ -3,26 +3,23 @@
 
 #include "member.h"
 #include "lecture.h"
+#include "IKoflearnPlatManager.h"
 #include <iostream>
 #include <map>
 using namespace std;
 
-// KoflearnPlatManager 전방 선언
-class KoflearnPlatManager;
-
 class EnrollManager {
+private:
+	// Manager 가 인터페이스에 의존하도록 인터페이스 포인터 선언
+	IKoflearnPlatManager* program_interface;
+
 private:
 	map<Member*, Lecture*> studentLectureList;
 	map<Member*, Lecture*> instructorLectureList;
 
-	// 250529 commit 로그에 작성하지 못한 내용(friend - daily 과제에 추가할 것.)
-	// myPageManager 에서는 EnrollManager 의 private 인 "강의듣는 리스트", "강의하는 리스트"
-	// 를 받아와야 하기 때문에 myPageManager 와의 [friend] 선언
-	friend class MyPageManager;
-	friend class LectureManager;
-
 public:
-	EnrollManager();
+	// 생성자에서 인터페이스 타입 의존성을 주입받음
+	EnrollManager(IKoflearnPlatManager* program);
 	~EnrollManager();
 
 	void searchAndStudentEnrollLecture();
@@ -33,8 +30,6 @@ public:
 
 	map<Member*, Lecture*> getStudentLectureList();
 	map<Member*, Lecture*> getInstructorLectureList();
-
-	KoflearnPlatManager* getInstance() const;
 };
 
 #endif // ! _ENROLLMANAGER_H_

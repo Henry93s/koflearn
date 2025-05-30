@@ -1,18 +1,22 @@
 #ifndef _MEMBER_MANAGER_H_
 #define _MEMBER_MANAGER_H_
 
+#include "member.h"
+#include "IKoflearnPlatManager.h"
 #include <vector>
 #include <map>
-#include "member.h"
 #include <iostream>
 using namespace std;
 
-// KoflearnPlatManager 전방 선언
-class KoflearnPlatManager;
 
 class MemberManager {
+private:
+    // Manager 가 인터페이스에 의존하도록 인터페이스 포인터 선언
+    IKoflearnPlatManager* program_interface;
+
 public:
-    MemberManager();               // 생성자 선언
+    // 생성자에서 인터페이스 타입 의존성을 주입받음
+    MemberManager(IKoflearnPlatManager* program);               // 생성자 선언
     ~MemberManager();              // 소멸자 선언
 
     Member* inputMember();
@@ -33,8 +37,6 @@ public:
     void displayMenu();
 
     map<unsigned long long, Member*> getMemberList();
-
-    KoflearnPlatManager* getInstance() const;
 
 private:
     map<unsigned long long, Member*> memberList;
