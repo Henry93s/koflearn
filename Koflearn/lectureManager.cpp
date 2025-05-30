@@ -297,7 +297,21 @@ void LectureManager::displayMenu()
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << " 기능을 선택하세요 : ";
         cin >> ch;
-        while (getchar() != '\n');
+        
+        // 메뉴에서 숫자 명령어를 받으려고 할 때 영문자 등을 입력했을 때 
+        // 무한 깜빡임 현상 해결
+        if (cin.fail()) {
+            cout << "잘못된 입력입니다. 숫자를 입력해주세요." << endl;
+            // 스트림의 오류 상태를 초기화
+            cin.clear();
+            cout << "[Enter] 를 눌러 뒤로가기" << endl;
+            while (getchar() != '\n');
+            // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+        // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
 
         switch (ch) {
