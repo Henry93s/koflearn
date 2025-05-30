@@ -45,7 +45,8 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
         cout << "          Koflearn Main page                 " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         if (program->getSessionManager().getIs_login() == true) {
-            cout << program->getSessionManager().getLoginUser()->getNickName() + " 님 안녕하세요. 현재 수강중인 강의가 있어요 !" << endl << endl;
+            string welcomeText = program->getEnrollManager().makeWelcomeText();
+            cout << program->getSessionManager().getLoginUser()->getNickName() + welcomeText << endl << endl;
             cout << "  0. 마이페이지                            " << endl;
             cout << "  1. 로그아웃                              " << endl;
         }

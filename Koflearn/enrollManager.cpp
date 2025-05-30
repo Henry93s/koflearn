@@ -189,6 +189,9 @@ void EnrollManager::searchAndStudentEnrollLecture() {
 
             // 학생 키로 map 에서 vector 찾기
             auto it = this->studentLectureList.find(studentKey);
+            // 추가하려는 강의의 "수강자 수" 를 증가 시킴
+            int temp = lecture->getEnrolledStudentsCount();
+            lecture->setEnrolledStudentsCount(++temp);
 
             if (it != this->studentLectureList.end()) {
                 // 학생이 이미 존재할 때 해당 학생 강의 리스트에 새 강의 추가
@@ -253,6 +256,23 @@ void EnrollManager::instructorEnrollLecture() {
 
     }
     return;
+}
+
+string EnrollManager::makeWelcomeText() {
+    string welcomeText = "님 안녕하세요. 지금 새 강의를 수강신청해보세요 !";
+    unsigned long long myPrimaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
+    map<unsigned long long, vector<Lecture*>>& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
+    bool is_own = false;
+
+    for (const auto& i : studentLectureList) {
+        if (i.first == myPrimaryKey) {
+            is_own = true;
+        }
+    }
+    if (is_own) {
+        welcomeText = "님 안녕하세요. 현재 수강중인 강의가 있어요 !";
+    }
+    return welcomeText;
 }
 
 // 컨테이너 객체의 경우 특정 변수에 값을 함수에서 반환을 통해 할당했을 때,

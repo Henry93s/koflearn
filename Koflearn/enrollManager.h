@@ -34,7 +34,11 @@ public:
 	void instructorEnrollLecture();
 	bool isDuplicationStudentEnrollLecture(Member* member, Lecture* lecture);
 	
+	string makeWelcomeText();
+
 	vector<string> parseCSV(istream&, char);
+
+
 
 	// 1.
 	// 컨테이너 객체의 경우 특정 변수에 값을 함수에서 반환을 통해 할당했을 때,
