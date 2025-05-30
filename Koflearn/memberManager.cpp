@@ -1,20 +1,20 @@
+#include "member.h"
+#include "memberManager.h"
+
 #include <vector>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-#include <sstream>
-
-#include "member.h"
-#include "koflearnPlatManager.h"
-// koflearnPlatManager 에 mamberManager 포함
-// #include "memberManager.h"
-#include "koflearnPlatform.h"
-
 using namespace std;
 
-MemberManager::MemberManager()
+// 생성자에서 인터페이스 타입의 의존성을 주입받음
+MemberManager::MemberManager(IKoflearnPlatManager* program)
+    : program_interface(program)
 { 
+    if (!program_interface) {
+        cerr << "오류: MyPageManager에 유효한 IKoflearnPlatManager가 주입되지 않았습니다!\n";
+    }
     ifstream file;
     file.open("memberList.txt");
     char* endptr;
@@ -49,10 +49,6 @@ MemberManager::~MemberManager()
         }
     }
     file.close();
-}
-
-KoflearnPlatManager* MemberManager::getInstance() const {
-    return KoflearnPlatManager::getInstance();
 }
 
 Member* MemberManager::inputMember()
@@ -233,6 +229,7 @@ void MemberManager::displayAllMembers() const {
         cout << "등록된 멤버가 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
         while (getchar() != '\n');
+
         return;
     }
 
@@ -353,7 +350,11 @@ vector<string> MemberManager::parseCSV(istream& file, char delimiter)
     return row;
 }
 
-map<unsigned long long, Member*> MemberManager::getMemberList() {
+// 컨테이너 객체의 경우 특정 변수에 값을 함수에서 반환을 통해 할당했을 때,
+// "임시 객체" 가 생성되고 반환 직후 ; 을 만나 문장이 끝나면 임시 컨테이너 객체가 소멸됨.
+// => "댕글링 포인터" 이슈 발생!!
+// * 해결 : 컨테이너 객체를 변수에 할당하여 반환할 때, "복사하지 않고" "참조" 값을 반환한다.
+map<unsigned long long, Member*>& MemberManager::getMemberList() {
     return this->memberList;
 }
 
@@ -376,39 +377,60 @@ void MemberManager::displayMenu()
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << " 기능을 선택하세요 : ";
         cin >> ch;
-        while (getchar() != '\n');
+        
+        // 메뉴에서 숫자 명령어를 받으려고 할 때 영문자 등을 입력했을 때 
+        // 무한 깜빡임 현상 해결
+        if (cin.fail()) {
+            cout << "잘못된 입력입니다. 숫자를 입력해주세요." << endl;
+            // 스트림의 오류 상태를 초기화
+            cin.clear();
+            cout << "[Enter] 를 눌러 뒤로가기" << endl;
+            while (getchar() != '\n');
+            // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+        // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
 
         switch (ch) {
         case 1: default:
             displayAllMembers();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
+
             break;
         case 2:
             inputMember();
             cout << "회원가입이 완료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
+
             break;
         case 3:
             displayAllMembers();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
             while (getchar() != '\n');
+
             deleteMember(key);
             cout << "멤버 삭제 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
+
             break;
         case 4:
             displayAllMembers();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
             while (getchar() != '\n');
+
             modifyMember(key);
             cout << "멤버 수정 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             while (getchar() != '\n');
+
             break;
         case 5:
             isContinue = false;
