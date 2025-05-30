@@ -111,7 +111,7 @@ EnrollManager::~EnrollManager() {
             // map<unsigned long long, vector<Lecture*>> 에서 vector<Lecture*> 를 먼저 얻고
             // for 문 순환 필요함
             for (Lecture* lecture : v.second) {
-                file1 << member->getPrimaryKey() << ", "
+                file2 << member->getPrimaryKey() << ", "
                     << member->getNickName() << ", "
                     << member->getEmail() << ", "
                     << member->getPassword() << ", "
