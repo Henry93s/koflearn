@@ -22,13 +22,17 @@ MyPageManager::~MyPageManager() {}
 
 void MyPageManager::myStudentLecturePrint() {
     int cnt = 0;
+
+    // 컨테이너 객체 반환받을 때 임시 객체 이슈로 댕글링 포인터될 수 있으므로 참조 값 받기
+    map<unsigned long long, vector<Lecture*>>& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
+    cout << studentLectureList.size() << endl;
     cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
-    for (const auto& i : program_interface->getEnrollManager().getStudentLectureList()) {
-        Lecture* lecture = nullptr;
-        if (i.first->getNickName() == program_interface->getSessionManager().getLoginUser()->getNickName()) {
-            lecture = i.second;
-            lecture->displayInfo();
-            cnt++;
+    for (const auto& i : studentLectureList) {
+        if (i.first == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
+            for (const auto& i2 : i.second) {
+                i2->displayInfo();
+                cnt++;
+            }
         }
     }
     if (cnt == 0) {
@@ -48,13 +52,17 @@ void MyPageManager::myStudentLecturePrint() {
 
 void MyPageManager::myInstructorLecturePrint() {
     int cnt = 0;
+    // 컨테이너 객체 반환받을 때 임시 객체 이슈로 댕글링 포인터될 수 있으므로 참조 값 받기
+    map<unsigned long long, vector<Lecture*>>& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
+
     cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
-    for (const auto& i : program_interface->getEnrollManager().getInstructorLectureList()) {
+    for (const auto& i : instructorLectureList) {
         Lecture* lecture = nullptr;
-        if (i.first->getNickName() == program_interface->getSessionManager().getLoginUser()->getNickName()) {
-            lecture = i.second;
-            lecture->displayInfo();
-            cnt++;
+        if (i.first == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
+            for (const auto& i2 : i.second) {
+                i2->displayInfo();
+                cnt++;
+            }
         }
     }
     if (cnt == 0) {
@@ -103,14 +111,21 @@ bool MyPageManager::selfDeleteID() {
 }
 
 void MyPageManager::allDeletedUserData() {
-    string instructorName = program_interface->getSessionManager().getLoginUser()->getNickName();
+    unsigned long long instructorPrimaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
+
+    // 컨테이너 객체의 경우 특정 변수에 값을 함수에서 반환을 통해 할당했을 때,
+    // "임시 객체" 가 생성되고 반환 직후 ; 을 만나 문장이 끝나면 임시 컨테이너 객체가 소멸됨.
+    // => "댕글링 포인터" 이슈 발생!!
+    // * 해결 : 컨테이너 객체를 변수에 할당하여 반환할 때, "복사하지 않고" "참조" 값을 반환한다.
+
 
     // lectureList data 제거
-    auto i = program_interface->getLectureManager().getLectureList().begin();
-    while (i != program_interface->getLectureManager().getLectureList().end()) {
-        if (i->second->getInstructorName().compare(instructorName) == 0) {
+    auto& lectureList = program_interface->getLectureManager().getLectureList();
+    auto i = lectureList.begin();
+    while (i != lectureList.end()) {
+        if (i->first == instructorPrimaryKey) {
             // i(iterator) 를 삭제된 다음 위치로 update
-            i = program_interface->getLectureManager().getLectureList().erase(i);
+            i = lectureList.erase(i);
         }
         else {
             // 조건을 만족하지 않으면 다음 요소로 이동
@@ -119,11 +134,12 @@ void MyPageManager::allDeletedUserData() {
     }
 
     // instructorLectureList data 제거
-    auto i2 = program_interface->getEnrollManager().getInstructorLectureList().begin();
-    while (i2 != program_interface->getEnrollManager().getInstructorLectureList().end()) {
-        if (i2->first->getNickName().compare(instructorName) == 0) {
+    auto& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
+    auto i2 = instructorLectureList.begin();
+    while (i2 != instructorLectureList.end()) {
+        if (i2->first == instructorPrimaryKey) {
             // i(iterator) 를 삭제된 다음 위치로 update
-            i2 = program_interface->getEnrollManager().getInstructorLectureList().erase(i2);
+            i2 = instructorLectureList.erase(i2);
         }
         else {
             // 조건을 만족하지 않으면 다음 요소로 이동
@@ -132,16 +148,27 @@ void MyPageManager::allDeletedUserData() {
     }
 
     // studentLectureList data 제거
-    auto i3 = program_interface->getEnrollManager().getStudentLectureList().begin();
+    auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
+    auto i3 = studentLectureList.begin();
+    while (i3 != studentLectureList.end()) {
+        vector<Lecture*>& lecturesOfStudent = i3->second;
 
-    while (i3 != program_interface->getEnrollManager().getStudentLectureList().end()) {
-        if (i3->first->getNickName().compare(instructorName) == 0) {
-            // i(iterator) 를 삭제된 다음 위치로 update
-            i3 = program_interface->getEnrollManager().getStudentLectureList().erase(i3);
+        // std::remove_if는 실제 삭제는 하지 않고, 삭제될 요소들을 벡터의 끝으로 이동시키고 새 end 이터레이터를 반환합니다.
+        auto new_end = remove_if(lecturesOfStudent.begin(), lecturesOfStudent.end(),
+            [instructorPrimaryKey](Lecture* lecture_ptr) {
+                return lecture_ptr && lecture_ptr->getPrimaryKey() == instructorPrimaryKey;
+            });
+        // 실제로 벡터에서 요소 제거
+        lecturesOfStudent.erase(new_end, lecturesOfStudent.end());
+
+        // 강좌 삭제 후, 만약 학생의 강의 리스트(vector)가 비어 있다면 해당 학생의 맵 엔트리도 삭제
+        if (lecturesOfStudent.empty()) {
+            // 맵에서 현재 엔트리를 삭제하고, erase가 반환 및 유효한 이터레이터로 map_it을 업데이트
+            i3 = studentLectureList.erase(i3);
         }
         else {
-            // 조건을 만족하지 않으면 다음 요소로 이동
-            i3++;
+            // 벡터에 아직 강의가 남아있다면, 다음 맵 엔트리로 이동
+            ++i3;
         }
     }
 

@@ -67,11 +67,11 @@ Lecture* LectureManager::inputLecture() {
 
     unsigned long long primaryKey = makePrimaryKey();
 
-
     cout << "강의 명 : ";
     getline(cin, lectureTitle, '\n');
     cout << "강사 명 : ";
     cout << program_interface->getSessionManager().getLoginUser()->getNickName() << endl;
+    instructorName = program_interface->getSessionManager().getLoginUser()->getNickName();
     cout << "가격 : ";
     cin >> price;
     enrolledStudentsCount = 0; // 기본 수강자 수는 0 부터 시작
@@ -103,7 +103,26 @@ Lecture* LectureManager::inputLecture() {
     lectureList.insert({ primaryKey, lecture });
     // 강의를 등록했을 때 "내 강의 보기" 리스트를 출력하기 위한 instructor(강의자) 기준 리스트에 데이터 추가
     Member* member = program_interface->getSessionManager().getLoginUser();
-    program_interface->getEnrollManager().getInstructorLectureList().insert({ member, lecture});
+
+    // 컨테이너 객체 반환받을 때 임시 객체 이슈로 댕글링 포인터될 수 있으므로 참조 값 받기
+    map<unsigned long long, vector<Lecture*>>& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
+    // 특정 member privateKey 를 key 로 vector 에 여러 개 요소 삽입하기 !
+
+    unsigned long long instructorKey = member->getPrimaryKey();
+
+    // 강사 키로 map 에서 vector 찾기
+    auto it = instructorLectureList.find(instructorKey);
+
+    if (it != instructorLectureList.end()) {
+        // 강의자가 이미 존재할 때 해당 강의자의 강의 리스트에 새 강의를 추가한다.
+        // push_back : 벡터의 맨 끝에 항목 추가
+        it->second.push_back(lecture);
+    }
+    else {
+        // 강의자가 존재하지 않으면 새 엔트리 생성 (새로운 벡터를 만들고 강의 추가)
+        instructorLectureList.insert({ instructorKey, {lecture} });
+    }
+
     return lecture;
 }
 
@@ -251,7 +270,11 @@ vector<string> LectureManager::parseCSV(istream& file, char delimiter)
     return row;
 }
 
-map<unsigned long long, Lecture*> LectureManager::getLectureList() {
+// 컨테이너 객체의 경우 특정 변수에 값을 함수에서 반환을 통해 할당했을 때,
+// "임시 객체" 가 생성되고 반환 직후 ; 을 만나 문장이 끝나면 임시 컨테이너 객체가 소멸됨.
+// => "댕글링 포인터" 이슈 발생!!
+// * 해결 : 컨테이너 객체를 변수에 할당하여 반환할 때, "복사하지 않고" "참조" 값을 반환한다.
+map<unsigned long long, Lecture*>& LectureManager::getLectureList() {
     return this->lectureList;
 }
 
