@@ -15,7 +15,7 @@
 using namespace std;
 
 // 생성자에서 인터페이스 타입의 의존성을 주입받음
-EnrollManager::EnrollManager(IKoflearnPlatManager* program) 
+EnrollManager::EnrollManager(IKoflearnPlatManager* program)
     : program_interface(program)
 {
     if (!program_interface) {
@@ -44,8 +44,8 @@ EnrollManager::EnrollManager(IKoflearnPlatManager* program)
                 // map<unsigned long long, vector<Lecture*>>
                 // map<unsigned long long, Lecture*> 형태일 경우
                 /*
-                한 학생은 하나의 강의 밖에 수강하지 못함 : 한 key 는 고유하기 때문에 중복해서 
-	            같은 key 를 삽입할 수 없음. 
+                한 학생은 하나의 강의 밖에 수강하지 못함 : 한 key 는 고유하기 때문에 중복해서
+                같은 key 를 삽입할 수 없음.
                 */
                 studentLectureList.insert({ member->getPrimaryKey(), { lecture } });
             }
@@ -105,7 +105,7 @@ EnrollManager::~EnrollManager() {
             }
         }
     }
-    if(!file2.fail()){
+    if (!file2.fail()) {
         for (const auto& v : instructorLectureList) {
             Member* member = program_interface->getMemberManager().searchMember(v.first);
             // map<unsigned long long, vector<Lecture*>> 에서 vector<Lecture*> 를 먼저 얻고
@@ -166,16 +166,14 @@ void EnrollManager::searchAndStudentEnrollLecture() {
         cout << "('-1' : 취소)" << endl;
         cin >> privateKey;
         if (privateKey == -1) { return; }
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 
     lecture = program_interface->getLectureManager().searchLecture(privateKey);
     if (lecture == nullptr) {
         cout << "조회된 강의가 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return;
     }
     else {
@@ -185,7 +183,7 @@ void EnrollManager::searchAndStudentEnrollLecture() {
 
         if (is_duplication == false) {
             cout << "수강 신청이 완료되었습니다." << endl;
-           unsigned long long studentKey = member->getPrimaryKey();
+            unsigned long long studentKey = member->getPrimaryKey();
 
             // 학생 키로 map 에서 vector 찾기
             auto it = this->studentLectureList.find(studentKey);
@@ -202,14 +200,12 @@ void EnrollManager::searchAndStudentEnrollLecture() {
                 this->studentLectureList.insert({ studentKey, {lecture} });
             }
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
         else if (is_duplication == true) {
             cout << "이미 수강 신청한 강의입니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
     }
 
@@ -246,14 +242,12 @@ void EnrollManager::instructorEnrollLecture() {
         Member* member = program_interface->getSessionManager().getLoginUser();
         this->instructorLectureList.insert({ member->getPrimaryKey() , {lecture} });
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     else {
         cout << "강의가 정상적으로 생성되지 않았습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     return;
 }

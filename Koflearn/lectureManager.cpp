@@ -142,8 +142,7 @@ void LectureManager::displayAllLecture() const {
     if (lectureList.empty()) {
         cout << "등록된 강의가 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return;
     }
 
@@ -176,8 +175,7 @@ void LectureManager::modifyLecture(unsigned long long primaryKey) {
         while (1) {
             cout << "수정할 항목을 선택하세요. \n(강의 명 : 1, 가격 : 2, 강의 시간 : 3, 난이도 : 4, [수정 종료] : 5) : ";
             cin >> op;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             switch (op)
             {
@@ -189,22 +187,19 @@ void LectureManager::modifyLecture(unsigned long long primaryKey) {
             case 2:
                 cout << "가격 수정 : ";
                 cin >> price;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 lecture->setPrice(price);
                 break;
             case 3:
                 cout << "강의 시간 수정 : ";
                 cin >> durationHours;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 lecture->setDurationHours(durationHours);
                 break;
             case 4:
                 cout << "난이도 수정(1 : 쉬움, 2: 보통, 3 : 어려움) : ";
                 cin >> integerLevel;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
                 if (integerLevel == 1) {
                     difficultyLevel = "쉬움";
@@ -305,7 +300,8 @@ void LectureManager::displayMenu()
             // 스트림의 오류 상태를 초기화
             cin.clear();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
             // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
@@ -318,39 +314,35 @@ void LectureManager::displayMenu()
         case 1: default:
             displayAllLecture();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 2:
             inputLecture();
             cout << "강의 등록이 완료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 3:
             displayAllLecture();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             deleteLecture(key);
             cout << "강의 삭제 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 4:
             displayAllLecture();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             modifyLecture(key);
             cout << "강의 수정 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 5:
             isContinue = false;

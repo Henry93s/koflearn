@@ -69,7 +69,8 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
             // 스트림의 오류 상태를 초기화
             cin.clear();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
             // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
@@ -92,8 +93,7 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
 
                 cout << "정상적으로 로그아웃 되었습니다. " << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             else {
                 // 로그인 화면 이동
@@ -108,8 +108,7 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
             else {
                 cout << "로그인 후 강의 조회 및 신청이 가능합니다." << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             break;
         case 3:
@@ -117,14 +116,12 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
                 program->getLectureManager().inputLecture();
                 cout << "강의를 신규 등록하였습니다." << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             else {
                 cout << "로그인 후 강의 등록이 가능합니다." << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             break;
         case 4:
@@ -134,8 +131,7 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
             else {
                 cout << "멤버(회원) 통합 관리 시스템은 관리자만 접근 가능합니다." << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             break;
         case 5:
@@ -145,8 +141,7 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
             else {
                 cout << "강의(제품) 통합 관리 시스템은 관리자만 접근 가능합니다." << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             break;
         case 6:

@@ -228,8 +228,7 @@ void MemberManager::displayAllMembers() const {
     if (memberList.empty()) {
         cout << "등록된 멤버가 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return;
     }
 
@@ -385,7 +384,8 @@ void MemberManager::displayMenu()
             // 스트림의 오류 상태를 초기화
             cin.clear();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
             // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
@@ -393,44 +393,41 @@ void MemberManager::displayMenu()
         // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-
         switch (ch) {
         case 1: default:
             displayAllMembers();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             break;
         case 2:
             inputMember();
             cout << "회원가입이 완료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             break;
         case 3:
             displayAllMembers();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             deleteMember(key);
             cout << "멤버 삭제 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 4:
             displayAllMembers();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             modifyMember(key);
             cout << "멤버 수정 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 5:
             isContinue = false;

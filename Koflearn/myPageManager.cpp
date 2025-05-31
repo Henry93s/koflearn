@@ -39,14 +39,12 @@ void MyPageManager::myStudentLecturePrint() {
         cout << endl;
         cout << "현재 수강 중인 강좌가 없습니다 !" << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     else {
         cout << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 }
 
@@ -69,14 +67,12 @@ void MyPageManager::myInstructorLecturePrint() {
         cout << endl;
         cout << "현재 진행하시는 강좌가 없습니다 !" << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     else {
         cout << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 }
 
@@ -97,15 +93,13 @@ bool MyPageManager::selfDeleteID() {
         
         cout << "회원 탈퇴가 정상적으로 되었습니다." << endl;
         cout << "로그인 상태가 해제되고 [Enter] 를 누르면 메인 페이지로 이동합니다." << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return true;
     }
     else {
         cout << "문구를 정상적으로 입력하지 않아 회원 탈퇴를 진행할 수 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return false;
     }
 }
@@ -204,7 +198,7 @@ void MyPageManager::displayMenu() {
             // 스트림의 오류 상태를 초기화
             cin.clear();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
