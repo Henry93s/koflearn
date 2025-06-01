@@ -1,4 +1,4 @@
-#include "koflearnPlatform.h"
+﻿#include "koflearnPlatform.h"
 
 unsigned long long KoflearnPlatform::getPrimaryKey() const {
 	return this->primaryKey;

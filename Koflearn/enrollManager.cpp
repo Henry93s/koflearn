@@ -15,7 +15,7 @@
 using namespace std;
 
 // 생성자에서 인터페이스 타입의 의존성을 주입받음
-EnrollManager::EnrollManager(IKoflearnPlatManager* program) 
+EnrollManager::EnrollManager(IKoflearnPlatManager* program)
     : program_interface(program)
 {
     if (!program_interface) {
@@ -32,20 +32,20 @@ EnrollManager::EnrollManager(IKoflearnPlatManager* program)
             if (row.size()) {
                 // strtoull : str to Unsigned Long Long
                 unsigned long long primaryKey = strtoull(row[0].c_str(), &endptr, 10);
-                Member* member = new Member(primaryKey, row[1], row[2], row[3], row[4], row[5]);
+
+                // memberList 와 포인터 동일 유지하기 위한 new 가 아닌 memberList 에서 주소를 가져와야 한다.
+                Member* member = program_interface->getMemberManager().searchMember(primaryKey);
 
                 // 6 index 부터
+                // lectureList 와 포인터 동일 유지하기 위한 new 가 아닌 lectureList 에서 주소를 가져와야 한다.
                 unsigned long long primaryKey2 = strtoull(row[6].c_str(), &endptr2, 10);
-                int price = atoi(row[9].c_str());
-                int enrolledStudentsCount = atoi(row[10].c_str());
-                int durationHours = atoi(row[11].c_str());
-                Lecture* lecture = new Lecture(primaryKey2, row[7], row[8], price, enrolledStudentsCount, durationHours, row[12]);
+                Lecture* lecture = program_interface->getLectureManager().searchLecture(primaryKey2);
 
                 // map<unsigned long long, vector<Lecture*>>
                 // map<unsigned long long, Lecture*> 형태일 경우
                 /*
-                한 학생은 하나의 강의 밖에 수강하지 못함 : 한 key 는 고유하기 때문에 중복해서 
-	            같은 key 를 삽입할 수 없음. 
+                한 학생은 하나의 강의 밖에 수강하지 못함 : 한 key 는 고유하기 때문에 중복해서
+                같은 key 를 삽입할 수 없음.
                 */
                 studentLectureList.insert({ member->getPrimaryKey(), { lecture } });
             }
@@ -62,14 +62,14 @@ EnrollManager::EnrollManager(IKoflearnPlatManager* program)
             if (row.size()) {
                 // strtoull : str to Unsigned Long Long
                 unsigned long long primaryKey = strtoull(row[0].c_str(), &endptr3, 10);
-                Member* member = new Member(primaryKey, row[1], row[2], row[3], row[4], row[5]);
+                
+                // memberList 와 포인터 동일 유지하기 위한 new 가 아닌 memberList 에서 주소를 가져와야 한다.
+                Member* member = program_interface->getMemberManager().searchMember(primaryKey);
 
                 // 6 index 부터
+                // lectureList 와 포인터 동일 유지하기 위한 new 가 아닌 lectureList 에서 주소를 가져와야 한다.
                 unsigned long long primaryKey2 = strtoull(row[6].c_str(), &endptr4, 10);
-                int price = atoi(row[9].c_str());
-                int enrolledStudentsCount = atoi(row[10].c_str());
-                int durationHours = atoi(row[11].c_str());
-                Lecture* lecture = new Lecture(primaryKey2, row[7], row[8], price, enrolledStudentsCount, durationHours, row[12]);
+                Lecture* lecture = program_interface->getLectureManager().searchLecture(primaryKey2);
 
                 instructorLectureList.insert({ member->getPrimaryKey(), { lecture } });
             }
@@ -105,7 +105,7 @@ EnrollManager::~EnrollManager() {
             }
         }
     }
-    if(!file2.fail()){
+    if (!file2.fail()) {
         for (const auto& v : instructorLectureList) {
             Member* member = program_interface->getMemberManager().searchMember(v.first);
             // map<unsigned long long, vector<Lecture*>> 에서 vector<Lecture*> 를 먼저 얻고
@@ -166,33 +166,33 @@ void EnrollManager::searchAndStudentEnrollLecture() {
         cout << "('-1' : 취소)" << endl;
         cin >> privateKey;
         if (privateKey == -1) { return; }
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 
     lecture = program_interface->getLectureManager().searchLecture(privateKey);
     if (lecture == nullptr) {
         cout << "조회된 강의가 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return;
     }
     else {
         bool is_duplication = false;
         Member* member = program_interface->getSessionManager().getLoginUser();
-        is_duplication = this->isDuplicationStudentEnrollLecture(member, lecture);
+        is_duplication = this->isDuplicationOrSizeCheckStudentEnrollLecture(member, lecture);
 
         if (is_duplication == false) {
             cout << "수강 신청이 완료되었습니다." << endl;
-           unsigned long long studentKey = member->getPrimaryKey();
+            unsigned long long studentKey = member->getPrimaryKey();
+
+            // 추가하려는 강의의 "수강자 수" 를 증가 시킴
+            int temp = lecture->getEnrolledStudentsCount();
+            temp++;
+            // 강의 data에 수강자 수 적용
+            lecture->setEnrolledStudentsCount(temp);
 
             // 학생 키로 map 에서 vector 찾기
             auto it = this->studentLectureList.find(studentKey);
-            // 추가하려는 강의의 "수강자 수" 를 증가 시킴
-            int temp = lecture->getEnrolledStudentsCount();
-            lecture->setEnrolledStudentsCount(++temp);
-
             if (it != this->studentLectureList.end()) {
                 // 학생이 이미 존재할 때 해당 학생 강의 리스트에 새 강의 추가
                 it->second.push_back(lecture);
@@ -201,22 +201,20 @@ void EnrollManager::searchAndStudentEnrollLecture() {
                 // 학생이 존재하지 않으면, 새로운 엔트리 생성 (새로운 벡터를 만들고 강의 추가)
                 this->studentLectureList.insert({ studentKey, {lecture} });
             }
+            
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
         else if (is_duplication == true) {
-            cout << "이미 수강 신청한 강의입니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
     }
 
     return;
 }
 
-bool EnrollManager::isDuplicationStudentEnrollLecture(Member* member, Lecture* lecture) {
+bool EnrollManager::isDuplicationOrSizeCheckStudentEnrollLecture(Member* member, Lecture* lecture) {
     // 컨테이너 객체 '댕글링 포인터' 이슈 방지로 참조 값 변수 할당
     map<unsigned long long, vector<Lecture*>>& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
 
@@ -227,9 +225,16 @@ bool EnrollManager::isDuplicationStudentEnrollLecture(Member* member, Lecture* l
         // 2. 학생을 찾았다면 해당 학생의 강의 리스트(std::vector<Lecture*>)를 가져옴
         const vector<Lecture*>& lecturesOfStudent = it->second;
 
-        // 3. 이 리스트 내에서 현재 강의가 이미 있는지 순회로 체크
+        // 3. (학생이 수강하는 강의 갯수가 9개 초과인지 체크)
+        if (lecturesOfStudent.size() >= 9) {
+            cout << "최대 수강 신청한 강의는 9개 입니다." << endl;
+            return true; // 초과 시 더 이상 수강할 수 없음.
+        }
+
+        // 4. 이 리스트 내에서 현재 강의가 이미 있는지 순회로 체크
         for (const auto& i : lecturesOfStudent) {
             if (i && i->getPrimaryKey() == lecture->getPrimaryKey()) {
+                cout << "이미 수강 신청한 강의입니다." << endl;
                 return true; // 중복 발견
             }
         }
@@ -246,14 +251,12 @@ void EnrollManager::instructorEnrollLecture() {
         Member* member = program_interface->getSessionManager().getLoginUser();
         this->instructorLectureList.insert({ member->getPrimaryKey() , {lecture} });
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     else {
         cout << "강의가 정상적으로 생성되지 않았습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     return;
 }
@@ -274,6 +277,68 @@ string EnrollManager::makeWelcomeText() {
     }
     return welcomeText;
 }
+
+// 학생이 수강하는 특정 한 강의 찾기
+Lecture* EnrollManager::findStudentLectureFromList(Lecture* lecture) {
+    if (program_interface->getSessionManager().getIs_login() == true) {
+        // 컨테이너 객체 반환받을 때 임시 객체 이슈로 댕글링 포인터될 수 있으므로 참조 값 받기
+        map<unsigned long long, vector<Lecture*>>& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
+        for (const auto& i : studentLectureList) {
+            if (i.first == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
+                for (const auto& i2 : i.second) {
+                    if (i2->getPrimaryKey() == lecture->getPrimaryKey()) {
+                        return lecture;
+                    }
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+// 강사가 진행하는 특정 한 강의 찾기
+Lecture* EnrollManager::findInstructorLectureFromList(Lecture* lecture) {
+    if (program_interface->getSessionManager().getIs_login() == true) {
+        // 컨테이너 객체 반환받을 때 임시 객체 이슈로 댕글링 포인터될 수 있으므로 참조 값 받기
+        map<unsigned long long, vector<Lecture*>>& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
+        for (const auto& i : instructorLectureList) {
+            if (i.first == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
+                for (const auto& i2 : i.second) {
+                    if (i2->getPrimaryKey() == lecture->getPrimaryKey()) {
+                        return lecture;
+                    }
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+// 특정 학생이 수강하는 모든 강의 찾기
+vector<Lecture*>& EnrollManager::findStudentLectureAllList(unsigned long long primaryKey) {
+    if (program_interface->getSessionManager().getIs_login() == true) {
+        // 컨테이너 객체 반환받을 때 임시 객체 이슈로 댕글링 포인터될 수 있으므로 참조 값 받기
+        map<unsigned long long, vector<Lecture*>>& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
+        auto it = studentLectureList.find(primaryKey);
+        if (it != studentLectureList.end()) {
+            return it->second;
+        }
+    }
+    static vector<Lecture*> emptyLectureList;
+    return emptyLectureList;
+}
+// 특정 강사가 진행하는 모든 강의 찾기
+vector<Lecture*>& EnrollManager::findInstructorLectureAllList(unsigned long long primaryKey) {
+    if (program_interface->getSessionManager().getIs_login() == true) {
+        // 컨테이너 객체 반환받을 때 임시 객체 이슈로 댕글링 포인터될 수 있으므로 참조 값 받기
+        map<unsigned long long, vector<Lecture*>>& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
+        auto it = instructorLectureList.find(primaryKey);
+        if (it != instructorLectureList.end()) {
+            return it->second;
+        }
+    }
+    static vector<Lecture*> emptyLectureList;
+    return emptyLectureList;
+}
+
 
 // 컨테이너 객체의 경우 특정 변수에 값을 함수에서 반환을 통해 할당했을 때,
 // "임시 객체" 가 생성되고 반환 직후 ; 을 만나 문장이 끝나면 임시 컨테이너 객체가 소멸됨.

@@ -48,7 +48,8 @@ void LoginManager::displayMenu()
             // 스트림의 오류 상태를 초기화
             cin.clear();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
             // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
@@ -64,8 +65,7 @@ void LoginManager::displayMenu()
             if (loginMember == nullptr) {
                 cout << "가입되지 않은 이메일입니다." << endl;
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             else {
                 cout << "비밀번호 : ";
@@ -73,8 +73,7 @@ void LoginManager::displayMenu()
                 if (password != loginMember->getPassword()) {
                     cout << "패스워드를 다시 확인해주세요." << endl;
                     cout << "[Enter] 를 눌러 뒤로가기" << endl;
-                    while (getchar() != '\n');
-
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 }
                 else {
                     cout << loginMember->getNickName() + " 님 환영합니다." << endl;
@@ -85,7 +84,7 @@ void LoginManager::displayMenu()
                         program_interface->getSessionManager().setIs_admin(true);
                     }
                     cout << "[Enter] 를 눌러 메인 페이지로 이동" << endl;
-                    while (getchar() != '\n');
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
                     isContinue = false;
                 }
@@ -102,15 +101,13 @@ void LoginManager::displayMenu()
                     program_interface->getSessionManager().setIs_admin(true);
                 }
                 cout << "[Enter] 를 눌러 메인 페이지로 자동 로그인됩니다." << endl;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 isContinue = false;
             }
             else {
                 cout << "회원 가입이 취소되었습니다." << endl;
                 cout << "[Enter] 를 눌러 메인 페이지로 돌아가기" << endl;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 isContinue = false;
             }
             break;
