@@ -32,7 +32,7 @@ public:
 
 	void searchAndStudentEnrollLecture();
 	void instructorEnrollLecture();
-	bool isDuplicationStudentEnrollLecture(Member* member, Lecture* lecture);
+	bool isDuplicationOrSizeCheckStudentEnrollLecture(Member* member, Lecture* lecture);
 	// 학생이 수강하는 특정 한 강의 찾기
 	Lecture* findStudentLectureFromList(Lecture* lecture);
 	// 강사가 진행하는 특정 한 강의 찾기

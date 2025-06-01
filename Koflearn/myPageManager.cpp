@@ -37,9 +37,76 @@ void MyPageManager::myStudentLecturePrint() {
             i->displayInfo();
         }
         cout << endl;
+        int ch;
+        while (1) {
+            cout << "1. 뒤로 가기" << endl;
+            cout << "2. 수강 종료하기" << endl;
+            cin >> ch;
+            if (cin.fail()) {
+                cout << "잘못된 입력입니다. 숫자를 입력해주세요." << endl;
+                // 스트림의 오류 상태를 초기화
+                cin.clear();
+                cout << "[Enter] 를 눌러 다시 입력하기" << endl;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
+            if (ch == 1) {
+                cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                break;
+            }
+            else if (ch == 2) {
+                unsigned long long primaryKey;
+                cout << "수강 종료할 강좌의 key 를 입력하세요 : ";
+                cin >> primaryKey;
+                exitLecture(primaryKey);
+                break;
+            }
+            else {
+                continue;
+            }
+        }
+    }
+}
+
+void MyPageManager::exitLecture(unsigned long long primaryKey) {
+    Lecture* lecture = program_interface->getLectureManager().searchLecture(primaryKey);
+    unsigned long long myPrimaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
+    auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
+
+    // 회원의 수강 리스트(studentLectureList)에서 수강자 수 감소
+    auto it = studentLectureList.find(myPrimaryKey);
+    if (lecture && it != studentLectureList.end()) {
+        vector<Lecture*>& lectures = it->second;
+        // 벡터에서 해당 강의를 찾아 수강자 수 감소 및 제거
+        for (auto vecIt = lectures.begin(); vecIt != lectures.end(); ++vecIt) {
+            if (*vecIt && (*vecIt)->getPrimaryKey() == primaryKey) {
+                int count = (*vecIt)->getEnrolledStudentsCount();
+                (*vecIt)->setEnrolledStudentsCount(count - 1);  // 수강자 수 감소
+
+                lectures.erase(vecIt);  // 강의 벡터에서 제거
+                break;  // 하나만 삭제하고 종료(어차피 회원이 중복 강의를 수강할 수 는 없음)
+            }
+        }
+
+        // 해당 학생의 수강 목록이 비었으면 map에서도 삭제
+        if (lectures.empty()) {
+            studentLectureList.erase(it);
+        }
+
+        cout << lecture->getLectureTitle() << " 강의를 수강 종료처리하였습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
+    else {
+        cout << "[Enter] 를 눌러 뒤로가기" << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    return;
 }
 
 void MyPageManager::myInstructorLecturePrint() {
@@ -151,7 +218,7 @@ void MyPageManager::displayMenu() {
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << "               Koflearn My Page                  " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << "  1. 수강 중인 강의 보기                     " << endl;
+        cout << "  1. 수강 중인 강의 및 수강 종료                     " << endl;
         cout << "  2. 진행하는 강의 보기                            " << endl;
         cout << "  3. 패스워드 수정                            " << endl;
         cout << "  4. 회원 탈퇴                       " << endl;
@@ -159,7 +226,6 @@ void MyPageManager::displayMenu() {
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << " 기능을 선택하세요 : ";
         cin >> ch;
-        
         // 메뉴에서 숫자 명령어를 받으려고 할 때 영문자 등을 입력했을 때 
         // 무한 깜빡임 현상 해결
         if (cin.fail()) {
@@ -168,10 +234,12 @@ void MyPageManager::displayMenu() {
             cin.clear();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
             // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
         }
+        
         // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 

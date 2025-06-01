@@ -179,7 +179,7 @@ void EnrollManager::searchAndStudentEnrollLecture() {
     else {
         bool is_duplication = false;
         Member* member = program_interface->getSessionManager().getLoginUser();
-        is_duplication = this->isDuplicationStudentEnrollLecture(member, lecture);
+        is_duplication = this->isDuplicationOrSizeCheckStudentEnrollLecture(member, lecture);
 
         if (is_duplication == false) {
             cout << "수강 신청이 완료되었습니다." << endl;
@@ -206,7 +206,6 @@ void EnrollManager::searchAndStudentEnrollLecture() {
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
         else if (is_duplication == true) {
-            cout << "이미 수강 신청한 강의입니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
@@ -215,7 +214,7 @@ void EnrollManager::searchAndStudentEnrollLecture() {
     return;
 }
 
-bool EnrollManager::isDuplicationStudentEnrollLecture(Member* member, Lecture* lecture) {
+bool EnrollManager::isDuplicationOrSizeCheckStudentEnrollLecture(Member* member, Lecture* lecture) {
     // 컨테이너 객체 '댕글링 포인터' 이슈 방지로 참조 값 변수 할당
     map<unsigned long long, vector<Lecture*>>& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
 
@@ -226,9 +225,16 @@ bool EnrollManager::isDuplicationStudentEnrollLecture(Member* member, Lecture* l
         // 2. 학생을 찾았다면 해당 학생의 강의 리스트(std::vector<Lecture*>)를 가져옴
         const vector<Lecture*>& lecturesOfStudent = it->second;
 
-        // 3. 이 리스트 내에서 현재 강의가 이미 있는지 순회로 체크
+        // 3. (학생이 수강하는 강의 갯수가 9개 초과인지 체크)
+        if (lecturesOfStudent.size() >= 9) {
+            cout << "최대 수강 신청한 강의는 9개 입니다." << endl;
+            return true; // 초과 시 더 이상 수강할 수 없음.
+        }
+
+        // 4. 이 리스트 내에서 현재 강의가 이미 있는지 순회로 체크
         for (const auto& i : lecturesOfStudent) {
             if (i && i->getPrimaryKey() == lecture->getPrimaryKey()) {
+                cout << "이미 수강 신청한 강의입니다." << endl;
                 return true; // 중복 발견
             }
         }

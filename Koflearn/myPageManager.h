@@ -19,6 +19,7 @@ public:
 	void myInstructorLecturePrint();
 	bool selfDeleteID();
 	void allDeletedUserData(unsigned long long primaryKey);
+	void exitLecture(unsigned long long primaryKey);
 };
 
 #endif // !_MYPAGE_MANAGER_H_
