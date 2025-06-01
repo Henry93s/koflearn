@@ -38,6 +38,7 @@ SessionManager& KoflearnPlatManager::getSessionManager() {
 void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
     int ch;
     bool isContinue = true;
+    Lecture* lecture = nullptr;
 
     while (isContinue == true) {
         cout << "\033[2J\033[1;1H";
@@ -113,8 +114,10 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
             break;
         case 3:
             if (program->getSessionManager().getIs_login() == true) {
-                program->getLectureManager().inputLecture();
-                cout << "강의를 신규 등록하였습니다." << endl;
+                lecture = program->getLectureManager().inputLecture();
+                if (lecture != nullptr) {
+                    cout << "강의를 신규 등록하였습니다." << endl;
+                }
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }

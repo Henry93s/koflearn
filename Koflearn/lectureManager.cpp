@@ -72,6 +72,19 @@ Lecture* LectureManager::inputLecture() {
         return nullptr;
     }
 
+    // 한 사람당 강의 개설은 최대 9개까지 개설 가능.
+    // 컨테이너 객체 반환받을 때 임시 객체 이슈로 댕글링 포인터될 수 있으므로 참조 값 받기
+    map<unsigned long long, vector<Lecture*>>& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
+    for (const auto& i : instructorLectureList) {
+        Lecture* lecture = nullptr;
+        if (i.first == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
+            if (i.second.size() > 9) {
+                cout << "한 사람당 강의 최대 개설은 9개까지만 가능합니다." << endl;
+                return nullptr;
+            }
+        }
+    }
+
     cout << "강의 명 : ";
     getline(cin, lectureTitle, '\n');
     cout << "강사 명 : ";
@@ -109,10 +122,7 @@ Lecture* LectureManager::inputLecture() {
     // 강의를 등록했을 때 "내 강의 보기" 리스트를 출력하기 위한 instructor(강의자) 기준 리스트에 데이터 추가
     Member* member = program_interface->getSessionManager().getLoginUser();
 
-    // 컨테이너 객체 반환받을 때 임시 객체 이슈로 댕글링 포인터될 수 있으므로 참조 값 받기
-    map<unsigned long long, vector<Lecture*>>& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
     // 특정 member privateKey 를 key 로 vector 에 여러 개 요소 삽입하기 !
-
     unsigned long long instructorKey = member->getPrimaryKey();
 
     // 강사 키로 map 에서 vector 찾기
