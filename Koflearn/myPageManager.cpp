@@ -106,55 +106,23 @@ void MyPageManager::allDeletedUserData(unsigned long long primaryKey) {
     auto& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
     auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
 
-    // 1. 해당 강사가 개설한 강의 리스트 수집
+    // 1. 해당 강사가 개설한 강의 리스트 수집 -> lectureList 제거
     vector<Lecture*> lecturesToDelete;
     for (auto it = lectureList.begin(); it != lectureList.end(); ) {
         Lecture* lec = it->second;
         if (lec && lec->getInstructorName() == name) {
             lecturesToDelete.push_back(lec);
-            // it = lectureList.erase(it);
-        }
-        ++it;
-    }
-
-    // 2. instructorLectureList 에서 해당 강사 항목 제거
-    instructorLectureList.erase(instructorPrimaryKey);
-
-    // 3. studentLectureList 에서 강사 강의 제거 + 수강자 수 감소
-    for (auto it = studentLectureList.begin(); it != studentLectureList.end(); ) {
-        vector<Lecture*>& lectures = it->second;
-
-        // 수강자 수 감소 및 삭제할 강의 필터링
-        auto new_end = remove_if(lectures.begin(), lectures.end(),
-            [&](Lecture* l) {
-                for (Lecture* del : lecturesToDelete) {
-                    if (l == del) {
-                        int count = l->getEnrolledStudentsCount();
-                        l->setEnrolledStudentsCount(count - 1);
-                        return true;
-                    }
-                }
-                return false;
-            });
-
-        lectures.erase(new_end, lectures.end());
-
-        // 수강 리스트 비었으면 map에서도 제거
-        if (lectures.empty()) {
-            it = studentLectureList.erase(it);
+            it = lectureList.erase(it);
         }
         else {
             ++it;
         }
     }
 
-    for (Lecture* lecture : lecturesToDelete) {
-        if (lecture) {
-            lectureList.erase(lecture->getPrimaryKey());  // 실제 삭제는 여기서 수행
-        }
-    }
+    // 2. instructorLectureList 에서 해당 강사 항목 제거
+    instructorLectureList.erase(instructorPrimaryKey);
 
-    // 4. 회원이 수강자(Student)인 경우 -> 본인의 수강 리스트에서 수강자 수 감소 + 제거
+    // 3. 회원이 수강자(Student)인 경우 -> 본인의 수강 리스트(studentLectureList)에서 수강자 수 감소 + 제거
     auto it = studentLectureList.find(primaryKey);
     if (it != studentLectureList.end()) {
         vector<Lecture*>& lectures = it->second;
