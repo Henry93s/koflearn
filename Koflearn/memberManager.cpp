@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <iostream>
 using namespace std;
 
 // 생성자에서 인터페이스 타입의 의존성을 주입받음
@@ -56,6 +57,12 @@ Member* MemberManager::inputMember()
     string nickname, email, password, phoneNumber;
     string rePassword;
 
+    unsigned long long primaryKey = this->makePrimaryKey();
+    if (primaryKey == -1) {
+        cout << "회원 최대 수용량을 초과하였습니다. (9,999,999,999)" << endl;
+        return nullptr;
+    }
+
     int isDuplicationNickName = 0;
     while (1) {
         cout << "닉네임 (2자 이상) : ";
@@ -94,9 +101,9 @@ Member* MemberManager::inputMember()
             cout << "이미 가입한 이메일입니다. 다시 입력해주세요." << endl;
             cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
         }
-        else if(isDuplicationEmail == 0) { break; }
+        else if (isDuplicationEmail == 0) { break; }
     }
-    
+
     int isSamePassword = 0;
     while (1) {
         cout << "패스워드 : ";
@@ -121,7 +128,7 @@ Member* MemberManager::inputMember()
             break;
         }
     }
-    
+
     int isDuplicationPhone = 0;
     while (1) {
         cout << "휴대폰 번호 : ";
@@ -156,11 +163,9 @@ Member* MemberManager::inputMember()
         }
         else if (managerPassKey.compare(getManagerKey()) == 0) {
             isManager = "true";
-            break; 
+            break;
         }
     }
-    
-    unsigned long long primaryKey = this->makePrimaryKey();
 
     Member* member = new Member(primaryKey, nickname, email,
                                 password, phoneNumber, isManager);
@@ -308,6 +313,9 @@ unsigned long long MemberManager::makePrimaryKey()
     else {
         auto elem = memberList.end();
         unsigned long long primaryKey = (--elem)->first;
+        if (primaryKey == 9999999999) {
+            return -1;
+        }
         return ++primaryKey;
     }
 }
@@ -362,6 +370,7 @@ void MemberManager::displayMenu()
     int ch;
     unsigned long long key;
     bool isContinue = true;
+    Member* member = nullptr;
 
     while (isContinue == true) {
         cout << "\033[2J\033[1;1H";
@@ -401,8 +410,10 @@ void MemberManager::displayMenu()
 
             break;
         case 2:
-            inputMember();
-            cout << "회원가입이 완료되었습니다." << endl;
+            member = inputMember();
+            if (member != nullptr) {
+                cout << "회원가입이 완료되었습니다." << endl;
+            }
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
 

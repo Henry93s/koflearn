@@ -13,6 +13,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <iostream>
 using namespace std;
 
 // 생성자에서 인터페이스 타입의 의존성을 주입받음
@@ -66,6 +67,10 @@ Lecture* LectureManager::inputLecture() {
     int price, enrolledStudentsCount, durationHours;
 
     unsigned long long primaryKey = makePrimaryKey();
+    if (primaryKey == -1) {
+        cout << "강의 최대 수용량이 초과하였습니다. (99,999,999,999)" << endl;
+        return nullptr;
+    }
 
     cout << "강의 명 : ";
     getline(cin, lectureTitle, '\n');
@@ -237,6 +242,9 @@ unsigned long long LectureManager::makePrimaryKey() {
     else {
         auto elem = lectureList.end();
         unsigned long long primaryKey = (--elem)->first;
+        if (primaryKey == 99999999999) {
+            return -1;
+        }
         return ++primaryKey;
     }
 }
@@ -278,6 +286,7 @@ void LectureManager::displayMenu()
     int ch;
     unsigned long long key;
     bool isContinue = true;
+    Lecture* lecture = nullptr;
 
     while (isContinue == true) {
         cout << "\033[2J\033[1;1H";
@@ -317,8 +326,10 @@ void LectureManager::displayMenu()
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 2:
-            inputLecture();
-            cout << "강의 등록이 완료되었습니다." << endl;
+            lecture = inputLecture();
+            if (lecture != nullptr) {
+                cout << "강의 등록이 완료되었습니다." << endl;
+            }
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
