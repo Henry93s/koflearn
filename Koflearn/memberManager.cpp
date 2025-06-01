@@ -1,5 +1,6 @@
 #include "member.h"
 #include "memberManager.h"
+#include "myPageManager.h"
 
 #include <vector>
 #include <algorithm>
@@ -65,7 +66,7 @@ Member* MemberManager::inputMember()
 
     int isDuplicationNickName = 0;
     while (1) {
-        cout << "닉네임 (2자 이상) : ";
+        cout << "이름 (2자 이상) : ";
         getline(cin, nickname, '\n');
         if (nickname.compare("F") == 0) {
             cout << "'F' 키를 입력했으므로 회원가입을 중단합니다." << endl;
@@ -73,14 +74,14 @@ Member* MemberManager::inputMember()
         }
 
         else if (nickname.length() < 2) {
-            cout << "닉네임의 길이는 2자리 이상이어야 합니다." << endl;
+            cout << "이름의 길이는 2자리 이상이어야 합니다." << endl;
             cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
             continue;
         }
 
         isDuplicationNickName = this->nickNameDuplicationCheck(nickname);
         if (isDuplicationNickName == 1) {
-            cout << "중복된 닉네임입니다. 다시 입력해주세요." << endl;
+            cout << "중복된 이름입니다. 다시 입력해주세요." << endl;
             cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
             continue;
         }
@@ -237,7 +238,7 @@ void MemberManager::displayAllMembers() const {
         return;
     }
 
-    cout << "    key      |            Email(ID)          |   nickName   |    Phone Number    |   isManager   |" << endl;
+    cout << "    key      |            Email(ID)          |     Name     |    Phone Number    |   isManager   |" << endl;
     for (const auto& member : memberList) {
         member.second->displayInfo(); // 단순 멤버 객체(Member) read 책임은 Member 클래스가 맡음
     }
@@ -254,7 +255,7 @@ void MemberManager::modifyMember(unsigned long long primaryKey)
 {
     Member* member = searchMember(primaryKey);
     if (member != nullptr) {
-        cout << "    key     |            Email(ID)          |   nickName   |    Phone Number    |   isManager   |" << endl;
+        cout << "    key     |            Email(ID)          |     Name     |    Phone Number    |   isManager   |" << endl;
         cout << setw(11) << setfill('0') << right << member->getPrimaryKey() << " | " << left;
         cout << setw(29) << setfill(' ') << member->getEmail() << " | ";
         cout << setw(12) << setfill(' ') << member->getNickName() << " | ";
@@ -423,7 +424,7 @@ void MemberManager::displayMenu()
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
+            program_interface->getMyPageManager().allDeletedUserData(key);
             deleteMember(key);
             cout << "멤버 삭제 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;

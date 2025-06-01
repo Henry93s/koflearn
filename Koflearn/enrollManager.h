@@ -33,12 +33,18 @@ public:
 	void searchAndStudentEnrollLecture();
 	void instructorEnrollLecture();
 	bool isDuplicationStudentEnrollLecture(Member* member, Lecture* lecture);
-	
+	// 학생이 수강하는 특정 한 강의 찾기
+	Lecture* findStudentLectureFromList(Lecture* lecture);
+	// 강사가 진행하는 특정 한 강의 찾기
+	Lecture* findInstructorLectureFromList(Lecture* lecture);
+	// 학생이 수강하는 모든 강의 찾기
+	vector<Lecture*>& findStudentLectureAllList(unsigned long long primaryKey);
+	// 강사가 진행하는 모든 강의 찾기
+	vector<Lecture*>& findInstructorLectureAllList(unsigned long long primaryKey);
+
 	string makeWelcomeText();
 
 	vector<string> parseCSV(istream&, char);
-
-
 
 	// 1.
 	// 컨테이너 객체의 경우 특정 변수에 값을 함수에서 반환을 통해 할당했을 때,

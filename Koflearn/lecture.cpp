@@ -55,7 +55,8 @@ void Lecture::setPrice(int price) {
 	this->price = price;
 }
 void Lecture::setEnrolledStudentsCount(int enrolledStudentCount) {
-	this->enrolledStudentsCount = enrolledStudentsCount;
+	// 두 값 중 큰 값으로 처리됨. 즉 외부에서 음수로 처리된 값이 와도 최소 0은 보장함.
+	this->enrolledStudentsCount = max(0, enrolledStudentCount);  // 음수 방지
 }
 void Lecture::setDurationHours(int durationHours) {
 	this->durationHours = durationHours;
