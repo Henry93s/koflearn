@@ -21,62 +21,113 @@ MyPageManager::MyPageManager(IKoflearnPlatManager* program)
 MyPageManager::~MyPageManager() {}
 
 void MyPageManager::myStudentLecturePrint() {
-    int cnt = 0;
-
-    // 컨테이너 객체 반환받을 때 임시 객체 이슈로 댕글링 포인터될 수 있으므로 참조 값 받기
-    map<unsigned long long, vector<Lecture*>>& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
-    cout << studentLectureList.size() << endl;
-    cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
-    for (const auto& i : studentLectureList) {
-        if (i.first == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
-            for (const auto& i2 : i.second) {
-                i2->displayInfo();
-                cnt++;
-            }
-        }
-    }
-    if (cnt == 0) {
+    // 코드 정리 : student 가 수강하는 강의 list 를 찾는 부분은 enrollManager 클래스 책임으로 진행
+    unsigned long long primaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
+    vector<Lecture*>& lectureList = program_interface->getEnrollManager().findStudentLectureAllList(primaryKey);
+    
+    if (lectureList.size() == 0) {
         cout << endl;
         cout << "현재 수강 중인 강좌가 없습니다 !" << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     else {
+        cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+        for (const auto& i : lectureList) {
+            i->displayInfo();
+        }
         cout << endl;
-        cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
-    }
-}
-
-void MyPageManager::myInstructorLecturePrint() {
-    int cnt = 0;
-    // 컨테이너 객체 반환받을 때 임시 객체 이슈로 댕글링 포인터될 수 있으므로 참조 값 받기
-    map<unsigned long long, vector<Lecture*>>& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
-
-    cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
-    for (const auto& i : instructorLectureList) {
-        Lecture* lecture = nullptr;
-        if (i.first == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
-            for (const auto& i2 : i.second) {
-                i2->displayInfo();
-                cnt++;
+        int ch;
+        while (1) {
+            cout << "1. 뒤로 가기" << endl;
+            cout << "2. 수강 종료하기" << endl;
+            cin >> ch;
+            if (cin.fail()) {
+                cout << "잘못된 입력입니다. 숫자를 입력해주세요." << endl;
+                // 스트림의 오류 상태를 초기화
+                cin.clear();
+                cout << "[Enter] 를 눌러 다시 입력하기" << endl;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
+            if (ch == 1) {
+                cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                break;
+            }
+            else if (ch == 2) {
+                unsigned long long primaryKey;
+                cout << "수강 종료할 강좌의 key 를 입력하세요 : ";
+                cin >> primaryKey;
+                exitLecture(primaryKey);
+                break;
+            }
+            else {
+                continue;
             }
         }
     }
-    if (cnt == 0) {
+}
+
+void MyPageManager::exitLecture(unsigned long long primaryKey) {
+    Lecture* lecture = program_interface->getLectureManager().searchLecture(primaryKey);
+    unsigned long long myPrimaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
+    auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
+
+    // 회원의 수강 리스트(studentLectureList)에서 수강자 수 감소
+    auto it = studentLectureList.find(myPrimaryKey);
+    if (lecture && it != studentLectureList.end()) {
+        vector<Lecture*>& lectures = it->second;
+        // 벡터에서 해당 강의를 찾아 수강자 수 감소 및 제거
+        for (auto vecIt = lectures.begin(); vecIt != lectures.end(); ++vecIt) {
+            if (*vecIt && (*vecIt)->getPrimaryKey() == primaryKey) {
+                int count = (*vecIt)->getEnrolledStudentsCount();
+                (*vecIt)->setEnrolledStudentsCount(count - 1);  // 수강자 수 감소
+
+                lectures.erase(vecIt);  // 강의 벡터에서 제거
+                break;  // 하나만 삭제하고 종료(어차피 회원이 중복 강의를 수강할 수 는 없음)
+            }
+        }
+
+        // 해당 학생의 수강 목록이 비었으면 map에서도 삭제
+        if (lectures.empty()) {
+            studentLectureList.erase(it);
+        }
+
+        cout << lecture->getLectureTitle() << " 강의를 수강 종료처리하였습니다." << endl;
+        cout << "[Enter] 를 눌러 뒤로가기" << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+    else {
+        cout << "[Enter] 를 눌러 뒤로가기" << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    return;
+}
+
+void MyPageManager::myInstructorLecturePrint() {
+    // 코드 정리 : Instructor 가 수강하는 강의 list 를 찾는 부분은 enrollManager 클래스 책임으로 진행
+    unsigned long long primaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
+    vector<Lecture*>& lectureList = program_interface->getEnrollManager().findInstructorLectureAllList(primaryKey);
+
+    if (lectureList.size() == 0) {
         cout << endl;
         cout << "현재 진행하시는 강좌가 없습니다 !" << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     else {
+        cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+        for (const auto& i : lectureList) {
+            i->displayInfo();
+        }
         cout << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 }
 
@@ -87,89 +138,68 @@ bool MyPageManager::selfDeleteID() {
     cout << "정말 탈퇴하시겠습니까?" << endl;
     cout << "탈퇴하시려면 [I agree to withdraw from member] 의 [ ] 안 문구를 정확히 입력해주세요." << endl;
     getline(cin, is_delete, '\n');
-    cout << is_delete << endl;
+
     if (is_delete.compare("I agree to withdraw from member") == 0) {
-        // 탈퇴자 관련 데이터 우선 제거(lectureList, instructorLectureList, studentLectureList)
-        allDeletedUserData();
-        // 탈퇴자 member 데이터 제거
         Member* member = program_interface->getSessionManager().getLoginUser();
+        // 탈퇴자 관련 데이터 우선 제거(lectureList, instructorLectureList, studentLectureList)
+        allDeletedUserData(member->getPrimaryKey());
+        // 탈퇴자 member 데이터 제거
+        
         program_interface->getMemberManager().deleteMember(member->getPrimaryKey());
         
         cout << "회원 탈퇴가 정상적으로 되었습니다." << endl;
         cout << "로그인 상태가 해제되고 [Enter] 를 누르면 메인 페이지로 이동합니다." << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return true;
     }
     else {
         cout << "문구를 정상적으로 입력하지 않아 회원 탈퇴를 진행할 수 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return false;
     }
 }
 
-void MyPageManager::allDeletedUserData() {
-    unsigned long long instructorPrimaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
+void MyPageManager::allDeletedUserData(unsigned long long primaryKey) {
+    unsigned long long instructorPrimaryKey = primaryKey;
+    Member* member = program_interface->getMemberManager().searchMember(primaryKey);
+    if (member == nullptr) {
+        return;
+    }
 
-    // 컨테이너 객체의 경우 특정 변수에 값을 함수에서 반환을 통해 할당했을 때,
-    // "임시 객체" 가 생성되고 반환 직후 ; 을 만나 문장이 끝나면 임시 컨테이너 객체가 소멸됨.
-    // => "댕글링 포인터" 이슈 발생!!
-    // * 해결 : 컨테이너 객체를 변수에 할당하여 반환할 때, "복사하지 않고" "참조" 값을 반환한다.
+    string name = member->getNickName();
 
-
-    // lectureList data 제거
     auto& lectureList = program_interface->getLectureManager().getLectureList();
-    auto i = lectureList.begin();
-    while (i != lectureList.end()) {
-        if (i->first == instructorPrimaryKey) {
-            // i(iterator) 를 삭제된 다음 위치로 update
-            i = lectureList.erase(i);
-        }
-        else {
-            // 조건을 만족하지 않으면 다음 요소로 이동
-            i++;
-        }
-    }
-
-    // instructorLectureList data 제거
     auto& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
-    auto i2 = instructorLectureList.begin();
-    while (i2 != instructorLectureList.end()) {
-        if (i2->first == instructorPrimaryKey) {
-            // i(iterator) 를 삭제된 다음 위치로 update
-            i2 = instructorLectureList.erase(i2);
+    auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
+
+    // 1. 해당 강사가 개설한 강의 리스트 수집 -> lectureList 제거
+    vector<Lecture*> lecturesToDelete;
+    for (auto it = lectureList.begin(); it != lectureList.end(); ) {
+        Lecture* lec = it->second;
+        if (lec && lec->getInstructorName() == name) {
+            lecturesToDelete.push_back(lec);
+            it = lectureList.erase(it);
         }
         else {
-            // 조건을 만족하지 않으면 다음 요소로 이동
-            i2++;
+            ++it;
         }
     }
 
-    // studentLectureList data 제거
-    auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
-    auto i3 = studentLectureList.begin();
-    while (i3 != studentLectureList.end()) {
-        vector<Lecture*>& lecturesOfStudent = i3->second;
+    // 2. instructorLectureList 에서 해당 강사 항목 제거
+    instructorLectureList.erase(instructorPrimaryKey);
 
-        // std::remove_if는 실제 삭제는 하지 않고, 삭제될 요소들을 벡터의 끝으로 이동시키고 새 end 이터레이터를 반환합니다.
-        auto new_end = remove_if(lecturesOfStudent.begin(), lecturesOfStudent.end(),
-            [instructorPrimaryKey](Lecture* lecture_ptr) {
-                return lecture_ptr && lecture_ptr->getPrimaryKey() == instructorPrimaryKey;
-            });
-        // 실제로 벡터에서 요소 제거
-        lecturesOfStudent.erase(new_end, lecturesOfStudent.end());
-
-        // 강좌 삭제 후, 만약 학생의 강의 리스트(vector)가 비어 있다면 해당 학생의 맵 엔트리도 삭제
-        if (lecturesOfStudent.empty()) {
-            // 맵에서 현재 엔트리를 삭제하고, erase가 반환 및 유효한 이터레이터로 map_it을 업데이트
-            i3 = studentLectureList.erase(i3);
+    // 3. 회원이 수강자(Student)인 경우 -> 본인의 수강 리스트(studentLectureList)에서 수강자 수 감소 + 제거
+    auto it = studentLectureList.find(primaryKey);
+    if (it != studentLectureList.end()) {
+        vector<Lecture*>& lectures = it->second;
+        for (Lecture* lec : lectures) {
+            if (lec) {
+                int count = lec->getEnrolledStudentsCount();
+                lec->setEnrolledStudentsCount(count - 1);
+            }
         }
-        else {
-            // 벡터에 아직 강의가 남아있다면, 다음 맵 엔트리로 이동
-            ++i3;
-        }
+        studentLectureList.erase(it);
     }
 
     return;
@@ -188,7 +218,7 @@ void MyPageManager::displayMenu() {
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << "               Koflearn My Page                  " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << "  1. 수강 중인 강의 보기                     " << endl;
+        cout << "  1. 수강 중인 강의 및 수강 종료                     " << endl;
         cout << "  2. 진행하는 강의 보기                            " << endl;
         cout << "  3. 패스워드 수정                            " << endl;
         cout << "  4. 회원 탈퇴                       " << endl;
@@ -196,7 +226,6 @@ void MyPageManager::displayMenu() {
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << " 기능을 선택하세요 : ";
         cin >> ch;
-        
         // 메뉴에서 숫자 명령어를 받으려고 할 때 영문자 등을 입력했을 때 
         // 무한 깜빡임 현상 해결
         if (cin.fail()) {
@@ -204,11 +233,13 @@ void MyPageManager::displayMenu() {
             // 스트림의 오류 상태를 초기화
             cin.clear();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
             // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
         }
+        
         // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 

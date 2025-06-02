@@ -13,6 +13,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <iostream>
 using namespace std;
 
 // 생성자에서 인터페이스 타입의 의존성을 주입받음
@@ -66,6 +67,23 @@ Lecture* LectureManager::inputLecture() {
     int price, enrolledStudentsCount, durationHours;
 
     unsigned long long primaryKey = makePrimaryKey();
+    if (primaryKey == -1) {
+        cout << "강의 최대 수용량이 초과하였습니다. (99,999,999,999)" << endl;
+        return nullptr;
+    }
+
+    // 한 사람당 강의 개설은 최대 9개까지 개설 가능.
+    // 컨테이너 객체 반환받을 때 임시 객체 이슈로 댕글링 포인터될 수 있으므로 참조 값 받기
+    map<unsigned long long, vector<Lecture*>>& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
+    for (const auto& i : instructorLectureList) {
+        Lecture* lecture = nullptr;
+        if (i.first == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
+            if (i.second.size() > 9) {
+                cout << "한 사람당 강의 최대 개설은 9개까지만 가능합니다." << endl;
+                return nullptr;
+            }
+        }
+    }
 
     cout << "강의 명 : ";
     getline(cin, lectureTitle, '\n');
@@ -104,10 +122,7 @@ Lecture* LectureManager::inputLecture() {
     // 강의를 등록했을 때 "내 강의 보기" 리스트를 출력하기 위한 instructor(강의자) 기준 리스트에 데이터 추가
     Member* member = program_interface->getSessionManager().getLoginUser();
 
-    // 컨테이너 객체 반환받을 때 임시 객체 이슈로 댕글링 포인터될 수 있으므로 참조 값 받기
-    map<unsigned long long, vector<Lecture*>>& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
     // 특정 member privateKey 를 key 로 vector 에 여러 개 요소 삽입하기 !
-
     unsigned long long instructorKey = member->getPrimaryKey();
 
     // 강사 키로 map 에서 vector 찾기
@@ -142,8 +157,7 @@ void LectureManager::displayAllLecture() const {
     if (lectureList.empty()) {
         cout << "등록된 강의가 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return;
     }
 
@@ -176,8 +190,7 @@ void LectureManager::modifyLecture(unsigned long long primaryKey) {
         while (1) {
             cout << "수정할 항목을 선택하세요. \n(강의 명 : 1, 가격 : 2, 강의 시간 : 3, 난이도 : 4, [수정 종료] : 5) : ";
             cin >> op;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             switch (op)
             {
@@ -189,22 +202,19 @@ void LectureManager::modifyLecture(unsigned long long primaryKey) {
             case 2:
                 cout << "가격 수정 : ";
                 cin >> price;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 lecture->setPrice(price);
                 break;
             case 3:
                 cout << "강의 시간 수정 : ";
                 cin >> durationHours;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 lecture->setDurationHours(durationHours);
                 break;
             case 4:
                 cout << "난이도 수정(1 : 쉬움, 2: 보통, 3 : 어려움) : ";
                 cin >> integerLevel;
-                while (getchar() != '\n');
-
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
                 if (integerLevel == 1) {
                     difficultyLevel = "쉬움";
@@ -242,6 +252,9 @@ unsigned long long LectureManager::makePrimaryKey() {
     else {
         auto elem = lectureList.end();
         unsigned long long primaryKey = (--elem)->first;
+        if (primaryKey == 99999999999) {
+            return -1;
+        }
         return ++primaryKey;
     }
 }
@@ -283,6 +296,7 @@ void LectureManager::displayMenu()
     int ch;
     unsigned long long key;
     bool isContinue = true;
+    Lecture* lecture = nullptr;
 
     while (isContinue == true) {
         cout << "\033[2J\033[1;1H";
@@ -305,7 +319,8 @@ void LectureManager::displayMenu()
             // 스트림의 오류 상태를 초기화
             cin.clear();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
             // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
@@ -318,39 +333,37 @@ void LectureManager::displayMenu()
         case 1: default:
             displayAllLecture();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 2:
-            inputLecture();
-            cout << "강의 등록이 완료되었습니다." << endl;
+            lecture = inputLecture();
+            if (lecture != nullptr) {
+                cout << "강의 등록이 완료되었습니다." << endl;
+            }
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 3:
             displayAllLecture();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             deleteLecture(key);
             cout << "강의 삭제 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 4:
             displayAllLecture();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             modifyLecture(key);
             cout << "강의 수정 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 5:
             isContinue = false;

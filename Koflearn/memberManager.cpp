@@ -1,11 +1,13 @@
 #include "member.h"
 #include "memberManager.h"
+#include "myPageManager.h"
 
 #include <vector>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <iostream>
 using namespace std;
 
 // 생성자에서 인터페이스 타입의 의존성을 주입받음
@@ -56,9 +58,15 @@ Member* MemberManager::inputMember()
     string nickname, email, password, phoneNumber;
     string rePassword;
 
+    unsigned long long primaryKey = this->makePrimaryKey();
+    if (primaryKey == -1) {
+        cout << "회원 최대 수용량을 초과하였습니다. (9,999,999,999)" << endl;
+        return nullptr;
+    }
+
     int isDuplicationNickName = 0;
     while (1) {
-        cout << "닉네임 (2자 이상) : ";
+        cout << "이름 (2자 이상) : ";
         getline(cin, nickname, '\n');
         if (nickname.compare("F") == 0) {
             cout << "'F' 키를 입력했으므로 회원가입을 중단합니다." << endl;
@@ -66,14 +74,14 @@ Member* MemberManager::inputMember()
         }
 
         else if (nickname.length() < 2) {
-            cout << "닉네임의 길이는 2자리 이상이어야 합니다." << endl;
+            cout << "이름의 길이는 2자리 이상이어야 합니다." << endl;
             cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
             continue;
         }
 
         isDuplicationNickName = this->nickNameDuplicationCheck(nickname);
         if (isDuplicationNickName == 1) {
-            cout << "중복된 닉네임입니다. 다시 입력해주세요." << endl;
+            cout << "중복된 이름입니다. 다시 입력해주세요." << endl;
             cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
             continue;
         }
@@ -94,9 +102,9 @@ Member* MemberManager::inputMember()
             cout << "이미 가입한 이메일입니다. 다시 입력해주세요." << endl;
             cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
         }
-        else if(isDuplicationEmail == 0) { break; }
+        else if (isDuplicationEmail == 0) { break; }
     }
-    
+
     int isSamePassword = 0;
     while (1) {
         cout << "패스워드 : ";
@@ -121,7 +129,7 @@ Member* MemberManager::inputMember()
             break;
         }
     }
-    
+
     int isDuplicationPhone = 0;
     while (1) {
         cout << "휴대폰 번호 : ";
@@ -156,11 +164,9 @@ Member* MemberManager::inputMember()
         }
         else if (managerPassKey.compare(getManagerKey()) == 0) {
             isManager = "true";
-            break; 
+            break;
         }
     }
-    
-    unsigned long long primaryKey = this->makePrimaryKey();
 
     Member* member = new Member(primaryKey, nickname, email,
                                 password, phoneNumber, isManager);
@@ -228,12 +234,11 @@ void MemberManager::displayAllMembers() const {
     if (memberList.empty()) {
         cout << "등록된 멤버가 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        while (getchar() != '\n');
-
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return;
     }
 
-    cout << "    key      |            Email(ID)          |   nickName   |    Phone Number    |   isManager   |" << endl;
+    cout << "    key      |            Email(ID)          |     Name     |    Phone Number    |   isManager   |" << endl;
     for (const auto& member : memberList) {
         member.second->displayInfo(); // 단순 멤버 객체(Member) read 책임은 Member 클래스가 맡음
     }
@@ -250,7 +255,7 @@ void MemberManager::modifyMember(unsigned long long primaryKey)
 {
     Member* member = searchMember(primaryKey);
     if (member != nullptr) {
-        cout << "    key     |            Email(ID)          |   nickName   |    Phone Number    |   isManager   |" << endl;
+        cout << "    key     |            Email(ID)          |     Name     |    Phone Number    |   isManager   |" << endl;
         cout << setw(11) << setfill('0') << right << member->getPrimaryKey() << " | " << left;
         cout << setw(29) << setfill(' ') << member->getEmail() << " | ";
         cout << setw(12) << setfill(' ') << member->getNickName() << " | ";
@@ -309,6 +314,9 @@ unsigned long long MemberManager::makePrimaryKey()
     else {
         auto elem = memberList.end();
         unsigned long long primaryKey = (--elem)->first;
+        if (primaryKey == 9999999999) {
+            return -1;
+        }
         return ++primaryKey;
     }
 }
@@ -363,6 +371,7 @@ void MemberManager::displayMenu()
     int ch;
     unsigned long long key;
     bool isContinue = true;
+    Member* member = nullptr;
 
     while (isContinue == true) {
         cout << "\033[2J\033[1;1H";
@@ -385,7 +394,8 @@ void MemberManager::displayMenu()
             // 스트림의 오류 상태를 초기화
             cin.clear();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
             // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
@@ -393,44 +403,43 @@ void MemberManager::displayMenu()
         // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-
         switch (ch) {
         case 1: default:
             displayAllMembers();
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             break;
         case 2:
-            inputMember();
-            cout << "회원가입이 완료되었습니다." << endl;
+            member = inputMember();
+            if (member != nullptr) {
+                cout << "회원가입이 완료되었습니다." << endl;
+            }
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             break;
         case 3:
             displayAllMembers();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            program_interface->getMyPageManager().allDeletedUserData(key);
             deleteMember(key);
             cout << "멤버 삭제 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 4:
             displayAllMembers();
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
-            while (getchar() != '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             modifyMember(key);
             cout << "멤버 수정 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            while (getchar() != '\n');
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 5:
             isContinue = false;
