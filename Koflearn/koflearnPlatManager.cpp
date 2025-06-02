@@ -2,14 +2,15 @@
 #include <sstream>
 
 KoflearnPlatManager::KoflearnPlatManager()
-    : // ì´ˆê¸°í™” ë¦¬ìŠ¤íŠ¸ì—ì„œ 'this' í¬ì¸í„°ë¥¼ ì‚¬ìš©í•˜ì—¬ ê° ë§¤ë‹ˆì €ì˜ ìƒì„±ìì— ì˜ì¡´ì„± ì£¼ì…
+    : // ÃÊ±âÈ­ ¸®½ºÆ®¿¡¼­ 'this' Æ÷ÀÎÅÍ¸¦ »ç¿ëÇÏ¿© °¢ ¸Å´ÏÀúÀÇ »ı¼ºÀÚ¿¡ ÀÇÁ¸¼º ÁÖÀÔ
     memberManager(this),
     lectureManager(this),
     loginManager(this),
     enrollManager(this),
     myPageManager(this),
     sessionManager(this)
-{};
+{
+};
 
 MemberManager& KoflearnPlatManager::getMemberManager() {
     return this->memberManager;
@@ -48,35 +49,35 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
         if (program->getSessionManager().getIs_login() == true) {
             string welcomeText = program->getEnrollManager().makeWelcomeText();
             cout << program->getSessionManager().getLoginUser()->getNickName() + welcomeText << endl << endl;
-            cout << "  0. ë§ˆì´í˜ì´ì§€                            " << endl;
-            cout << "  1. ë¡œê·¸ì•„ì›ƒ                              " << endl;
+            cout << "  0. ¸¶ÀÌÆäÀÌÁö                            " << endl;
+            cout << "  1. ·Î±×¾Æ¿ô                              " << endl;
         }
         else {
-            cout << "  1. ë¡œê·¸ì¸ / íšŒì›ê°€ì…                            " << endl;
+            cout << "  1. ·Î±×ÀÎ / È¸¿ø°¡ÀÔ                            " << endl;
         }
-        cout << "  2. ê°•ì˜ ì¡°íšŒ / ì‹ ì²­ í•˜ê¸° [ë¡œê·¸ì¸ í•„ìš”]                   " << endl;
-        cout << "  3. ê°•ì˜ ë“±ë¡ í•˜ê¸° [ë¡œê·¸ì¸ í•„ìš”]                   " << endl;
-        cout << "  4. Koflearn ë©¤ë²„(íšŒì›) ê´€ë¦¬ ì‹œìŠ¤í…œ [ê´€ë¦¬ì ì ‘ê·¼ í•„ìš”]                           " << endl;
-        cout << "  5. Koflearn ê°•ì˜(ì œí’ˆ) ê´€ë¦¬ ì‹œìŠ¤í…œ [ê´€ë¦¬ì ì ‘ê·¼ í•„ìš”]                          " << endl;
-        cout << "  6. ì¢…ë£Œ                              " << endl;
+        cout << "  2. °­ÀÇ Á¶È¸ / ½ÅÃ» ÇÏ±â [·Î±×ÀÎ ÇÊ¿ä]                   " << endl;
+        cout << "  3. °­ÀÇ µî·Ï ÇÏ±â [·Î±×ÀÎ ÇÊ¿ä]                   " << endl;
+        cout << "  4. Koflearn ¸â¹ö(È¸¿ø) °ü¸® ½Ã½ºÅÛ [°ü¸®ÀÚ Á¢±Ù ÇÊ¿ä]                           " << endl;
+        cout << "  5. Koflearn °­ÀÇ(Á¦Ç°) °ü¸® ½Ã½ºÅÛ [°ü¸®ÀÚ Á¢±Ù ÇÊ¿ä]                          " << endl;
+        cout << "  6. Á¾·á                              " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << " ê¸°ëŠ¥ì„ ì„ íƒí•˜ì„¸ìš” : ";
+        cout << " ±â´ÉÀ» ¼±ÅÃÇÏ¼¼¿ä : ";
         cin >> ch;
 
-        // ë©”ë‰´ì—ì„œ ìˆ«ì ëª…ë ¹ì–´ë¥¼ ë°›ìœ¼ë ¤ê³  í•  ë•Œ ì˜ë¬¸ì ë“±ì„ ì…ë ¥í–ˆì„ ë•Œ 
-        // ë¬´í•œ ê¹œë¹¡ì„ í˜„ìƒ í•´ê²°
+        // ¸Ş´º¿¡¼­ ¼ıÀÚ ¸í·É¾î¸¦ ¹ŞÀ¸·Á°í ÇÒ ¶§ ¿µ¹®ÀÚ µîÀ» ÀÔ·ÂÇßÀ» ¶§ 
+        // ¹«ÇÑ ±ôºıÀÓ Çö»ó ÇØ°á
         if (cin.fail()) {
-            cout << "ì˜ëª»ëœ ì…ë ¥ì…ë‹ˆë‹¤. ìˆ«ìë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”." << endl;
-            // ìŠ¤íŠ¸ë¦¼ì˜ ì˜¤ë¥˜ ìƒíƒœë¥¼ ì´ˆê¸°í™”
+            cout << "Àß¸øµÈ ÀÔ·ÂÀÔ´Ï´Ù. ¼ıÀÚ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+            // ½ºÆ®¸²ÀÇ ¿À·ù »óÅÂ¸¦ ÃÊ±âÈ­
             cin.clear();
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+            cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-            // ë²„í¼ì˜ ìµœëŒ€ í¬ê¸°, '\n'ì€ ë²„í¼ë¥¼ ë¹„ìš¸ ë•Œê¹Œì§€ ì°¾ì„ ë¬¸ì
+            // ¹öÆÛÀÇ ÃÖ´ë Å©±â, '\n'Àº ¹öÆÛ¸¦ ºñ¿ï ¶§±îÁö Ã£À» ¹®ÀÚ
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
         }
-        // ë²„í¼ì˜ ìµœëŒ€ í¬ê¸°, '\n'ì€ ë²„í¼ë¥¼ ë¹„ìš¸ ë•Œê¹Œì§€ ì°¾ì„ ë¬¸ì
+        // ¹öÆÛÀÇ ÃÖ´ë Å©±â, '\n'Àº ¹öÆÛ¸¦ ºñ¿ï ¶§±îÁö Ã£À» ¹®ÀÚ
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         switch (ch) {
@@ -87,17 +88,17 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
             break;
         case 1:
             if (program->getSessionManager().getIs_login() == true) {
-                // ë¡œê·¸ì•„ì›ƒ
+                // ·Î±×¾Æ¿ô
                 program->getSessionManager().setIs_login(false);
                 program->getSessionManager().setLoginUser(nullptr);
                 program->getSessionManager().setIs_admin(false);
 
-                cout << "ì •ìƒì ìœ¼ë¡œ ë¡œê·¸ì•„ì›ƒ ë˜ì—ˆìŠµë‹ˆë‹¤. " << endl;
-                cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+                cout << "Á¤»óÀûÀ¸·Î ·Î±×¾Æ¿ô µÇ¾ú½À´Ï´Ù. " << endl;
+                cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             else {
-                // ë¡œê·¸ì¸ í™”ë©´ ì´ë™
+                // ·Î±×ÀÎ È­¸é ÀÌµ¿
                 program->getLoginManager().displayMenu();
             }
             break;
@@ -107,8 +108,8 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
                 program->getEnrollManager().searchAndStudentEnrollLecture();
             }
             else {
-                cout << "ë¡œê·¸ì¸ í›„ ê°•ì˜ ì¡°íšŒ ë° ì‹ ì²­ì´ ê°€ëŠ¥í•©ë‹ˆë‹¤." << endl;
-                cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+                cout << "·Î±×ÀÎ ÈÄ °­ÀÇ Á¶È¸ ¹× ½ÅÃ»ÀÌ °¡´ÉÇÕ´Ï´Ù." << endl;
+                cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             break;
@@ -116,14 +117,14 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
             if (program->getSessionManager().getIs_login() == true) {
                 lecture = program->getLectureManager().inputLecture();
                 if (lecture != nullptr) {
-                    cout << "ê°•ì˜ë¥¼ ì‹ ê·œ ë“±ë¡í•˜ì˜€ìŠµë‹ˆë‹¤." << endl;
+                    cout << "°­ÀÇ¸¦ ½Å±Ô µî·ÏÇÏ¿´½À´Ï´Ù." << endl;
                 }
-                cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+                cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             else {
-                cout << "ë¡œê·¸ì¸ í›„ ê°•ì˜ ë“±ë¡ì´ ê°€ëŠ¥í•©ë‹ˆë‹¤." << endl;
-                cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+                cout << "·Î±×ÀÎ ÈÄ °­ÀÇ µî·ÏÀÌ °¡´ÉÇÕ´Ï´Ù." << endl;
+                cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             break;
@@ -132,8 +133,8 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
                 program->getMemberManager().displayMenu();
             }
             else {
-                cout << "ë©¤ë²„(íšŒì›) í†µí•© ê´€ë¦¬ ì‹œìŠ¤í…œì€ ê´€ë¦¬ìë§Œ ì ‘ê·¼ ê°€ëŠ¥í•©ë‹ˆë‹¤." << endl;
-                cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+                cout << "¸â¹ö(È¸¿ø) ÅëÇÕ °ü¸® ½Ã½ºÅÛÀº °ü¸®ÀÚ¸¸ Á¢±Ù °¡´ÉÇÕ´Ï´Ù." << endl;
+                cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             break;
@@ -142,8 +143,8 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
                 program->getLectureManager().displayMenu();
             }
             else {
-                cout << "ê°•ì˜(ì œí’ˆ) í†µí•© ê´€ë¦¬ ì‹œìŠ¤í…œì€ ê´€ë¦¬ìë§Œ ì ‘ê·¼ ê°€ëŠ¥í•©ë‹ˆë‹¤." << endl;
-                cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+                cout << "°­ÀÇ(Á¦Ç°) ÅëÇÕ °ü¸® ½Ã½ºÅÛÀº °ü¸®ÀÚ¸¸ Á¢±Ù °¡´ÉÇÕ´Ï´Ù." << endl;
+                cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             break;

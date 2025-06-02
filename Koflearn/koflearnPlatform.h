@@ -5,26 +5,27 @@
 using namespace std;
 
 class KoflearnPlatform {
-// ê¸€ë¡œë²Œ id ë³€ìˆ˜ì¸ primary key
+	// ±Û·Î¹ú id º¯¼öÀÎ primary key
 protected:
-	unsigned long long primaryKey; // ê¸€ë¡œë²Œ id ë³€ìˆ˜ì¸ primary key
-	// í•´ë‹¹ primaryKey ë¥¼ í†µí•´ì„œ íŠ¹ì • ë©¤ë²„ë‚˜ ê°•ì˜ë¥¼ ì‹ë³„í•  ìˆ˜ ìžˆìŒ !
+	unsigned long long primaryKey; // ±Û·Î¹ú id º¯¼öÀÎ primary key
+	// ÇØ´ç primaryKey ¸¦ ÅëÇØ¼­ Æ¯Á¤ ¸â¹ö³ª °­ÀÇ¸¦ ½Äº°ÇÒ ¼ö ÀÖÀ½ !
 
 public:
 	KoflearnPlatform(unsigned long long primaryKey)
-		: primaryKey(primaryKey) {}
+		: primaryKey(primaryKey) {
+	}
 	virtual ~KoflearnPlatform() {}
 
-	// getPrimaryKey ì™€ setPrimarykey ëŠ” ê¸°ëŠ¥ ìžì²´ëŠ” ë™ì¼í•œ ê¸°ëŠ¥ì´ê¸° ë•Œë¬¸ì— ë‹¤í˜•ì„±ê³¼ ê±°ë¦¬ê°€ ìžˆìœ¼ë¯€ë¡œ
-	// ìˆœìˆ˜ ê°€ìƒ í•¨ìˆ˜ë¡œ êµ¬í˜„í•˜ì§€ ì•Šìœ¼ë‚˜, ì¶”í›„ ìœ ì—°ì„±ì„ ìœ„í•´ ì¼ë°˜ ê°€ìƒ í•¨ìˆ˜ë¡œëŠ” ì„ ì–¸í•˜ì˜€ìŒ.
+	// getPrimaryKey ¿Í setPrimarykey ´Â ±â´É ÀÚÃ¼´Â µ¿ÀÏÇÑ ±â´ÉÀÌ±â ¶§¹®¿¡ ´ÙÇü¼º°ú °Å¸®°¡ ÀÖÀ¸¹Ç·Î
+	// ¼ø¼ö °¡»ó ÇÔ¼ö·Î ±¸ÇöÇÏÁö ¾ÊÀ¸³ª, ÃßÈÄ À¯¿¬¼ºÀ» À§ÇØ ÀÏ¹Ý °¡»ó ÇÔ¼ö·Î´Â ¼±¾ðÇÏ¿´À½.
 	virtual unsigned long long getPrimaryKey() const;
 	virtual void setPrimaryKey(unsigned long long primaryKey);
 
 	// (250527 fix)
-	// ìˆœìˆ˜ ê°€ìƒ í•¨ìˆ˜ : void displayInfo()
-	// CRUD ì˜ ê²½ìš° ê° íŒŒìƒ í´ëž˜ìŠ¤ Manager ê°€ ë‹´ë‹¹í•˜ì§€ë§Œ, 
-	// ê° íŒŒìƒ í´ëž˜ìŠ¤ "ê°ì²´ ìžì²´" ë§Œì˜ ì •ë³´ ì¶œë ¥ì€ íŒŒìƒ í´ëž˜ìŠ¤ ì—ì„œ ì •ì˜ë˜ëŠ”ê²Œ ë§žìŒ.
-	// => displayInfo() í•¨ìˆ˜ë¥¼ ê¸°ë³¸ í´ëž˜ìŠ¤ì— ìˆœìˆ˜ ê°€ìƒ í•¨ìˆ˜ë¡œ ì„ ì–¸í•˜ê³ , íŒŒìƒ í´ëž˜ìŠ¤ì—ì„œ ì´ë¥¼ overriding í•œë‹¤
+	// ¼ø¼ö °¡»ó ÇÔ¼ö : void displayInfo()
+	// CRUD ÀÇ °æ¿ì °¢ ÆÄ»ý Å¬·¡½º Manager °¡ ´ã´çÇÏÁö¸¸, 
+	// °¢ ÆÄ»ý Å¬·¡½º "°´Ã¼ ÀÚÃ¼" ¸¸ÀÇ Á¤º¸ Ãâ·ÂÀº ÆÄ»ý Å¬·¡½º ¿¡¼­ Á¤ÀÇµÇ´Â°Ô ¸ÂÀ½.
+	// => displayInfo() ÇÔ¼ö¸¦ ±âº» Å¬·¡½º¿¡ ¼ø¼ö °¡»ó ÇÔ¼ö·Î ¼±¾ðÇÏ°í, ÆÄ»ý Å¬·¡½º¿¡¼­ ÀÌ¸¦ overriding ÇÑ´Ù
 	virtual void displayInfo() = 0;
 };
 

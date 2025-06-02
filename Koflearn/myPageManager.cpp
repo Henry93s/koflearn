@@ -1,34 +1,34 @@
 #include "myPageManager.h"
 #include <string>
-// program_interface ë¥¼ í†µí•´ì„œ ì ‘ê·¼í•˜ë ¤ëŠ” ëª¨ë“  
-// Manager í´ë˜ìŠ¤ë“¤ì´ í•„ìš”í•œ í—¤ë” íŒŒì¼ì´ include ë˜ì–´ ìˆì–´ì•¼ í•¨. 
-// why? ìˆœí™˜ì°¸ì¡° ë°©ì§€ë¡œ IKoflearnPlatManager ì—ì„œ Manager í´ë˜ìŠ¤ë“¤ì„ include í•˜ì§€ ì•Šê³ 
-//      ì „ë°©ì„ ì–¸ ì²˜ë¦¬í–ˆìœ¼ë¯€ë¡œ
+// program_interface ¸¦ ÅëÇØ¼­ Á¢±ÙÇÏ·Á´Â ¸ğµç 
+// Manager Å¬·¡½ºµéÀÌ ÇÊ¿äÇÑ Çì´õ ÆÄÀÏÀÌ include µÇ¾î ÀÖ¾î¾ß ÇÔ. 
+// why? ¼øÈ¯ÂüÁ¶ ¹æÁö·Î IKoflearnPlatManager ¿¡¼­ Manager Å¬·¡½ºµéÀ» include ÇÏÁö ¾Ê°í
+//      Àü¹æ¼±¾ğ Ã³¸®ÇßÀ¸¹Ç·Î
 #include "enrollManager.h"
 #include "sessionManager.h"
 #include "memberManager.h"
 #include "lectureManager.h"
 
 
-// ìƒì„±ìì—ì„œ ì¸í„°í˜ì´ìŠ¤ íƒ€ì… ì˜ì¡´ì„±ì„ ì£¼ì…ë°›ìŒ
+// »ı¼ºÀÚ¿¡¼­ ÀÎÅÍÆäÀÌ½º Å¸ÀÔ ÀÇÁ¸¼ºÀ» ÁÖÀÔ¹ŞÀ½
 MyPageManager::MyPageManager(IKoflearnPlatManager* program)
     : program_interface(program)
 {
     if (!program_interface) {
-        cerr << "ì˜¤ë¥˜: MyPageManagerì— ìœ íš¨í•œ IKoflearnPlatManagerê°€ ì£¼ì…ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!\n";
+        cerr << "¿À·ù: MyPageManager¿¡ À¯È¿ÇÑ IKoflearnPlatManager°¡ ÁÖÀÔµÇÁö ¾Ê¾Ò½À´Ï´Ù!\n";
     }
 }
 MyPageManager::~MyPageManager() {}
 
 void MyPageManager::myStudentLecturePrint() {
-    // ì½”ë“œ ì •ë¦¬ : student ê°€ ìˆ˜ê°•í•˜ëŠ” ê°•ì˜ list ë¥¼ ì°¾ëŠ” ë¶€ë¶„ì€ enrollManager í´ë˜ìŠ¤ ì±…ì„ìœ¼ë¡œ ì§„í–‰
+    // ÄÚµå Á¤¸® : student °¡ ¼ö°­ÇÏ´Â °­ÀÇ list ¸¦ Ã£´Â ºÎºĞÀº enrollManager Å¬·¡½º Ã¥ÀÓÀ¸·Î ÁøÇà
     unsigned long long primaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
     vector<Lecture*>& lectureList = program_interface->getEnrollManager().findStudentLectureAllList(primaryKey);
-    
+
     if (lectureList.size() == 0) {
         cout << endl;
-        cout << "í˜„ì¬ ìˆ˜ê°• ì¤‘ì¸ ê°•ì¢Œê°€ ì—†ìŠµë‹ˆë‹¤ !" << endl;
-        cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+        cout << "ÇöÀç ¼ö°­ ÁßÀÎ °­ÁÂ°¡ ¾ø½À´Ï´Ù !" << endl;
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     else {
@@ -39,26 +39,26 @@ void MyPageManager::myStudentLecturePrint() {
         cout << endl;
         int ch;
         while (1) {
-            cout << "1. ë’¤ë¡œ ê°€ê¸°" << endl;
-            cout << "2. ìˆ˜ê°• ì¢…ë£Œí•˜ê¸°" << endl;
+            cout << "1. µÚ·Î °¡±â" << endl;
+            cout << "2. ¼ö°­ Á¾·áÇÏ±â" << endl;
             cin >> ch;
             if (cin.fail()) {
-                cout << "ì˜ëª»ëœ ì…ë ¥ì…ë‹ˆë‹¤. ìˆ«ìë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”." << endl;
-                // ìŠ¤íŠ¸ë¦¼ì˜ ì˜¤ë¥˜ ìƒíƒœë¥¼ ì´ˆê¸°í™”
+                cout << "Àß¸øµÈ ÀÔ·ÂÀÔ´Ï´Ù. ¼ıÀÚ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+                // ½ºÆ®¸²ÀÇ ¿À·ù »óÅÂ¸¦ ÃÊ±âÈ­
                 cin.clear();
-                cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë‹¤ì‹œ ì…ë ¥í•˜ê¸°" << endl;
+                cout << "[Enter] ¸¦ ´­·¯ ´Ù½Ã ÀÔ·ÂÇÏ±â" << endl;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 continue;
             }
             if (ch == 1) {
-                cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+                cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 break;
             }
             else if (ch == 2) {
                 unsigned long long primaryKey;
-                cout << "ìˆ˜ê°• ì¢…ë£Œí•  ê°•ì¢Œì˜ key ë¥¼ ì…ë ¥í•˜ì„¸ìš” : ";
+                cout << "¼ö°­ Á¾·áÇÒ °­ÁÂÀÇ key ¸¦ ÀÔ·ÂÇÏ¼¼¿ä : ";
                 cin >> primaryKey;
                 exitLecture(primaryKey);
                 break;
@@ -75,33 +75,33 @@ void MyPageManager::exitLecture(unsigned long long primaryKey) {
     unsigned long long myPrimaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
     auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
 
-    // íšŒì›ì˜ ìˆ˜ê°• ë¦¬ìŠ¤íŠ¸(studentLectureList)ì—ì„œ ìˆ˜ê°•ì ìˆ˜ ê°ì†Œ
+    // È¸¿øÀÇ ¼ö°­ ¸®½ºÆ®(studentLectureList)¿¡¼­ ¼ö°­ÀÚ ¼ö °¨¼Ò
     auto it = studentLectureList.find(myPrimaryKey);
     if (lecture && it != studentLectureList.end()) {
         vector<Lecture*>& lectures = it->second;
-        // ë²¡í„°ì—ì„œ í•´ë‹¹ ê°•ì˜ë¥¼ ì°¾ì•„ ìˆ˜ê°•ì ìˆ˜ ê°ì†Œ ë° ì œê±°
+        // º¤ÅÍ¿¡¼­ ÇØ´ç °­ÀÇ¸¦ Ã£¾Æ ¼ö°­ÀÚ ¼ö °¨¼Ò ¹× Á¦°Å
         for (auto vecIt = lectures.begin(); vecIt != lectures.end(); ++vecIt) {
             if (*vecIt && (*vecIt)->getPrimaryKey() == primaryKey) {
                 int count = (*vecIt)->getEnrolledStudentsCount();
-                (*vecIt)->setEnrolledStudentsCount(count - 1);  // ìˆ˜ê°•ì ìˆ˜ ê°ì†Œ
+                (*vecIt)->setEnrolledStudentsCount(count - 1);  // ¼ö°­ÀÚ ¼ö °¨¼Ò
 
-                lectures.erase(vecIt);  // ê°•ì˜ ë²¡í„°ì—ì„œ ì œê±°
-                break;  // í•˜ë‚˜ë§Œ ì‚­ì œí•˜ê³  ì¢…ë£Œ(ì–´ì°¨í”¼ íšŒì›ì´ ì¤‘ë³µ ê°•ì˜ë¥¼ ìˆ˜ê°•í•  ìˆ˜ ëŠ” ì—†ìŒ)
+                lectures.erase(vecIt);  // °­ÀÇ º¤ÅÍ¿¡¼­ Á¦°Å
+                break;  // ÇÏ³ª¸¸ »èÁ¦ÇÏ°í Á¾·á(¾îÂ÷ÇÇ È¸¿øÀÌ Áßº¹ °­ÀÇ¸¦ ¼ö°­ÇÒ ¼ö ´Â ¾øÀ½)
             }
         }
 
-        // í•´ë‹¹ í•™ìƒì˜ ìˆ˜ê°• ëª©ë¡ì´ ë¹„ì—ˆìœ¼ë©´ mapì—ì„œë„ ì‚­ì œ
+        // ÇØ´ç ÇĞ»ıÀÇ ¼ö°­ ¸ñ·ÏÀÌ ºñ¾úÀ¸¸é map¿¡¼­µµ »èÁ¦
         if (lectures.empty()) {
             studentLectureList.erase(it);
         }
 
-        cout << lecture->getLectureTitle() << " ê°•ì˜ë¥¼ ìˆ˜ê°• ì¢…ë£Œì²˜ë¦¬í•˜ì˜€ìŠµë‹ˆë‹¤." << endl;
-        cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+        cout << lecture->getLectureTitle() << " °­ÀÇ¸¦ ¼ö°­ Á¾·áÃ³¸®ÇÏ¿´½À´Ï´Ù." << endl;
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     else {
-        cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
@@ -110,14 +110,14 @@ void MyPageManager::exitLecture(unsigned long long primaryKey) {
 }
 
 void MyPageManager::myInstructorLecturePrint() {
-    // ì½”ë“œ ì •ë¦¬ : Instructor ê°€ ìˆ˜ê°•í•˜ëŠ” ê°•ì˜ list ë¥¼ ì°¾ëŠ” ë¶€ë¶„ì€ enrollManager í´ë˜ìŠ¤ ì±…ì„ìœ¼ë¡œ ì§„í–‰
+    // ÄÚµå Á¤¸® : Instructor °¡ ¼ö°­ÇÏ´Â °­ÀÇ list ¸¦ Ã£´Â ºÎºĞÀº enrollManager Å¬·¡½º Ã¥ÀÓÀ¸·Î ÁøÇà
     unsigned long long primaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
     vector<Lecture*>& lectureList = program_interface->getEnrollManager().findInstructorLectureAllList(primaryKey);
 
     if (lectureList.size() == 0) {
         cout << endl;
-        cout << "í˜„ì¬ ì§„í–‰í•˜ì‹œëŠ” ê°•ì¢Œê°€ ì—†ìŠµë‹ˆë‹¤ !" << endl;
-        cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+        cout << "ÇöÀç ÁøÇàÇÏ½Ã´Â °­ÁÂ°¡ ¾ø½À´Ï´Ù !" << endl;
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     else {
@@ -126,7 +126,7 @@ void MyPageManager::myInstructorLecturePrint() {
             i->displayInfo();
         }
         cout << endl;
-        cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 }
@@ -134,27 +134,27 @@ void MyPageManager::myInstructorLecturePrint() {
 bool MyPageManager::selfDeleteID() {
     string is_delete = "";
 
-    cout << "íƒˆí‡´ ì‹œ ìˆ˜ê°•í•˜ì‹œëŠ” ê°•ì˜, ê°•ì˜í•˜ì‹œëŠ” ê°•ì¢Œ ëª¨ë‘ ì œê±°ë©ë‹ˆë‹¤." << endl;
-    cout << "ì •ë§ íƒˆí‡´í•˜ì‹œê² ìŠµë‹ˆê¹Œ?" << endl;
-    cout << "íƒˆí‡´í•˜ì‹œë ¤ë©´ [I agree to withdraw from member] ì˜ [ ] ì•ˆ ë¬¸êµ¬ë¥¼ ì •í™•íˆ ì…ë ¥í•´ì£¼ì„¸ìš”." << endl;
+    cout << "Å»Åğ ½Ã ¼ö°­ÇÏ½Ã´Â °­ÀÇ, °­ÀÇÇÏ½Ã´Â °­ÁÂ ¸ğµÎ Á¦°ÅµË´Ï´Ù." << endl;
+    cout << "Á¤¸» Å»ÅğÇÏ½Ã°Ú½À´Ï±î?" << endl;
+    cout << "Å»ÅğÇÏ½Ã·Á¸é [I agree to withdraw from member] ÀÇ [ ] ¾È ¹®±¸¸¦ Á¤È®È÷ ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
     getline(cin, is_delete, '\n');
 
     if (is_delete.compare("I agree to withdraw from member") == 0) {
         Member* member = program_interface->getSessionManager().getLoginUser();
-        // íƒˆí‡´ì ê´€ë ¨ ë°ì´í„° ìš°ì„  ì œê±°(lectureList, instructorLectureList, studentLectureList)
+        // Å»ÅğÀÚ °ü·Ã µ¥ÀÌÅÍ ¿ì¼± Á¦°Å(lectureList, instructorLectureList, studentLectureList)
         allDeletedUserData(member->getPrimaryKey());
-        // íƒˆí‡´ì member ë°ì´í„° ì œê±°
-        
+        // Å»ÅğÀÚ member µ¥ÀÌÅÍ Á¦°Å
+
         program_interface->getMemberManager().deleteMember(member->getPrimaryKey());
-        
-        cout << "íšŒì› íƒˆí‡´ê°€ ì •ìƒì ìœ¼ë¡œ ë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
-        cout << "ë¡œê·¸ì¸ ìƒíƒœê°€ í•´ì œë˜ê³  [Enter] ë¥¼ ëˆ„ë¥´ë©´ ë©”ì¸ í˜ì´ì§€ë¡œ ì´ë™í•©ë‹ˆë‹¤." << endl;
+
+        cout << "È¸¿ø Å»Åğ°¡ Á¤»óÀûÀ¸·Î µÇ¾ú½À´Ï´Ù." << endl;
+        cout << "·Î±×ÀÎ »óÅÂ°¡ ÇØÁ¦µÇ°í [Enter] ¸¦ ´©¸£¸é ¸ŞÀÎ ÆäÀÌÁö·Î ÀÌµ¿ÇÕ´Ï´Ù." << endl;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return true;
     }
     else {
-        cout << "ë¬¸êµ¬ë¥¼ ì •ìƒì ìœ¼ë¡œ ì…ë ¥í•˜ì§€ ì•Šì•„ íšŒì› íƒˆí‡´ë¥¼ ì§„í–‰í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤." << endl;
-        cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+        cout << "¹®±¸¸¦ Á¤»óÀûÀ¸·Î ÀÔ·ÂÇÏÁö ¾Ê¾Æ È¸¿ø Å»Åğ¸¦ ÁøÇàÇÒ ¼ö ¾ø½À´Ï´Ù." << endl;
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return false;
     }
@@ -173,7 +173,7 @@ void MyPageManager::allDeletedUserData(unsigned long long primaryKey) {
     auto& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
     auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
 
-    // 1. í•´ë‹¹ ê°•ì‚¬ê°€ ê°œì„¤í•œ ê°•ì˜ ë¦¬ìŠ¤íŠ¸ ìˆ˜ì§‘ -> lectureList ì œê±°
+    // 1. ÇØ´ç °­»ç°¡ °³¼³ÇÑ °­ÀÇ ¸®½ºÆ® ¼öÁı -> lectureList Á¦°Å
     vector<Lecture*> lecturesToDelete;
     for (auto it = lectureList.begin(); it != lectureList.end(); ) {
         Lecture* lec = it->second;
@@ -186,10 +186,10 @@ void MyPageManager::allDeletedUserData(unsigned long long primaryKey) {
         }
     }
 
-    // 2. instructorLectureList ì—ì„œ í•´ë‹¹ ê°•ì‚¬ í•­ëª© ì œê±°
+    // 2. instructorLectureList ¿¡¼­ ÇØ´ç °­»ç Ç×¸ñ Á¦°Å
     instructorLectureList.erase(instructorPrimaryKey);
 
-    // 3. íšŒì›ì´ ìˆ˜ê°•ì(Student)ì¸ ê²½ìš° -> ë³¸ì¸ì˜ ìˆ˜ê°• ë¦¬ìŠ¤íŠ¸(studentLectureList)ì—ì„œ ìˆ˜ê°•ì ìˆ˜ ê°ì†Œ + ì œê±°
+    // 3. È¸¿øÀÌ ¼ö°­ÀÚ(Student)ÀÎ °æ¿ì -> º»ÀÎÀÇ ¼ö°­ ¸®½ºÆ®(studentLectureList)¿¡¼­ ¼ö°­ÀÚ ¼ö °¨¼Ò + Á¦°Å
     auto it = studentLectureList.find(primaryKey);
     if (it != studentLectureList.end()) {
         vector<Lecture*>& lectures = it->second;
@@ -218,29 +218,29 @@ void MyPageManager::displayMenu() {
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << "               Koflearn My Page                  " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << "  1. ìˆ˜ê°• ì¤‘ì¸ ê°•ì˜ ë° ìˆ˜ê°• ì¢…ë£Œ                     " << endl;
-        cout << "  2. ì§„í–‰í•˜ëŠ” ê°•ì˜ ë³´ê¸°                            " << endl;
-        cout << "  3. íŒ¨ìŠ¤ì›Œë“œ ìˆ˜ì •                            " << endl;
-        cout << "  4. íšŒì› íƒˆí‡´                       " << endl;
-        cout << "  5. ë©”ì¸ ë©”ë‰´ë¡œ ëŒì•„ê°€ê¸°                " << endl;
+        cout << "  1. ¼ö°­ ÁßÀÎ °­ÀÇ ¹× ¼ö°­ Á¾·á                     " << endl;
+        cout << "  2. ÁøÇàÇÏ´Â °­ÀÇ º¸±â                            " << endl;
+        cout << "  3. ÆĞ½º¿öµå ¼öÁ¤                            " << endl;
+        cout << "  4. È¸¿ø Å»Åğ                       " << endl;
+        cout << "  5. ¸ŞÀÎ ¸Ş´º·Î µ¹¾Æ°¡±â                " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << " ê¸°ëŠ¥ì„ ì„ íƒí•˜ì„¸ìš” : ";
+        cout << " ±â´ÉÀ» ¼±ÅÃÇÏ¼¼¿ä : ";
         cin >> ch;
-        // ë©”ë‰´ì—ì„œ ìˆ«ì ëª…ë ¹ì–´ë¥¼ ë°›ìœ¼ë ¤ê³  í•  ë•Œ ì˜ë¬¸ì ë“±ì„ ì…ë ¥í–ˆì„ ë•Œ 
-        // ë¬´í•œ ê¹œë¹¡ì„ í˜„ìƒ í•´ê²°
+        // ¸Ş´º¿¡¼­ ¼ıÀÚ ¸í·É¾î¸¦ ¹ŞÀ¸·Á°í ÇÒ ¶§ ¿µ¹®ÀÚ µîÀ» ÀÔ·ÂÇßÀ» ¶§ 
+        // ¹«ÇÑ ±ôºıÀÓ Çö»ó ÇØ°á
         if (cin.fail()) {
-            cout << "ì˜ëª»ëœ ì…ë ¥ì…ë‹ˆë‹¤. ìˆ«ìë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”." << endl;
-            // ìŠ¤íŠ¸ë¦¼ì˜ ì˜¤ë¥˜ ìƒíƒœë¥¼ ì´ˆê¸°í™”
+            cout << "Àß¸øµÈ ÀÔ·ÂÀÔ´Ï´Ù. ¼ıÀÚ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+            // ½ºÆ®¸²ÀÇ ¿À·ù »óÅÂ¸¦ ÃÊ±âÈ­
             cin.clear();
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+            cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-            // ë²„í¼ì˜ ìµœëŒ€ í¬ê¸°, '\n'ì€ ë²„í¼ë¥¼ ë¹„ìš¸ ë•Œê¹Œì§€ ì°¾ì„ ë¬¸ì
+            // ¹öÆÛÀÇ ÃÖ´ë Å©±â, '\n'Àº ¹öÆÛ¸¦ ºñ¿ï ¶§±îÁö Ã£À» ¹®ÀÚ
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
         }
-        
-        // ë²„í¼ì˜ ìµœëŒ€ í¬ê¸°, '\n'ì€ ë²„í¼ë¥¼ ë¹„ìš¸ ë•Œê¹Œì§€ ì°¾ì„ ë¬¸ì
+
+        // ¹öÆÛÀÇ ÃÖ´ë Å©±â, '\n'Àº ¹öÆÛ¸¦ ºñ¿ï ¶§±îÁö Ã£À» ¹®ÀÚ
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         switch (ch) {

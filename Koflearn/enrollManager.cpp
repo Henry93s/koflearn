@@ -1,8 +1,8 @@
 #include "enrollManager.h"
-// program_interface ë¥¼ í†µí•´ì„œ ì ‘ê·¼í•˜ë ¤ëŠ” ëª¨ë“  
-// Manager í´ë˜ìŠ¤ë“¤ì´ í•„ìš”í•œ í—¤ë” íŒŒì¼ì´ include ë˜ì–´ ìˆì–´ì•¼ í•¨. 
-// why? ìˆœí™˜ì°¸ì¡° ë°©ì§€ë¡œ IKoflearnPlatManager ì—ì„œ Manager í´ë˜ìŠ¤ë“¤ì„ include í•˜ì§€ ì•Šê³ 
-//      ì „ë°©ì„ ì–¸ ì²˜ë¦¬í–ˆìœ¼ë¯€ë¡œ
+// program_interface ¸¦ ÅëÇØ¼­ Á¢±ÙÇÏ·Á´Â ¸ğµç 
+// Manager Å¬·¡½ºµéÀÌ ÇÊ¿äÇÑ Çì´õ ÆÄÀÏÀÌ include µÇ¾î ÀÖ¾î¾ß ÇÔ. 
+// why? ¼øÈ¯ÂüÁ¶ ¹æÁö·Î IKoflearnPlatManager ¿¡¼­ Manager Å¬·¡½ºµéÀ» include ÇÏÁö ¾Ê°í
+//      Àü¹æ¼±¾ğ Ã³¸®ÇßÀ¸¹Ç·Î
 #include "lectureManager.h"
 #include "sessionManager.h"
 #include "memberManager.h"
@@ -14,16 +14,16 @@
 #include <iomanip>
 using namespace std;
 
-// ìƒì„±ìì—ì„œ ì¸í„°í˜ì´ìŠ¤ íƒ€ì…ì˜ ì˜ì¡´ì„±ì„ ì£¼ì…ë°›ìŒ
+// »ı¼ºÀÚ¿¡¼­ ÀÎÅÍÆäÀÌ½º Å¸ÀÔÀÇ ÀÇÁ¸¼ºÀ» ÁÖÀÔ¹ŞÀ½
 EnrollManager::EnrollManager(IKoflearnPlatManager* program)
     : program_interface(program)
 {
     if (!program_interface) {
-        cerr << "ì˜¤ë¥˜: MyPageManagerì— ìœ íš¨í•œ IKoflearnPlatManagerê°€ ì£¼ì…ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!\n";
+        cerr << "¿À·ù: MyPageManager¿¡ À¯È¿ÇÑ IKoflearnPlatManager°¡ ÁÖÀÔµÇÁö ¾Ê¾Ò½À´Ï´Ù!\n";
     }
 
     ifstream file1, file2;
-    file1.open("studentLectureList.txt");
+    file1.open("studentLectureList.csv");
     char* endptr;
     char* endptr2;
     if (!file1.fail()) {
@@ -33,19 +33,19 @@ EnrollManager::EnrollManager(IKoflearnPlatManager* program)
                 // strtoull : str to Unsigned Long Long
                 unsigned long long primaryKey = strtoull(row[0].c_str(), &endptr, 10);
 
-                // memberList ì™€ í¬ì¸í„° ë™ì¼ ìœ ì§€í•˜ê¸° ìœ„í•œ new ê°€ ì•„ë‹Œ memberList ì—ì„œ ì£¼ì†Œë¥¼ ê°€ì ¸ì™€ì•¼ í•œë‹¤.
+                // memberList ¿Í Æ÷ÀÎÅÍ µ¿ÀÏ À¯ÁöÇÏ±â À§ÇÑ new °¡ ¾Æ´Ñ memberList ¿¡¼­ ÁÖ¼Ò¸¦ °¡Á®¿Í¾ß ÇÑ´Ù.
                 Member* member = program_interface->getMemberManager().searchMember(primaryKey);
 
-                // 6 index ë¶€í„°
-                // lectureList ì™€ í¬ì¸í„° ë™ì¼ ìœ ì§€í•˜ê¸° ìœ„í•œ new ê°€ ì•„ë‹Œ lectureList ì—ì„œ ì£¼ì†Œë¥¼ ê°€ì ¸ì™€ì•¼ í•œë‹¤.
+                // 6 index ºÎÅÍ
+                // lectureList ¿Í Æ÷ÀÎÅÍ µ¿ÀÏ À¯ÁöÇÏ±â À§ÇÑ new °¡ ¾Æ´Ñ lectureList ¿¡¼­ ÁÖ¼Ò¸¦ °¡Á®¿Í¾ß ÇÑ´Ù.
                 unsigned long long primaryKey2 = strtoull(row[6].c_str(), &endptr2, 10);
                 Lecture* lecture = program_interface->getLectureManager().searchLecture(primaryKey2);
 
                 // map<unsigned long long, vector<Lecture*>>
-                // map<unsigned long long, Lecture*> í˜•íƒœì¼ ê²½ìš°
+                // map<unsigned long long, Lecture*> ÇüÅÂÀÏ °æ¿ì
                 /*
-                í•œ í•™ìƒì€ í•˜ë‚˜ì˜ ê°•ì˜ ë°–ì— ìˆ˜ê°•í•˜ì§€ ëª»í•¨ : í•œ key ëŠ” ê³ ìœ í•˜ê¸° ë•Œë¬¸ì— ì¤‘ë³µí•´ì„œ
-                ê°™ì€ key ë¥¼ ì‚½ì…í•  ìˆ˜ ì—†ìŒ.
+                ÇÑ ÇĞ»ıÀº ÇÏ³ªÀÇ °­ÀÇ ¹Û¿¡ ¼ö°­ÇÏÁö ¸øÇÔ : ÇÑ key ´Â °íÀ¯ÇÏ±â ¶§¹®¿¡ Áßº¹ÇØ¼­
+                °°Àº key ¸¦ »ğÀÔÇÒ ¼ö ¾øÀ½.
                 */
                 studentLectureList.insert({ member->getPrimaryKey(), { lecture } });
             }
@@ -53,7 +53,7 @@ EnrollManager::EnrollManager(IKoflearnPlatManager* program)
     }
     file1.close();
 
-    file2.open("instructorLectureList.txt");
+    file2.open("instructorLectureList.csv");
     char* endptr3;
     char* endptr4;
     if (!file2.fail()) {
@@ -62,12 +62,12 @@ EnrollManager::EnrollManager(IKoflearnPlatManager* program)
             if (row.size()) {
                 // strtoull : str to Unsigned Long Long
                 unsigned long long primaryKey = strtoull(row[0].c_str(), &endptr3, 10);
-                
-                // memberList ì™€ í¬ì¸í„° ë™ì¼ ìœ ì§€í•˜ê¸° ìœ„í•œ new ê°€ ì•„ë‹Œ memberList ì—ì„œ ì£¼ì†Œë¥¼ ê°€ì ¸ì™€ì•¼ í•œë‹¤.
+
+                // memberList ¿Í Æ÷ÀÎÅÍ µ¿ÀÏ À¯ÁöÇÏ±â À§ÇÑ new °¡ ¾Æ´Ñ memberList ¿¡¼­ ÁÖ¼Ò¸¦ °¡Á®¿Í¾ß ÇÑ´Ù.
                 Member* member = program_interface->getMemberManager().searchMember(primaryKey);
 
-                // 6 index ë¶€í„°
-                // lectureList ì™€ í¬ì¸í„° ë™ì¼ ìœ ì§€í•˜ê¸° ìœ„í•œ new ê°€ ì•„ë‹Œ lectureList ì—ì„œ ì£¼ì†Œë¥¼ ê°€ì ¸ì™€ì•¼ í•œë‹¤.
+                // 6 index ºÎÅÍ
+                // lectureList ¿Í Æ÷ÀÎÅÍ µ¿ÀÏ À¯ÁöÇÏ±â À§ÇÑ new °¡ ¾Æ´Ñ lectureList ¿¡¼­ ÁÖ¼Ò¸¦ °¡Á®¿Í¾ß ÇÑ´Ù.
                 unsigned long long primaryKey2 = strtoull(row[6].c_str(), &endptr4, 10);
                 Lecture* lecture = program_interface->getLectureManager().searchLecture(primaryKey2);
 
@@ -85,8 +85,8 @@ EnrollManager::~EnrollManager() {
     if (!file1.fail()) {
         for (const auto& v : studentLectureList) {
             Member* member = program_interface->getMemberManager().searchMember(v.first);
-            // map<unsigned long long, vector<Lecture*>> ì—ì„œ vector<Lecture*> ë¥¼ ë¨¼ì € ì–»ê³ 
-            // for ë¬¸ ìˆœí™˜ í•„ìš”í•¨
+            // map<unsigned long long, vector<Lecture*>> ¿¡¼­ vector<Lecture*> ¸¦ ¸ÕÀú ¾ò°í
+            // for ¹® ¼øÈ¯ ÇÊ¿äÇÔ
             for (Lecture* lecture : v.second) {
                 file1 << member->getPrimaryKey() << ", "
                     << member->getNickName() << ", "
@@ -108,8 +108,8 @@ EnrollManager::~EnrollManager() {
     if (!file2.fail()) {
         for (const auto& v : instructorLectureList) {
             Member* member = program_interface->getMemberManager().searchMember(v.first);
-            // map<unsigned long long, vector<Lecture*>> ì—ì„œ vector<Lecture*> ë¥¼ ë¨¼ì € ì–»ê³ 
-            // for ë¬¸ ìˆœí™˜ í•„ìš”í•¨
+            // map<unsigned long long, vector<Lecture*>> ¿¡¼­ vector<Lecture*> ¸¦ ¸ÕÀú ¾ò°í
+            // for ¹® ¼øÈ¯ ÇÊ¿äÇÔ
             for (Lecture* lecture : v.second) {
                 file2 << member->getPrimaryKey() << ", "
                     << member->getNickName() << ", "
@@ -162,8 +162,8 @@ void EnrollManager::searchAndStudentEnrollLecture() {
     map<unsigned long long, Lecture*>& lectureList = program_interface->getLectureManager().getLectureList();
 
     if (!lectureList.empty()) {
-        cout << "ìˆ˜ê°•í•  ê°•ì˜ privateKey ë¥¼ ì…ë ¥í•˜ì„¸ìš” : ";
-        cout << "('-1' : ì·¨ì†Œ)" << endl;
+        cout << "¼ö°­ÇÒ °­ÀÇ privateKey ¸¦ ÀÔ·ÂÇÏ¼¼¿ä : ";
+        cout << "('-1' : Ãë¼Ò)" << endl;
         cin >> privateKey;
         if (privateKey == -1) { return; }
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -171,8 +171,8 @@ void EnrollManager::searchAndStudentEnrollLecture() {
 
     lecture = program_interface->getLectureManager().searchLecture(privateKey);
     if (lecture == nullptr) {
-        cout << "ì¡°íšŒëœ ê°•ì˜ê°€ ì—†ìŠµë‹ˆë‹¤." << endl;
-        cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+        cout << "Á¶È¸µÈ °­ÀÇ°¡ ¾ø½À´Ï´Ù." << endl;
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return;
     }
@@ -182,31 +182,31 @@ void EnrollManager::searchAndStudentEnrollLecture() {
         is_duplication = this->isDuplicationOrSizeCheckStudentEnrollLecture(member, lecture);
 
         if (is_duplication == false) {
-            cout << "ìˆ˜ê°• ì‹ ì²­ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
+            cout << "¼ö°­ ½ÅÃ»ÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù." << endl;
             unsigned long long studentKey = member->getPrimaryKey();
 
-            // ì¶”ê°€í•˜ë ¤ëŠ” ê°•ì˜ì˜ "ìˆ˜ê°•ì ìˆ˜" ë¥¼ ì¦ê°€ ì‹œí‚´
+            // Ãß°¡ÇÏ·Á´Â °­ÀÇÀÇ "¼ö°­ÀÚ ¼ö" ¸¦ Áõ°¡ ½ÃÅ´
             int temp = lecture->getEnrolledStudentsCount();
             temp++;
-            // ê°•ì˜ dataì— ìˆ˜ê°•ì ìˆ˜ ì ìš©
+            // °­ÀÇ data¿¡ ¼ö°­ÀÚ ¼ö Àû¿ë
             lecture->setEnrolledStudentsCount(temp);
 
-            // í•™ìƒ í‚¤ë¡œ map ì—ì„œ vector ì°¾ê¸°
+            // ÇĞ»ı Å°·Î map ¿¡¼­ vector Ã£±â
             auto it = this->studentLectureList.find(studentKey);
             if (it != this->studentLectureList.end()) {
-                // í•™ìƒì´ ì´ë¯¸ ì¡´ì¬í•  ë•Œ í•´ë‹¹ í•™ìƒ ê°•ì˜ ë¦¬ìŠ¤íŠ¸ì— ìƒˆ ê°•ì˜ ì¶”ê°€
+                // ÇĞ»ıÀÌ ÀÌ¹Ì Á¸ÀçÇÒ ¶§ ÇØ´ç ÇĞ»ı °­ÀÇ ¸®½ºÆ®¿¡ »õ °­ÀÇ Ãß°¡
                 it->second.push_back(lecture);
             }
             else {
-                // í•™ìƒì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´, ìƒˆë¡œìš´ ì—”íŠ¸ë¦¬ ìƒì„± (ìƒˆë¡œìš´ ë²¡í„°ë¥¼ ë§Œë“¤ê³  ê°•ì˜ ì¶”ê°€)
+                // ÇĞ»ıÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é, »õ·Î¿î ¿£Æ®¸® »ı¼º (»õ·Î¿î º¤ÅÍ¸¦ ¸¸µé°í °­ÀÇ Ãß°¡)
                 this->studentLectureList.insert({ studentKey, {lecture} });
             }
-            
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+
+            cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
         else if (is_duplication == true) {
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+            cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
     }
@@ -215,31 +215,31 @@ void EnrollManager::searchAndStudentEnrollLecture() {
 }
 
 bool EnrollManager::isDuplicationOrSizeCheckStudentEnrollLecture(Member* member, Lecture* lecture) {
-    // ì»¨í…Œì´ë„ˆ ê°ì²´ 'ëŒ•ê¸€ë§ í¬ì¸í„°' ì´ìŠˆ ë°©ì§€ë¡œ ì°¸ì¡° ê°’ ë³€ìˆ˜ í• ë‹¹
+    // ÄÁÅ×ÀÌ³Ê °´Ã¼ '´ó±Û¸µ Æ÷ÀÎÅÍ' ÀÌ½´ ¹æÁö·Î ÂüÁ¶ °ª º¯¼ö ÇÒ´ç
     map<unsigned long long, vector<Lecture*>>& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
 
-    // 1. ë¨¼ì € í•™ìƒ key ë¡œ Map ì—ì„œ ê²€ìƒ‰
+    // 1. ¸ÕÀú ÇĞ»ı key ·Î Map ¿¡¼­ °Ë»ö
     auto it = studentLectureList.find(member->getPrimaryKey());
 
     if (it != studentLectureList.end()) {
-        // 2. í•™ìƒì„ ì°¾ì•˜ë‹¤ë©´ í•´ë‹¹ í•™ìƒì˜ ê°•ì˜ ë¦¬ìŠ¤íŠ¸(std::vector<Lecture*>)ë¥¼ ê°€ì ¸ì˜´
+        // 2. ÇĞ»ıÀ» Ã£¾Ò´Ù¸é ÇØ´ç ÇĞ»ıÀÇ °­ÀÇ ¸®½ºÆ®(std::vector<Lecture*>)¸¦ °¡Á®¿È
         const vector<Lecture*>& lecturesOfStudent = it->second;
 
-        // 3. (í•™ìƒì´ ìˆ˜ê°•í•˜ëŠ” ê°•ì˜ ê°¯ìˆ˜ê°€ 9ê°œ ì´ˆê³¼ì¸ì§€ ì²´í¬)
+        // 3. (ÇĞ»ıÀÌ ¼ö°­ÇÏ´Â °­ÀÇ °¹¼ö°¡ 9°³ ÃÊ°úÀÎÁö Ã¼Å©)
         if (lecturesOfStudent.size() >= 9) {
-            cout << "ìµœëŒ€ ìˆ˜ê°• ì‹ ì²­í•œ ê°•ì˜ëŠ” 9ê°œ ì…ë‹ˆë‹¤." << endl;
-            return true; // ì´ˆê³¼ ì‹œ ë” ì´ìƒ ìˆ˜ê°•í•  ìˆ˜ ì—†ìŒ.
+            cout << "ÃÖ´ë ¼ö°­ ½ÅÃ»ÇÑ °­ÀÇ´Â 9°³ ÀÔ´Ï´Ù." << endl;
+            return true; // ÃÊ°ú ½Ã ´õ ÀÌ»ó ¼ö°­ÇÒ ¼ö ¾øÀ½.
         }
 
-        // 4. ì´ ë¦¬ìŠ¤íŠ¸ ë‚´ì—ì„œ í˜„ì¬ ê°•ì˜ê°€ ì´ë¯¸ ìˆëŠ”ì§€ ìˆœíšŒë¡œ ì²´í¬
+        // 4. ÀÌ ¸®½ºÆ® ³»¿¡¼­ ÇöÀç °­ÀÇ°¡ ÀÌ¹Ì ÀÖ´ÂÁö ¼øÈ¸·Î Ã¼Å©
         for (const auto& i : lecturesOfStudent) {
             if (i && i->getPrimaryKey() == lecture->getPrimaryKey()) {
-                cout << "ì´ë¯¸ ìˆ˜ê°• ì‹ ì²­í•œ ê°•ì˜ì…ë‹ˆë‹¤." << endl;
-                return true; // ì¤‘ë³µ ë°œê²¬
+                cout << "ÀÌ¹Ì ¼ö°­ ½ÅÃ»ÇÑ °­ÀÇÀÔ´Ï´Ù." << endl;
+                return true; // Áßº¹ ¹ß°ß
             }
         }
     }
-    return false; // ì¤‘ë³µ ì•„ë‹˜
+    return false; // Áßº¹ ¾Æ´Ô
 }
 
 void EnrollManager::instructorEnrollLecture() {
@@ -247,22 +247,22 @@ void EnrollManager::instructorEnrollLecture() {
 
     lecture = program_interface->getLectureManager().inputLecture();
     if (lecture != nullptr) {
-        cout << "ê°•ì˜ ë“±ë¡ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
+        cout << "°­ÀÇ µî·ÏÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù." << endl;
         Member* member = program_interface->getSessionManager().getLoginUser();
         this->instructorLectureList.insert({ member->getPrimaryKey() , {lecture} });
-        cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     else {
-        cout << "ê°•ì˜ê°€ ì •ìƒì ìœ¼ë¡œ ìƒì„±ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤." << endl;
-        cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+        cout << "°­ÀÇ°¡ Á¤»óÀûÀ¸·Î »ı¼ºµÇÁö ¾Ê¾Ò½À´Ï´Ù." << endl;
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     return;
 }
 
 string EnrollManager::makeWelcomeText() {
-    string welcomeText = "ë‹˜ ì•ˆë…•í•˜ì„¸ìš”. ì§€ê¸ˆ ìƒˆ ê°•ì˜ë¥¼ ìˆ˜ê°•ì‹ ì²­í•´ë³´ì„¸ìš” !";
+    string welcomeText = "´Ô ¾È³çÇÏ¼¼¿ä. Áö±İ »õ °­ÀÇ¸¦ ¼ö°­½ÅÃ»ÇØº¸¼¼¿ä !";
     unsigned long long myPrimaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
     map<unsigned long long, vector<Lecture*>>& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
     bool is_own = false;
@@ -273,15 +273,15 @@ string EnrollManager::makeWelcomeText() {
         }
     }
     if (is_own) {
-        welcomeText = "ë‹˜ ì•ˆë…•í•˜ì„¸ìš”. í˜„ì¬ ìˆ˜ê°•ì¤‘ì¸ ê°•ì˜ê°€ ìˆì–´ìš” !";
+        welcomeText = "´Ô ¾È³çÇÏ¼¼¿ä. ÇöÀç ¼ö°­ÁßÀÎ °­ÀÇ°¡ ÀÖ¾î¿ä !";
     }
     return welcomeText;
 }
 
-// í•™ìƒì´ ìˆ˜ê°•í•˜ëŠ” íŠ¹ì • í•œ ê°•ì˜ ì°¾ê¸°
+// ÇĞ»ıÀÌ ¼ö°­ÇÏ´Â Æ¯Á¤ ÇÑ °­ÀÇ Ã£±â
 Lecture* EnrollManager::findStudentLectureFromList(Lecture* lecture) {
     if (program_interface->getSessionManager().getIs_login() == true) {
-        // ì»¨í…Œì´ë„ˆ ê°ì²´ ë°˜í™˜ë°›ì„ ë•Œ ì„ì‹œ ê°ì²´ ì´ìŠˆë¡œ ëŒ•ê¸€ë§ í¬ì¸í„°ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì°¸ì¡° ê°’ ë°›ê¸°
+        // ÄÁÅ×ÀÌ³Ê °´Ã¼ ¹İÈ¯¹ŞÀ» ¶§ ÀÓ½Ã °´Ã¼ ÀÌ½´·Î ´ó±Û¸µ Æ÷ÀÎÅÍµÉ ¼ö ÀÖÀ¸¹Ç·Î ÂüÁ¶ °ª ¹Ş±â
         map<unsigned long long, vector<Lecture*>>& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
         for (const auto& i : studentLectureList) {
             if (i.first == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
@@ -295,10 +295,10 @@ Lecture* EnrollManager::findStudentLectureFromList(Lecture* lecture) {
     }
     return nullptr;
 }
-// ê°•ì‚¬ê°€ ì§„í–‰í•˜ëŠ” íŠ¹ì • í•œ ê°•ì˜ ì°¾ê¸°
+// °­»ç°¡ ÁøÇàÇÏ´Â Æ¯Á¤ ÇÑ °­ÀÇ Ã£±â
 Lecture* EnrollManager::findInstructorLectureFromList(Lecture* lecture) {
     if (program_interface->getSessionManager().getIs_login() == true) {
-        // ì»¨í…Œì´ë„ˆ ê°ì²´ ë°˜í™˜ë°›ì„ ë•Œ ì„ì‹œ ê°ì²´ ì´ìŠˆë¡œ ëŒ•ê¸€ë§ í¬ì¸í„°ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì°¸ì¡° ê°’ ë°›ê¸°
+        // ÄÁÅ×ÀÌ³Ê °´Ã¼ ¹İÈ¯¹ŞÀ» ¶§ ÀÓ½Ã °´Ã¼ ÀÌ½´·Î ´ó±Û¸µ Æ÷ÀÎÅÍµÉ ¼ö ÀÖÀ¸¹Ç·Î ÂüÁ¶ °ª ¹Ş±â
         map<unsigned long long, vector<Lecture*>>& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
         for (const auto& i : instructorLectureList) {
             if (i.first == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
@@ -312,10 +312,10 @@ Lecture* EnrollManager::findInstructorLectureFromList(Lecture* lecture) {
     }
     return nullptr;
 }
-// íŠ¹ì • í•™ìƒì´ ìˆ˜ê°•í•˜ëŠ” ëª¨ë“  ê°•ì˜ ì°¾ê¸°
+// Æ¯Á¤ ÇĞ»ıÀÌ ¼ö°­ÇÏ´Â ¸ğµç °­ÀÇ Ã£±â
 vector<Lecture*>& EnrollManager::findStudentLectureAllList(unsigned long long primaryKey) {
     if (program_interface->getSessionManager().getIs_login() == true) {
-        // ì»¨í…Œì´ë„ˆ ê°ì²´ ë°˜í™˜ë°›ì„ ë•Œ ì„ì‹œ ê°ì²´ ì´ìŠˆë¡œ ëŒ•ê¸€ë§ í¬ì¸í„°ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì°¸ì¡° ê°’ ë°›ê¸°
+        // ÄÁÅ×ÀÌ³Ê °´Ã¼ ¹İÈ¯¹ŞÀ» ¶§ ÀÓ½Ã °´Ã¼ ÀÌ½´·Î ´ó±Û¸µ Æ÷ÀÎÅÍµÉ ¼ö ÀÖÀ¸¹Ç·Î ÂüÁ¶ °ª ¹Ş±â
         map<unsigned long long, vector<Lecture*>>& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
         auto it = studentLectureList.find(primaryKey);
         if (it != studentLectureList.end()) {
@@ -325,10 +325,10 @@ vector<Lecture*>& EnrollManager::findStudentLectureAllList(unsigned long long pr
     static vector<Lecture*> emptyLectureList;
     return emptyLectureList;
 }
-// íŠ¹ì • ê°•ì‚¬ê°€ ì§„í–‰í•˜ëŠ” ëª¨ë“  ê°•ì˜ ì°¾ê¸°
+// Æ¯Á¤ °­»ç°¡ ÁøÇàÇÏ´Â ¸ğµç °­ÀÇ Ã£±â
 vector<Lecture*>& EnrollManager::findInstructorLectureAllList(unsigned long long primaryKey) {
     if (program_interface->getSessionManager().getIs_login() == true) {
-        // ì»¨í…Œì´ë„ˆ ê°ì²´ ë°˜í™˜ë°›ì„ ë•Œ ì„ì‹œ ê°ì²´ ì´ìŠˆë¡œ ëŒ•ê¸€ë§ í¬ì¸í„°ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì°¸ì¡° ê°’ ë°›ê¸°
+        // ÄÁÅ×ÀÌ³Ê °´Ã¼ ¹İÈ¯¹ŞÀ» ¶§ ÀÓ½Ã °´Ã¼ ÀÌ½´·Î ´ó±Û¸µ Æ÷ÀÎÅÍµÉ ¼ö ÀÖÀ¸¹Ç·Î ÂüÁ¶ °ª ¹Ş±â
         map<unsigned long long, vector<Lecture*>>& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
         auto it = instructorLectureList.find(primaryKey);
         if (it != instructorLectureList.end()) {
@@ -340,10 +340,10 @@ vector<Lecture*>& EnrollManager::findInstructorLectureAllList(unsigned long long
 }
 
 
-// ì»¨í…Œì´ë„ˆ ê°ì²´ì˜ ê²½ìš° íŠ¹ì • ë³€ìˆ˜ì— ê°’ì„ í•¨ìˆ˜ì—ì„œ ë°˜í™˜ì„ í†µí•´ í• ë‹¹í–ˆì„ ë•Œ,
-// "ì„ì‹œ ê°ì²´" ê°€ ìƒì„±ë˜ê³  ë°˜í™˜ ì§í›„ ; ì„ ë§Œë‚˜ ë¬¸ì¥ì´ ëë‚˜ë©´ ì„ì‹œ ì»¨í…Œì´ë„ˆ ê°ì²´ê°€ ì†Œë©¸ë¨.
-// => "ëŒ•ê¸€ë§ í¬ì¸í„°" ì´ìŠˆ ë°œìƒ!!
-// * í•´ê²° : ì»¨í…Œì´ë„ˆ ê°ì²´ë¥¼ ë³€ìˆ˜ì— í• ë‹¹í•˜ì—¬ ë°˜í™˜í•  ë•Œ, "ë³µì‚¬í•˜ì§€ ì•Šê³ " "ì°¸ì¡°" ê°’ì„ ë°˜í™˜í•œë‹¤.
+// ÄÁÅ×ÀÌ³Ê °´Ã¼ÀÇ °æ¿ì Æ¯Á¤ º¯¼ö¿¡ °ªÀ» ÇÔ¼ö¿¡¼­ ¹İÈ¯À» ÅëÇØ ÇÒ´çÇßÀ» ¶§,
+// "ÀÓ½Ã °´Ã¼" °¡ »ı¼ºµÇ°í ¹İÈ¯ Á÷ÈÄ ; À» ¸¸³ª ¹®ÀåÀÌ ³¡³ª¸é ÀÓ½Ã ÄÁÅ×ÀÌ³Ê °´Ã¼°¡ ¼Ò¸êµÊ.
+// => "´ó±Û¸µ Æ÷ÀÎÅÍ" ÀÌ½´ ¹ß»ı!!
+// * ÇØ°á : ÄÁÅ×ÀÌ³Ê °´Ã¼¸¦ º¯¼ö¿¡ ÇÒ´çÇÏ¿© ¹İÈ¯ÇÒ ¶§, "º¹»çÇÏÁö ¾Ê°í" "ÂüÁ¶" °ªÀ» ¹İÈ¯ÇÑ´Ù.
 map<unsigned long long, vector<Lecture*>>& EnrollManager::getStudentLectureList() {
     return this->studentLectureList;
 }

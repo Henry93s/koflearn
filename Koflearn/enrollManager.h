@@ -11,35 +11,35 @@ using namespace std;
 
 class EnrollManager {
 private:
-	// Manager ê°€ ì¸í„°í˜ì´ìŠ¤ì— ì˜ì¡´í•˜ë„ë¡ ì¸í„°í˜ì´ìŠ¤ í¬ì¸í„° ì„ ì–¸
+	// Manager °¡ ÀÎÅÍÆäÀÌ½º¿¡ ÀÇÁ¸ÇÏµµ·Ï ÀÎÅÍÆäÀÌ½º Æ÷ÀÎÅÍ ¼±¾ğ
 	IKoflearnPlatManager* program_interface;
 
 private:
 	/*
-		std ì»¨í…Œì´ë„ˆì˜ keyê°€ í¬ì¸í„° íƒ€ì…ì¸ ê²½ìš°, 
-		ë§µì€ í¬ì¸í„°ê°€ ê°€ë¦¬í‚¤ëŠ” ê°ì²´ì˜ ë‚´ìš©ì´ ì•„ë‹ˆë¼ í¬ì¸í„° ì£¼ì†Œ ê°’ìœ¼ë¡œ ê²€ìƒ‰í•˜ì—¬
-		ì˜ë„í•˜ì§€ ì•Šì€ ë°˜í™˜ ê°’ì´ë‚˜ ì—ëŸ¬ ë°œìƒ ìœ„í—˜ ìˆìŒ
-		-> í‚¤ë¥¼ í´ë˜ìŠ¤ ê°ì²´ í¬ì¸í„° ë¡œ ì“°ëŠ” ëª¨ë“  ë§µ(2ê°œ) ë“¤ì„ <unsigned long long, Lecture*> ë¡œ ë³€ê²½
-			(ì•ìª½ unsigned long long ì—ëŠ” member ì˜ primarykey ê°€ ë“¤ì–´ê°)
+		std ÄÁÅ×ÀÌ³ÊÀÇ key°¡ Æ÷ÀÎÅÍ Å¸ÀÔÀÎ °æ¿ì,
+		¸ÊÀº Æ÷ÀÎÅÍ°¡ °¡¸®Å°´Â °´Ã¼ÀÇ ³»¿ëÀÌ ¾Æ´Ï¶ó Æ÷ÀÎÅÍ ÁÖ¼Ò °ªÀ¸·Î °Ë»öÇÏ¿©
+		ÀÇµµÇÏÁö ¾ÊÀº ¹İÈ¯ °ªÀÌ³ª ¿¡·¯ ¹ß»ı À§Çè ÀÖÀ½
+		-> Å°¸¦ Å¬·¡½º °´Ã¼ Æ÷ÀÎÅÍ ·Î ¾²´Â ¸ğµç ¸Ê(2°³) µéÀ» <unsigned long long, Lecture*> ·Î º¯°æ
+			(¾ÕÂÊ unsigned long long ¿¡´Â member ÀÇ primarykey °¡ µé¾î°¨)
 	*/
 	map<unsigned long long, vector<Lecture*>> studentLectureList;
 	map<unsigned long long, vector<Lecture*>> instructorLectureList;
 
 public:
-	// ìƒì„±ìì—ì„œ ì¸í„°í˜ì´ìŠ¤ íƒ€ì… ì˜ì¡´ì„±ì„ ì£¼ì…ë°›ìŒ
+	// »ı¼ºÀÚ¿¡¼­ ÀÎÅÍÆäÀÌ½º Å¸ÀÔ ÀÇÁ¸¼ºÀ» ÁÖÀÔ¹ŞÀ½
 	EnrollManager(IKoflearnPlatManager* program);
 	~EnrollManager();
 
 	void searchAndStudentEnrollLecture();
 	void instructorEnrollLecture();
 	bool isDuplicationOrSizeCheckStudentEnrollLecture(Member* member, Lecture* lecture);
-	// í•™ìƒì´ ìˆ˜ê°•í•˜ëŠ” íŠ¹ì • í•œ ê°•ì˜ ì°¾ê¸°
+	// ÇĞ»ıÀÌ ¼ö°­ÇÏ´Â Æ¯Á¤ ÇÑ °­ÀÇ Ã£±â
 	Lecture* findStudentLectureFromList(Lecture* lecture);
-	// ê°•ì‚¬ê°€ ì§„í–‰í•˜ëŠ” íŠ¹ì • í•œ ê°•ì˜ ì°¾ê¸°
+	// °­»ç°¡ ÁøÇàÇÏ´Â Æ¯Á¤ ÇÑ °­ÀÇ Ã£±â
 	Lecture* findInstructorLectureFromList(Lecture* lecture);
-	// í•™ìƒì´ ìˆ˜ê°•í•˜ëŠ” ëª¨ë“  ê°•ì˜ ì°¾ê¸°
+	// ÇĞ»ıÀÌ ¼ö°­ÇÏ´Â ¸ğµç °­ÀÇ Ã£±â
 	vector<Lecture*>& findStudentLectureAllList(unsigned long long primaryKey);
-	// ê°•ì‚¬ê°€ ì§„í–‰í•˜ëŠ” ëª¨ë“  ê°•ì˜ ì°¾ê¸°
+	// °­»ç°¡ ÁøÇàÇÏ´Â ¸ğµç °­ÀÇ Ã£±â
 	vector<Lecture*>& findInstructorLectureAllList(unsigned long long primaryKey);
 
 	string makeWelcomeText();
@@ -47,14 +47,14 @@ public:
 	vector<string> parseCSV(istream&, char);
 
 	// 1.
-	// ì»¨í…Œì´ë„ˆ ê°ì²´ì˜ ê²½ìš° íŠ¹ì • ë³€ìˆ˜ì— ê°’ì„ í•¨ìˆ˜ì—ì„œ ë°˜í™˜ì„ í†µí•´ í• ë‹¹í–ˆì„ ë•Œ,
-	// "ì„ì‹œ ê°ì²´" ê°€ ìƒì„±ë˜ê³  ë°˜í™˜ ì§í›„ ; ì„ ë§Œë‚˜ ë¬¸ì¥ì´ ëë‚˜ë©´ ì„ì‹œ ì»¨í…Œì´ë„ˆ ê°ì²´ê°€ ì†Œë©¸ë¨.
-	// => "ëŒ•ê¸€ë§ í¬ì¸í„°" ì´ìŠˆ ë°œìƒ!!
-	// * í•´ê²° : ì»¨í…Œì´ë„ˆ ê°ì²´ë¥¼ ë³€ìˆ˜ì— í• ë‹¹í•˜ì—¬ ë°˜í™˜í•  ë•Œ, "ë³µì‚¬í•˜ì§€ ì•Šê³ " "ì°¸ì¡°" ê°’ì„ ë°˜í™˜í•œë‹¤.
-	// 2. stl ì»¨í…Œì´ë„ˆ ì‚¬ìš© ì—ëŸ¬ : map<unsigned long long, Lecture*> í˜•íƒœì¼ ê²½ìš°
+	// ÄÁÅ×ÀÌ³Ê °´Ã¼ÀÇ °æ¿ì Æ¯Á¤ º¯¼ö¿¡ °ªÀ» ÇÔ¼ö¿¡¼­ ¹İÈ¯À» ÅëÇØ ÇÒ´çÇßÀ» ¶§,
+	// "ÀÓ½Ã °´Ã¼" °¡ »ı¼ºµÇ°í ¹İÈ¯ Á÷ÈÄ ; À» ¸¸³ª ¹®ÀåÀÌ ³¡³ª¸é ÀÓ½Ã ÄÁÅ×ÀÌ³Ê °´Ã¼°¡ ¼Ò¸êµÊ.
+	// => "´ó±Û¸µ Æ÷ÀÎÅÍ" ÀÌ½´ ¹ß»ı!!
+	// * ÇØ°á : ÄÁÅ×ÀÌ³Ê °´Ã¼¸¦ º¯¼ö¿¡ ÇÒ´çÇÏ¿© ¹İÈ¯ÇÒ ¶§, "º¹»çÇÏÁö ¾Ê°í" "ÂüÁ¶" °ªÀ» ¹İÈ¯ÇÑ´Ù.
+	// 2. stl ÄÁÅ×ÀÌ³Ê »ç¿ë ¿¡·¯ : map<unsigned long long, Lecture*> ÇüÅÂÀÏ °æ¿ì
 	/*
-		í•œ í•™ìƒì€ í•˜ë‚˜ì˜ ê°•ì˜ ë°–ì— ìˆ˜ê°•í•˜ì§€ ëª»í•¨ : í•œ key ëŠ” ê³ ìœ í•˜ê¸° ë•Œë¬¸ì— ì¤‘ë³µí•´ì„œ 
-		ê°™ì€ key ë¥¼ ì‚½ì…í•  ìˆ˜ ì—†ìŒ. ì´í›„ key ë¥¼ ì‚½ì…í•˜ë ¤ í•  ë•ŒëŠ” key, value ì‚½ì… ìì²´ê°€ ë¬´ì‹œë¨.
+		ÇÑ ÇĞ»ıÀº ÇÏ³ªÀÇ °­ÀÇ ¹Û¿¡ ¼ö°­ÇÏÁö ¸øÇÔ : ÇÑ key ´Â °íÀ¯ÇÏ±â ¶§¹®¿¡ Áßº¹ÇØ¼­
+		°°Àº key ¸¦ »ğÀÔÇÒ ¼ö ¾øÀ½. ÀÌÈÄ key ¸¦ »ğÀÔÇÏ·Á ÇÒ ¶§´Â key, value »ğÀÔ ÀÚÃ¼°¡ ¹«½ÃµÊ.
 	*/
 	map<unsigned long long, vector<Lecture*>>& getStudentLectureList();
 	map<unsigned long long, vector<Lecture*>>& getInstructorLectureList();

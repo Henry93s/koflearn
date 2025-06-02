@@ -4,15 +4,16 @@
 #include <iomanip>
 using namespace std;
 
-// lecutre ìžì‹ í´ëž˜ìŠ¤ ìƒì„±ìžì—ì„œ ë¶€ëª¨ í´ëž˜ìŠ¤ ìƒì„±ìž í¬í•¨
+// lecutre ÀÚ½Ä Å¬·¡½º »ý¼ºÀÚ¿¡¼­ ºÎ¸ð Å¬·¡½º »ý¼ºÀÚ Æ÷ÇÔ
 Lecture::Lecture(unsigned long long primaryKey, string lectureTitle, string instructorName
 	, int price, int enrolledStudentsCount, int durationHours, string difficultyLevel)
-	: KoflearnPlatform(primaryKey), lectureTitle(lectureTitle),instructorName(instructorName)
+	: KoflearnPlatform(primaryKey), lectureTitle(lectureTitle), instructorName(instructorName)
 	, price(price), enrolledStudentsCount(enrolledStudentsCount), durationHours(durationHours)
 	, difficultyLevel(difficultyLevel)
-{}
+{
+}
 
-// getter í•¨ìˆ˜ êµ¬í˜„
+// getter ÇÔ¼ö ±¸Çö
 string Lecture::getLectureTitle() {
 	return this->lectureTitle;
 }
@@ -38,13 +39,13 @@ void Lecture::displayInfo() {
 	cout << setw(12) << setfill(' ') << this->instructorName << "| ";
 	cout << setw(10) << setfill(' ') << this->price << "  | ";
 	cout << setw(10) << setfill(' ') << this->enrolledStudentsCount << "   | ";
-	cout << setw(10) << setfill(' ') << this->durationHours  << "| ";
+	cout << setw(10) << setfill(' ') << this->durationHours << "| ";
 	cout << setw(8) << setfill(' ') << this->difficultyLevel << "   | ";
 	cout << endl;
 }
 
 
-// setter í•¨ìˆ˜ êµ¬í˜„
+// setter ÇÔ¼ö ±¸Çö
 void Lecture::setLectureTitle(string lectureTitle) {
 	this->lectureTitle = lectureTitle;
 }
@@ -55,8 +56,8 @@ void Lecture::setPrice(int price) {
 	this->price = price;
 }
 void Lecture::setEnrolledStudentsCount(int enrolledStudentCount) {
-	// ë‘ ê°’ ì¤‘ í° ê°’ìœ¼ë¡œ ì²˜ë¦¬ë¨. ì¦‰ ì™¸ë¶€ì—ì„œ ìŒìˆ˜ë¡œ ì²˜ë¦¬ëœ ê°’ì´ ì™€ë„ ìµœì†Œ 0ì€ ë³´ìž¥í•¨.
-	this->enrolledStudentsCount = max(0, enrolledStudentCount);  // ìŒìˆ˜ ë°©ì§€
+	// µÎ °ª Áß Å« °ªÀ¸·Î Ã³¸®µÊ. Áï ¿ÜºÎ¿¡¼­ À½¼ö·Î Ã³¸®µÈ °ªÀÌ ¿Íµµ ÃÖ¼Ò 0Àº º¸ÀåÇÔ.
+	this->enrolledStudentsCount = max(0, enrolledStudentCount);  // À½¼ö ¹æÁö
 }
 void Lecture::setDurationHours(int durationHours) {
 	this->durationHours = durationHours;
