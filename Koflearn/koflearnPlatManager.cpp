@@ -40,6 +40,7 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
     int ch;
     bool isContinue = true;
     Lecture* lecture = nullptr;
+    bool isDisplay = false;
 
     while (isContinue == true) {
         cout << "\033[2J\033[1;1H";
@@ -104,8 +105,13 @@ void KoflearnPlatManager::displayMenu(IKoflearnPlatManager* program) {
             break;
         case 2:
             if (program->getSessionManager().getIs_login() == true) {
-                program->getLectureManager().displayAllLecture();
-                program->getEnrollManager().searchAndStudentEnrollLecture();
+                // displayAllLecture 처음 조회 시 최대 50 개의 강의만 출력됨
+                // 이후 조회는 검색을 통해 진행해야함
+                isDisplay = program->getLectureManager().displayAllLecture();
+                // 전체 강의가 한 개라도 있을 때만 search Lecture 단계로 진행된다.
+                if (isDisplay == true) {
+                    program->getEnrollManager().searchAndStudentEnrollLecture();
+                }
             }
             else {
                 cout << "로그인 후 강의 조회 및 신청이 가능합니다." << endl;

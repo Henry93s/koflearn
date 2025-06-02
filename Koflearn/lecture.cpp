@@ -40,7 +40,7 @@ void Lecture::displayInfo() {
 	cout << setw(10) << setfill(' ') << this->price << "  | ";
 	cout << setw(10) << setfill(' ') << this->enrolledStudentsCount << "   | ";
 	cout << setw(10) << setfill(' ') << this->durationHours << "| ";
-	cout << setw(8) << setfill(' ') << this->difficultyLevel << "   | ";
+	cout << setw(6) << setfill(' ') << this->difficultyLevel << "   | ";
 	cout << endl;
 }
 

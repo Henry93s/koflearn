@@ -23,7 +23,8 @@ public:
 	void deleteLecture(unsigned long long key);
 	void modifyLecture(unsigned long long key);
 	Lecture* searchLecture(unsigned long long key);
-	void displayAllLecture() const;
+	bool displayAllLecture() const;
+	bool searchLectureList(string text);
 
 	unsigned long long makePrimaryKey();
 	vector<string> parseCSV(istream&, char);

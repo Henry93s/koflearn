@@ -157,60 +157,114 @@ vector<string> EnrollManager::parseCSV(istream& file, char delimiter)
 }
 
 void EnrollManager::searchAndStudentEnrollLecture() {
-    unsigned long long privateKey = 0;
+    string text = "";
+    unsigned long long primaryKey = 0;
     Lecture* lecture = nullptr;
-    map<unsigned long long, Lecture*>& lectureList = program_interface->getLectureManager().getLectureList();
+    bool is_size = false;
+    map<unsigned long long, Lecture*>& searchLectureList = program_interface->getLectureManager().getLectureList();
 
-    if (!lectureList.empty()) {
-        cout << "수강할 강의 privateKey 를 입력하세요 : ";
-        cout << "('-1' : 취소)" << endl;
-        cin >> privateKey;
-        if (privateKey == -1) { return; }
+    bool isContinue = true;
+    bool isTwice = false;
+    int ch;
+    while (isContinue == true) {
+        // isTwice : 해당 메소드 실행 전 displayAllLecture 에서 조회되는 항목들이 처음에 출력
+        //           먼저되고 나서부터 콘솔 text 클리어 처리해야함.
+        if (isTwice == true) {
+            cout << "\033[2J\033[1;1H";
+        }
+        cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
+        cout << "          Koflearn Search and Enroll                 " << endl;
+        cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
+        cout << " 강의 조회 메인 화면에서는 최대 20개의 강의만 조회됩니다. " << endl;
+        cout << "  [ 특정 강의 확인은 검색 기능을 활용하세요. ] " << endl;
+        cout << "  1. 강의 검색하기" << endl;
+        cout << "  2. 메인 메뉴로 돌아가기" << endl;
+        cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
+        cout << " 기능을 선택하세요 : ";
+        cin >> ch;
+
+        // 메뉴에서 숫자 명령어를 받으려고 할 때 영문자 등을 입력했을 때 
+        // 무한 깜빡임 현상 해결
+        if (cin.fail()) {
+            cout << "잘못된 입력입니다. 숫자를 입력해주세요." << endl;
+            // 스트림의 오류 상태를 초기화
+            cin.clear();
+            cout << "[Enter] 를 눌러 뒤로가기" << endl;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+        // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    }
+        isTwice = true;
 
-    lecture = program_interface->getLectureManager().searchLecture(privateKey);
-    if (lecture == nullptr) {
-        cout << "조회된 강의가 없습니다." << endl;
-        cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        return;
-    }
-    else {
-        bool is_duplication = false;
-        Member* member = program_interface->getSessionManager().getLoginUser();
-        is_duplication = this->isDuplicationOrSizeCheckStudentEnrollLecture(member, lecture);
+        switch (ch)
+        {
+        case 1: 
+            // 수강할 강의 조회 text 를 입력받고 출력 처리
+            cout << endl;
+            cout << "'primaryKey' 또는 '강의명' 또는 '강사 이름' 을 입력하세요" << endl;
+            cout << "primaryKey 조회는 정확히 일치해야하며, '강의명' 또는 '강사 이름' 은 부분 조회가 가능합니다." << endl;
+            cout << endl;
+            cout << "검색 : ";
+            getline(cin, text, '\n');
+            // 조회된 강의가 있을 땐 true, 없을 땐 false 반환처리
+            is_size = program_interface->getLectureManager().searchLectureList(text);
 
-        if (is_duplication == false) {
-            cout << "수강 신청이 완료되었습니다." << endl;
-            unsigned long long studentKey = member->getPrimaryKey();
-
-            // 추가하려는 강의의 "수강자 수" 를 증가 시킴
-            int temp = lecture->getEnrolledStudentsCount();
-            temp++;
-            // 강의 data에 수강자 수 적용
-            lecture->setEnrolledStudentsCount(temp);
-
-            // 학생 키로 map 에서 vector 찾기
-            auto it = this->studentLectureList.find(studentKey);
-            if (it != this->studentLectureList.end()) {
-                // 학생이 이미 존재할 때 해당 학생 강의 리스트에 새 강의 추가
-                it->second.push_back(lecture);
+            if (is_size == false) {
+                cout << "조회된 강의가 없습니다." << endl;
+                cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             else {
-                // 학생이 존재하지 않으면, 새로운 엔트리 생성 (새로운 벡터를 만들고 강의 추가)
-                this->studentLectureList.insert({ studentKey, {lecture} });
-            }
+                cout << "조회된 강의 중 수강할 강의 의 privateKey 를 입력하세요 : " << endl;
+                cin >> primaryKey;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                // 수강 신청 처리
+                lecture = program_interface->getLectureManager().searchLecture(primaryKey);
+                bool is_duplication = false;
+                Member* member = program_interface->getSessionManager().getLoginUser();
+                is_duplication = this->isDuplicationOrSizeCheckStudentEnrollLecture(member, lecture);
 
-            cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        }
-        else if (is_duplication == true) {
-            cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                if (is_duplication == false) {
+                    cout << "수강 신청이 완료되었습니다." << endl;
+                    unsigned long long studentKey = member->getPrimaryKey();
+
+                    // 추가하려는 강의의 "수강자 수" 를 증가 시킴
+                    int temp = lecture->getEnrolledStudentsCount();
+                    temp++;
+                    // 강의 data에 수강자 수 적용
+                    lecture->setEnrolledStudentsCount(temp);
+
+                    // 학생 키로 map 에서 vector 찾기
+                    auto it = this->studentLectureList.find(studentKey);
+                    if (it != this->studentLectureList.end()) {
+                        // 학생이 이미 존재할 때 해당 학생 강의 리스트에 새 강의 추가
+                        it->second.push_back(lecture);
+                    }
+                    else {
+                        // 학생이 존재하지 않으면, 새로운 엔트리 생성 (새로운 벡터를 만들고 강의 추가)
+                        this->studentLectureList.insert({ studentKey, {lecture} });
+                    }
+
+                    cout << endl << "[Enter] 를 눌러 뒤로가기" << endl;
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                }
+                else if (is_duplication == true) {
+                    cout << endl << "[Enter] 를 눌러 뒤로가기" << endl;
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                }
+            }
+            break;
+        case 2:
+            isContinue = false;
+            break;
+        default:
+            break;
         }
     }
-
     return;
 }
 

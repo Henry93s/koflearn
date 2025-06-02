@@ -14,6 +14,8 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>
+#include <chrono> // 시간 관련 기능(searching cout 출력에 딜레이 부여 위함)
+#include <thread> // 스레드 관련 기능(searching cout 출력에 딜레이 부여 위함)
 using namespace std;
 
 // 생성자에서 인터페이스 타입의 의존성을 주입받음
@@ -153,20 +155,84 @@ Lecture* LectureManager::searchLecture(unsigned long long primaryKey) {
     return nullptr;
 }
 
-void LectureManager::displayAllLecture() const {
+bool LectureManager::searchLectureList(string text) {
+    bool is_size = false;
+    char* endptr;
+    unsigned long long searchKey = strtoull(text.c_str(), &endptr, 10);
+
+    cout << endl;
+    // 1. text 가 숫자엿을 경우 -> Lecture 의 primaryKey 로만 조회
+    if (*endptr == '\0' && !text.empty()) {
+        cout << "searching PrimaryKey .";
+        for (auto i = 0; i < 5;i++) {
+            cout << " .";
+            this_thread::sleep_for(chrono::milliseconds(350));
+            cout.flush(); // 버퍼에 있는 내용을 바로 화면에 뿌림으로써
+                          // 점들이 thread chrono timer 에 맞춰서 하나씩 나타나는 프로세싱 효과 부여
+        }
+        cout << endl;
+
+        // 먼저 데이터를 찾아보고 없으면 이터레이터가 end() 를 반환하는 걸 체크한다.
+        auto it = this->lectureList.find(searchKey);
+        if (it != lectureList.end()) {
+            // 출력되는 Lecture 가 있을 때 is_size = true
+            is_size = true;
+            cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+            it->second->displayInfo();
+        }
+    } // 2. text 가 문자가 하나라도 포함된 문자열이였을 경우 
+      //    -> Lecture 의 title 또는 instructorName 으로 조회
+    else {
+        cout << "searching title or instructorName .";
+        for (auto i = 0; i < 5;i++) {
+            cout << " .";
+            this_thread::sleep_for(chrono::milliseconds(350));
+            cout.flush(); // 버퍼에 있는 내용을 바로 화면에 뿌림으로써
+                          // 점들이 thread chrono timer 에 맞춰서 하나씩 나타나는 프로세싱 효과 부여
+        }
+        cout << endl;
+
+        /* 부분 문자열 찾기 메소드 적용 : find()
+           부분 문자열을 찾으면 해당 부분 문자열이 시작하는 인덱스(위치)를 반환
+           찾지 못하면 string::npos 특수 값을 반환한다.
+        */
+        for (const auto& i : lectureList) {
+            if (i.second->getLectureTitle().find(text) != string::npos
+                || i.second->getInstructorName().find(text) != string::npos) {
+                if (is_size == false) {
+                    cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+                    // 출력되는 Lecture 가 하나라도 있을 때 is_size = true
+                    is_size = true;
+                }
+                i.second->displayInfo();
+            }
+        }
+    }
+
+    return is_size;
+}
+
+bool LectureManager::displayAllLecture() const {
     if (lectureList.empty()) {
         cout << "등록된 강의가 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        return;
+        return false;
     }
 
+    cout << endl;
     cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+    int cnt = 0;
     for (const auto& lecture : lectureList) {
         lecture.second->displayInfo(); // 단순 강의 객체(Lecture()) read 책임은 Lecture 클래스에서 처리
+        cnt++;
+        // 처음 출력은 최대 50개 까지만 출력 이후 조회를 통해서 처리 가능
+        if (cnt == 50) {
+            break;
+        }
     }
     cout << endl << endl << endl;
-    return;
+    return true;
 }
 
 void LectureManager::deleteLecture(unsigned long long primaryKey) {
