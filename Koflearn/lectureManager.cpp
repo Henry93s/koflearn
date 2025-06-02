@@ -363,25 +363,28 @@ map<unsigned long long, Lecture*>& LectureManager::getLectureList() {
 
 bool LectureManager::deleteLectureProcess(unsigned long long key) {
     bool is_deleted = false;
-    string is_delete = "";
+    string deleteText = "";
 
     cout << "삭제 시 선택 강의 및 모든 수강 리스트에서 해당 강의도 모두 제거됩니다." << endl;
     cout << "정말 제거하시겠습니까?" << endl;
     cout << "제거하시려면 [Delete lecture] 의 [ ] 안 문구를 정확히 입력해주세요." << endl;
     cout << "입력 : ";
-    getline(cin, is_delete, '\n');
+    getline(cin, deleteText, '\n');
 
-    if (is_delete.compare("Delete lecture") == 0) {
+    if (deleteText.compare("Delete lecture") == 0) {
         Lecture* lecture = program_interface->getLectureManager().searchLecture(key);
-        // 삭제 대상 강의 관련 데이터 우선 제거(instructorLectureList, studentLectureList)
-        allDeletedLectureData(key);
+        
+        if (lecture != nullptr) {
+            // 삭제 대상 강의 관련 데이터 우선 제거(instructorLectureList, studentLectureList)
+            allDeletedLectureData(key);
 
-        // 삭제 대상 강의 본 데이터 제거(lectureList)
-        lectureList.erase(key);
+            // 삭제 대상 강의 본 데이터 제거(lectureList)
+            lectureList.erase(key);
 
-        cout << "강의 삭제가 정상적으로 완료되었습니다." << endl;
-        cout << "[Enter] 를 누르면 메인 페이지로 이동합니다." << endl;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "강의 삭제가 정상적으로 완료되었습니다." << endl;
+            cout << "[Enter] 를 누르면 메인 페이지로 이동합니다." << endl;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
         return true;
     }
     else {
@@ -390,13 +393,11 @@ bool LectureManager::deleteLectureProcess(unsigned long long key) {
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return false;
     }
-
-    return is_deleted;
 }
 
 void LectureManager::allDeletedLectureData(unsigned long long key) {
     unsigned long long lecturePrimaryKey = key;
-    Lecture* lecture = program_interface->getLectureManager().searchLecture(lecturePrimaryKey);
+    Lecture* lecture = this->searchLecture(lecturePrimaryKey);
     if (lecture == nullptr) {
         return;
     }
@@ -405,9 +406,13 @@ void LectureManager::allDeletedLectureData(unsigned long long key) {
     auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
 
     // 1. instructorLectureList 에서 lecture 제거
-    for (auto it = instructorLectureList.begin(); it != instructorLectureList.end(); ++it) {
+    /* LectureList 에 한 개만 있을 때 제거할 때 에러 발생
+       for 루프의 세 번째 인자에서 ++it를 제거하고, 
+       루프 본문 내에서 조건부로 이터레이터를 증가시키는 방식으로 변경
+    */
+    for (auto it = instructorLectureList.begin(); it != instructorLectureList.end(); ) {
         vector<Lecture*>& lectures = it->second;
-
+        
         for (auto vecIt = lectures.begin(); vecIt != lectures.end(); ) {
             if ((*vecIt)->getPrimaryKey() == lecturePrimaryKey) {
                 // 현재 요소를 삭제하고 list 의 다음 이터레이터를 받음
@@ -423,10 +428,17 @@ void LectureManager::allDeletedLectureData(unsigned long long key) {
         if (lectures.empty()) {
             it = instructorLectureList.erase(it);
         }
+        else {
+            ++it; // next
+        }
     }
 
     // 2. studentLectureList 에서 lecture 제거
-    for (auto it = studentLectureList.begin(); it != studentLectureList.end(); ++it) {
+    /* LectureList 에 한 개만 있을 때 제거할 때 에러 발생
+       for 루프의 세 번째 인자에서 ++it를 제거하고,
+       루프 본문 내에서 조건부로 이터레이터를 증가시키는 방식으로 변경
+    */
+    for (auto it = studentLectureList.begin(); it != studentLectureList.end(); ) {
         vector<Lecture*>& lectures = it->second;
 
         for (auto vecIt = lectures.begin(); vecIt != lectures.end();) {
@@ -443,6 +455,9 @@ void LectureManager::allDeletedLectureData(unsigned long long key) {
         // 벡터에서 lecture 를 제거함으로써 list 가 비어있다면 해당 컨테이너에서 엔트리 자체를 삭제해야한다.
         if (lectures.empty()) {
             it = studentLectureList.erase(it);
+        }
+        else {
+            ++it; // next
         }
     }
 

@@ -74,6 +74,7 @@ void MyPageManager::myInstructorLecturePrint() {
     // 코드 정리 : Instructor 가 수강하는 강의 list 를 찾는 부분은 enrollManager 클래스 책임으로 진행
     unsigned long long primaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
     vector<Lecture*>& lectureList = program_interface->getEnrollManager().findInstructorLectureAllList(primaryKey);
+    unsigned long long delete_primaryKey = 0;
 
     if (lectureList.size() == 0) {
         cout << endl;
@@ -102,16 +103,19 @@ void MyPageManager::myInstructorLecturePrint() {
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 continue;
             }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
             if (ch == 1) {
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 break;
             }
             else if (ch == 2) {
-                unsigned long long primaryKey;
                 cout << "강의 진행을 종료할 강좌의 key 를 입력하세요 : ";
-                cin >> primaryKey;
-                is_deleted = program_interface->getLectureManager().deleteLectureProcess(primaryKey);
+                cin >> delete_primaryKey;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                
+                is_deleted = program_interface->getLectureManager().deleteLectureProcess(delete_primaryKey);
                 if (is_deleted == true) {
                     break;
                 }
