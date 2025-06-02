@@ -26,6 +26,11 @@ public:
 	bool displayAllLecture() const;
 	bool searchLectureList(string text);
 
+	bool deleteLectureProcess(unsigned long long key);
+	void allDeletedLectureData(unsigned long long key);
+
+	void exitLecture(unsigned long long primaryKey);
+
 	unsigned long long makePrimaryKey();
 	vector<string> parseCSV(istream&, char);
 	void displayMenu();

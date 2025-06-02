@@ -14,9 +14,9 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>
+#include <string>
 #include <chrono> // 시간 관련 기능(searching cout 출력에 딜레이 부여 위함)
 #include <thread> // 스레드 관련 기능(searching cout 출력에 딜레이 부여 위함)
-using namespace std;
 
 // 생성자에서 인터페이스 타입의 의존성을 주입받음
 LectureManager::LectureManager(IKoflearnPlatManager* program)
@@ -180,35 +180,37 @@ bool LectureManager::searchLectureList(string text) {
             cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
             it->second->displayInfo();
         }
-    } // 2. text 가 문자가 하나라도 포함된 문자열이였을 경우 
-      //    -> Lecture 의 title 또는 instructorName 으로 조회
-    else {
-        cout << "searching title or instructorName .";
-        for (auto i = 0; i < 5;i++) {
-            cout << " .";
-            this_thread::sleep_for(chrono::milliseconds(350));
-            cout.flush(); // 버퍼에 있는 내용을 바로 화면에 뿌림으로써
-                          // 점들이 thread chrono timer 에 맞춰서 하나씩 나타나는 프로세싱 효과 부여
-        }
-        cout << endl;
+    } 
 
-        /* 부분 문자열 찾기 메소드 적용 : find()
-           부분 문자열을 찾으면 해당 부분 문자열이 시작하는 인덱스(위치)를 반환
-           찾지 못하면 string::npos 특수 값을 반환한다.
-        */
-        for (const auto& i : lectureList) {
-            if (i.second->getLectureTitle().find(text) != string::npos
-                || i.second->getInstructorName().find(text) != string::npos) {
-                if (is_size == false) {
-                    cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
-                    // 출력되는 Lecture 가 하나라도 있을 때 is_size = true
-                    is_size = true;
-                }
-                i.second->displayInfo();
+    cout << endl << endl;
+    
+    // 2. text 가 숫자이거나 문자가 하나라도 포함된 문자열이였을 경우 
+    //    -> Lecture 의 title 또는 instructorName 으로 조회
+    cout << "searching title or instructorName .";
+    for (auto i = 0; i < 5;i++) {
+        cout << " .";
+        this_thread::sleep_for(chrono::milliseconds(350));
+        cout.flush(); // 버퍼에 있는 내용을 바로 화면에 뿌림으로써
+                        // 점들이 thread chrono timer 에 맞춰서 하나씩 나타나는 프로세싱 효과 부여
+    }
+    cout << endl;
+
+    /* 부분 문자열 찾기 메소드 적용 : find()
+        부분 문자열을 찾으면 해당 부분 문자열이 시작하는 인덱스(위치)를 반환
+        찾지 못하면 string::npos 특수 값을 반환한다.
+    */
+    for (const auto& i : lectureList) {
+        if (i.second->getLectureTitle().find(text) != string::npos
+            || i.second->getInstructorName().find(text) != string::npos) {
+            if (is_size == false) {
+                cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+                // 출력되는 Lecture 가 하나라도 있을 때 is_size = true
+                is_size = true;
             }
+            i.second->displayInfo();
         }
     }
-
+    
     return is_size;
 }
 
@@ -357,23 +359,152 @@ map<unsigned long long, Lecture*>& LectureManager::getLectureList() {
     return this->lectureList;
 }
 
+bool LectureManager::deleteLectureProcess(unsigned long long key) {
+    bool is_deleted = false;
+    string is_delete = "";
+
+    cout << "삭제 시 선택 강의 및 모든 수강 리스트에서 해당 강의도 모두 제거됩니다." << endl;
+    cout << "정말 제거하시겠습니까?" << endl;
+    cout << "제거하시려면 [Delete lecture] 의 [ ] 안 문구를 정확히 입력해주세요." << endl;
+    cout << "입력 : ";
+    getline(cin, is_delete, '\n');
+
+    if (is_delete.compare("Delete lecture") == 0) {
+        Lecture* lecture = program_interface->getLectureManager().searchLecture(key);
+        // 삭제 대상 강의 관련 데이터 우선 제거(instructorLectureList, studentLectureList)
+        allDeletedLectureData(key);
+
+        // 삭제 대상 강의 본 데이터 제거(lectureList)
+        lectureList.erase(key);
+
+        cout << "강의 삭제가 정상적으로 완료되었습니다." << endl;
+        cout << "[Enter] 를 누르면 메인 페이지로 이동합니다." << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        return true;
+    }
+    else {
+        cout << "문구를 정상적으로 입력하지 않아 강의 삭제를 진행할 수 없습니다." << endl;
+        cout << "[Enter] 를 눌러 뒤로가기" << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        return false;
+    }
+
+    return is_deleted;
+}
+
+void LectureManager::allDeletedLectureData(unsigned long long key) {
+    unsigned long long lecturePrimaryKey = key;
+    Lecture* lecture = program_interface->getLectureManager().searchLecture(lecturePrimaryKey);
+    if (lecture == nullptr) {
+        return;
+    }
+
+    auto& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
+    auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
+
+    // 1. instructorLectureList 에서 lecture 제거
+    for (auto it = instructorLectureList.begin(); it != instructorLectureList.end(); ++it) {
+        vector<Lecture*>& lectures = it->second;
+
+        for (auto vecIt = lectures.begin(); vecIt != lectures.end(); ) {
+            if ((*vecIt)->getPrimaryKey() == lecturePrimaryKey) {
+                // 현재 요소를 삭제하고 list 의 다음 이터레이터를 받음
+                vecIt = lectures.erase(vecIt);
+            }
+            else {
+                // next
+                ++vecIt;
+            }
+        }
+
+        // 벡터에서 lecture 를 제거함으로써 list 가 비어있다면 해당 컨테이너에서 엔트리 자체를 삭제해야한다.
+        if (lectures.empty()) {
+            it = instructorLectureList.erase(it);
+        }
+    }
+
+    // 2. studentLectureList 에서 lecture 제거
+    for (auto it = studentLectureList.begin(); it != studentLectureList.end(); ++it) {
+        vector<Lecture*>& lectures = it->second;
+
+        for (auto vecIt = lectures.begin(); vecIt != lectures.end();) {
+            if ((*vecIt)->getPrimaryKey() == lecturePrimaryKey) {
+                // 현재 요소를 삭제하고 studentLectureList의 다음 이터레이터 받기
+                vecIt = lectures.erase(vecIt);
+            }
+            else {
+                // next
+                ++vecIt;
+            }
+        }
+
+        // 벡터에서 lecture 를 제거함으로써 list 가 비어있다면 해당 컨테이너에서 엔트리 자체를 삭제해야한다.
+        if (lectures.empty()) {
+            it = studentLectureList.erase(it);
+        }
+    }
+
+    return;
+}
+
+void LectureManager::exitLecture(unsigned long long primaryKey) {
+    Lecture* lecture = this->searchLecture(primaryKey);
+    unsigned long long myPrimaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
+    auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
+
+    // 회원의 수강 리스트(studentLectureList)에서 수강자 수 감소
+    auto it = studentLectureList.find(myPrimaryKey);
+    if (lecture && it != studentLectureList.end()) {
+        vector<Lecture*>& lectures = it->second;
+        // 벡터에서 해당 강의를 찾아 수강자 수 감소 및 제거
+        for (auto vecIt = lectures.begin(); vecIt != lectures.end(); ++vecIt) {
+            if (*vecIt && (*vecIt)->getPrimaryKey() == primaryKey) {
+                int count = (*vecIt)->getEnrolledStudentsCount();
+                (*vecIt)->setEnrolledStudentsCount(count - 1);  // 수강자 수 감소
+
+                lectures.erase(vecIt);  // 강의 벡터에서 제거
+                break;  // 하나만 삭제하고 종료(어차피 회원이 중복 강의를 수강할 수 는 없음)
+            }
+        }
+
+        // 해당 학생의 수강 목록이 비었으면 map에서도 삭제
+        if (lectures.empty()) {
+            studentLectureList.erase(it);
+        }
+
+        cout << lecture->getLectureTitle() << " 강의를 수강 종료처리하였습니다." << endl;
+        cout << "[Enter] 를 눌러 뒤로가기" << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+    else {
+        cout << "[Enter] 를 눌러 뒤로가기" << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    return;
+}
+
 void LectureManager::displayMenu()
 {
-    int ch;
-    unsigned long long key;
+    int ch, ch2;
     bool isContinue = true;
     Lecture* lecture = nullptr;
+    string text = "";
+    bool all_is_size = false;
+    bool is_size = false;
+    unsigned long long primaryKey = 0;
+    bool is_deleted = false;
 
     while (isContinue == true) {
         cout << "\033[2J\033[1;1H";
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << "          Koflearn Lecture Manager                 " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << "  1. Koflearn 강의(상품) 리스트 출력                     " << endl;
+        cout << "  1. Koflearn 강의(상품) 리스트 조회(삭제, 수정)         " << endl;
         cout << "  2. 강의 추가                            " << endl;
-        cout << "  3. 강의 삭제                           " << endl;
-        cout << "  4. 강의 수정                           " << endl;
-        cout << "  5. 메인 메뉴로 돌아가기                       " << endl;
+        cout << "  3. 메인 메뉴로 돌아가기                           " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << " 기능을 선택하세요 : ";
         cin >> ch;
@@ -394,12 +525,73 @@ void LectureManager::displayMenu()
         // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-
         switch (ch) {
-        case 1: default:
-            displayAllLecture();
-            cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        case 1:
+            cout << " 강의 조회 메인 화면에서는 최대 50개의 강의만 조회됩니다. " << endl;
+            cout << "  [ 특정 강의 확인은 검색 기능을 활용하세요. ] " << endl;
+            all_is_size = displayAllLecture();
+            if(all_is_size == true){
+                // 수정 또는 삭제할 강의 조회 text 를 입력받고 출력 처리
+                cout << endl;
+                cout << "   'primaryKey' 또는 '강의명' 또는 '강사 이름' 을 입력하세요" << endl;
+                cout << "       primaryKey 조회는 정확히 일치해야하며, '강의명' 또는 '강사 이름' 은 부분 조회가 가능합니다." << endl;
+                cout << endl;
+                cout << "-1 : 취소" << endl;
+                cout << "검색 : ";
+                getline(cin, text, '\n');
+                if (text == "-1") {
+                    continue;
+                }
+                // 조회된 강의가 있을 땐 true, 없을 땐 false 반환처리
+                is_size = program_interface->getLectureManager().searchLectureList(text);
+                if (is_size == true) {
+                    cout << "조회된 강의 중 수정 또는 삭제할 강의 의 privateKey 를 입력하세요." << endl;
+                    cout << "-1 : 취소" << endl;
+                    cout << "입력 : ";
+                    cin >> primaryKey;
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    if (primaryKey == -1) {
+                        continue;
+                    }
+                    lecture = program_interface->getLectureManager().searchLecture(primaryKey);
+                    if (lecture != nullptr) {
+                        cout << "     1. 수정 하기        " << endl;
+                        cout << "     2. 삭제 하기        " << endl;
+                        cout << "     3. 메인 메뉴로 돌아가기        " << endl;
+                        cout << "   기능을 선택하세요 : ";
+                        cin >> ch2;
+
+                        // 메뉴에서 숫자 명령어를 받으려고 할 때 영문자 등을 입력했을 때 
+                        // 무한 깜빡임 현상 해결
+                        if (cin.fail()) {
+                            cout << "잘못된 입력입니다. 숫자를 입력해주세요." << endl;
+                            // 스트림의 오류 상태를 초기화
+                            cin.clear();
+                            cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+                            // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                            continue;
+                        }
+                        // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+                        if (ch2 == 1) {
+                            program_interface->getLectureManager().modifyLecture(primaryKey);
+                        }
+                        else if (ch2 == 2) {
+                            is_deleted = deleteLectureProcess(primaryKey);
+                            isContinue = false;
+                        }
+                        else {
+                            continue;
+                        }
+                    }
+                }
+                cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
             break;
         case 2:
             lecture = inputLecture();
@@ -410,29 +602,9 @@ void LectureManager::displayMenu()
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 3:
-            displayAllLecture();
-            cout << "   멤버 primaryKey 입력 : ";
-            cin >> key;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-            deleteLecture(key);
-            cout << "강의 삭제 작업이 종료되었습니다." << endl;
-            cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            break;
-        case 4:
-            displayAllLecture();
-            cout << "   멤버 primaryKey 입력 : ";
-            cin >> key;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-            modifyLecture(key);
-            cout << "강의 수정 작업이 종료되었습니다." << endl;
-            cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            break;
-        case 5:
             isContinue = false;
+            break;
+        default:
             break;
         }
     }

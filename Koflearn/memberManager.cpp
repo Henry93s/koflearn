@@ -1,6 +1,8 @@
 #include "member.h"
 #include "memberManager.h"
 #include "myPageManager.h"
+#include "enrollManager.h"
+#include "lectureManager.h"
 
 #include <vector>
 #include <algorithm>
@@ -366,6 +368,80 @@ map<unsigned long long, Member*>& MemberManager::getMemberList() {
     return this->memberList;
 }
 
+bool MemberManager::deleteUserProcess(unsigned long long key) {
+    string is_delete = "";
+
+    cout << "탈퇴 시 수강하시는 강의, 강의하시는 강좌 모두 제거됩니다." << endl;
+    cout << "정말 탈퇴하시겠습니까?" << endl;
+    cout << "탈퇴하시려면 [I agree to withdraw from member] 의 [ ] 안 문구를 정확히 입력해주세요." << endl;
+    getline(cin, is_delete, '\n');
+
+    if (is_delete.compare("I agree to withdraw from member") == 0) {
+        Member* member = this->searchMember(key);
+        // 탈퇴자 관련 데이터 우선 제거(lectureList, instructorLectureList, studentLectureList)
+        allDeletedUserData(key);
+
+        // 탈퇴자 member 데이터 제거
+        deleteMember(key);
+
+        cout << "회원 탈퇴가 정상적으로 되었습니다." << endl;
+        cout << "로그인 상태가 해제되고 [Enter] 를 누르면 메인 페이지로 이동합니다." << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        return true;
+    }
+    else {
+        cout << "문구를 정상적으로 입력하지 않아 회원 탈퇴를 진행할 수 없습니다." << endl;
+        cout << "[Enter] 를 눌러 뒤로가기" << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        return false;
+    }
+}
+
+void MemberManager::allDeletedUserData(unsigned long long primaryKey) {
+    unsigned long long instructorPrimaryKey = primaryKey;
+    Member* member = this->searchMember(primaryKey);
+    if (member == nullptr) {
+        return;
+    }
+
+    string name = member->getNickName();
+
+    auto& lectureList = program_interface->getLectureManager().getLectureList();
+    auto& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
+    auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
+
+    // 1. 해당 강사가 개설한 강의 리스트 수집 -> lectureList 제거
+    vector<Lecture*> lecturesToDelete;
+    for (auto it = lectureList.begin(); it != lectureList.end(); ) {
+        Lecture* lec = it->second;
+        if (lec && lec->getInstructorName() == name) {
+            lecturesToDelete.push_back(lec);
+            it = lectureList.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+
+    // 2. instructorLectureList 에서 해당 강사 항목 제거
+    instructorLectureList.erase(instructorPrimaryKey);
+
+    // 3. 회원이 수강자(Student)인 경우 -> 본인의 수강 리스트(studentLectureList)에서 수강자 수 감소 + 제거
+    auto it = studentLectureList.find(primaryKey);
+    if (it != studentLectureList.end()) {
+        vector<Lecture*>& lectures = it->second;
+        for (Lecture* lec : lectures) {
+            if (lec) {
+                int count = lec->getEnrolledStudentsCount();
+                lec->setEnrolledStudentsCount(count - 1);
+            }
+        }
+        studentLectureList.erase(it);
+    }
+
+    return;
+}
+
 void MemberManager::displayMenu()
 {
     int ch;
@@ -424,7 +500,7 @@ void MemberManager::displayMenu()
             cout << "   멤버 primaryKey 입력 : ";
             cin >> key;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            program_interface->getMyPageManager().allDeletedUserData(key);
+            program_interface->getMemberManager().allDeletedUserData(key);
             deleteMember(key);
             cout << "멤버 삭제 작업이 종료되었습니다." << endl;
             cout << "[Enter] 를 눌러 뒤로가기" << endl;

@@ -34,6 +34,9 @@ public:
     unsigned long long makePrimaryKey();
     string getManagerKey();
     vector<string> parseCSV(istream&, char);
+
+    void allDeletedUserData(unsigned long long primaryKey);
+    bool deleteUserProcess(unsigned long long key);
     void displayMenu();
 
     // 컨테이너 객체의 경우 특정 변수에 값을 함수에서 반환을 통해 할당했을 때,

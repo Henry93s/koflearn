@@ -41,9 +41,9 @@ EnrollManager::EnrollManager(IKoflearnPlatManager* program)
                 unsigned long long primaryKey2 = strtoull(row[6].c_str(), &endptr2, 10);
                 Lecture* lecture = program_interface->getLectureManager().searchLecture(primaryKey2);
 
-                // map<unsigned long long, vector<Lecture*>>
-                // map<unsigned long long, Lecture*> 형태일 경우
-                /*
+                // map<unsigned long long, vector<Lecture*>> 컨테이너 사용
+                // 
+                /* map<unsigned long long, Lecture*> 형태일 경우
                 한 학생은 하나의 강의 밖에 수강하지 못함 : 한 key 는 고유하기 때문에 중복해서
                 같은 key 를 삽입할 수 없음.
                 */
@@ -175,7 +175,7 @@ void EnrollManager::searchAndStudentEnrollLecture() {
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << "          Koflearn Search and Enroll                 " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << " 강의 조회 메인 화면에서는 최대 20개의 강의만 조회됩니다. " << endl;
+        cout << " 강의 조회 메인 화면에서는 최대 50개의 강의만 조회됩니다. " << endl;
         cout << "  [ 특정 강의 확인은 검색 기능을 활용하세요. ] " << endl;
         cout << "  1. 강의 검색하기" << endl;
         cout << "  2. 메인 메뉴로 돌아가기" << endl;
@@ -205,8 +205,8 @@ void EnrollManager::searchAndStudentEnrollLecture() {
         case 1: 
             // 수강할 강의 조회 text 를 입력받고 출력 처리
             cout << endl;
-            cout << "'primaryKey' 또는 '강의명' 또는 '강사 이름' 을 입력하세요" << endl;
-            cout << "primaryKey 조회는 정확히 일치해야하며, '강의명' 또는 '강사 이름' 은 부분 조회가 가능합니다." << endl;
+            cout << "   'primaryKey' 또는 '강의명' 또는 '강사 이름' 을 입력하세요" << endl;
+            cout << "       primaryKey 조회는 정확히 일치해야하며, '강의명' 또는 '강사 이름' 은 부분 조회가 가능합니다." << endl;
             cout << endl;
             cout << "검색 : ";
             getline(cin, text, '\n');
@@ -219,43 +219,48 @@ void EnrollManager::searchAndStudentEnrollLecture() {
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             else {
-                cout << "조회된 강의 중 수강할 강의 의 privateKey 를 입력하세요 : " << endl;
+                cout << "조회된 강의 중 수강할 강의 의 privateKey 를 입력하세요" << endl;
+                cout << "-1 : 취소" << endl;
+                cout << "입력 : ";
                 cin >> primaryKey;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                if (primaryKey == -1) {
+                    continue;
+                }
                 // 수강 신청 처리
                 lecture = program_interface->getLectureManager().searchLecture(primaryKey);
-                bool is_duplication = false;
-                Member* member = program_interface->getSessionManager().getLoginUser();
-                is_duplication = this->isDuplicationOrSizeCheckStudentEnrollLecture(member, lecture);
+                if (lecture != nullptr) {
+                    bool is_duplication = false;
+                    Member* member = program_interface->getSessionManager().getLoginUser();
+                    is_duplication = this->isDuplicationOrSizeCheckStudentEnrollLecture(member, lecture);
 
-                if (is_duplication == false) {
-                    cout << "수강 신청이 완료되었습니다." << endl;
-                    unsigned long long studentKey = member->getPrimaryKey();
+                    if (is_duplication == false) {
+                        cout << "수강 신청이 완료되었습니다." << endl;
+                        unsigned long long studentKey = member->getPrimaryKey();
 
-                    // 추가하려는 강의의 "수강자 수" 를 증가 시킴
-                    int temp = lecture->getEnrolledStudentsCount();
-                    temp++;
-                    // 강의 data에 수강자 수 적용
-                    lecture->setEnrolledStudentsCount(temp);
+                        // 추가하려는 강의의 "수강자 수" 를 증가 시킴
+                        int temp = lecture->getEnrolledStudentsCount();
+                        temp++;
+                        // 강의 data에 수강자 수 적용
+                        lecture->setEnrolledStudentsCount(temp);
 
-                    // 학생 키로 map 에서 vector 찾기
-                    auto it = this->studentLectureList.find(studentKey);
-                    if (it != this->studentLectureList.end()) {
-                        // 학생이 이미 존재할 때 해당 학생 강의 리스트에 새 강의 추가
-                        it->second.push_back(lecture);
+                        // 학생 키로 map 에서 vector 찾기
+                        auto it = this->studentLectureList.find(studentKey);
+                        if (it != this->studentLectureList.end()) {
+                            // 학생이 이미 존재할 때 해당 학생 강의 리스트에 새 강의 추가
+                            it->second.push_back(lecture);
+                        }
+                        else {
+                            // 학생이 존재하지 않으면, 새로운 엔트리 생성 (새로운 벡터를 만들고 강의 추가)
+                            this->studentLectureList.insert({ studentKey, {lecture} });
+                        }
                     }
-                    else {
-                        // 학생이 존재하지 않으면, 새로운 엔트리 생성 (새로운 벡터를 만들고 강의 추가)
-                        this->studentLectureList.insert({ studentKey, {lecture} });
-                    }
-
-                    cout << endl << "[Enter] 를 눌러 뒤로가기" << endl;
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 }
-                else if (is_duplication == true) {
-                    cout << endl << "[Enter] 를 눌러 뒤로가기" << endl;
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                else {
+                    cout << "조회된 강의가 없습니다." << endl;
                 }
+                cout << endl << "[Enter] 를 눌러 뒤로가기" << endl;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             break;
         case 2:

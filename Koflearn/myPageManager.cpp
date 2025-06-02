@@ -60,7 +60,7 @@ void MyPageManager::myStudentLecturePrint() {
                 unsigned long long primaryKey;
                 cout << "수강 종료할 강좌의 key 를 입력하세요 : ";
                 cin >> primaryKey;
-                exitLecture(primaryKey);
+                program_interface->getLectureManager().exitLecture(primaryKey);
                 break;
             }
             else {
@@ -68,45 +68,6 @@ void MyPageManager::myStudentLecturePrint() {
             }
         }
     }
-}
-
-void MyPageManager::exitLecture(unsigned long long primaryKey) {
-    Lecture* lecture = program_interface->getLectureManager().searchLecture(primaryKey);
-    unsigned long long myPrimaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
-    auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
-
-    // 회원의 수강 리스트(studentLectureList)에서 수강자 수 감소
-    auto it = studentLectureList.find(myPrimaryKey);
-    if (lecture && it != studentLectureList.end()) {
-        vector<Lecture*>& lectures = it->second;
-        // 벡터에서 해당 강의를 찾아 수강자 수 감소 및 제거
-        for (auto vecIt = lectures.begin(); vecIt != lectures.end(); ++vecIt) {
-            if (*vecIt && (*vecIt)->getPrimaryKey() == primaryKey) {
-                int count = (*vecIt)->getEnrolledStudentsCount();
-                (*vecIt)->setEnrolledStudentsCount(count - 1);  // 수강자 수 감소
-
-                lectures.erase(vecIt);  // 강의 벡터에서 제거
-                break;  // 하나만 삭제하고 종료(어차피 회원이 중복 강의를 수강할 수 는 없음)
-            }
-        }
-
-        // 해당 학생의 수강 목록이 비었으면 map에서도 삭제
-        if (lectures.empty()) {
-            studentLectureList.erase(it);
-        }
-
-        cout << lecture->getLectureTitle() << " 강의를 수강 종료처리하였습니다." << endl;
-        cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    }
-    else {
-        cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    }
-
-    return;
 }
 
 void MyPageManager::myInstructorLecturePrint() {
@@ -131,80 +92,6 @@ void MyPageManager::myInstructorLecturePrint() {
     }
 }
 
-bool MyPageManager::selfDeleteID() {
-    string is_delete = "";
-
-    cout << "탈퇴 시 수강하시는 강의, 강의하시는 강좌 모두 제거됩니다." << endl;
-    cout << "정말 탈퇴하시겠습니까?" << endl;
-    cout << "탈퇴하시려면 [I agree to withdraw from member] 의 [ ] 안 문구를 정확히 입력해주세요." << endl;
-    getline(cin, is_delete, '\n');
-
-    if (is_delete.compare("I agree to withdraw from member") == 0) {
-        Member* member = program_interface->getSessionManager().getLoginUser();
-        // 탈퇴자 관련 데이터 우선 제거(lectureList, instructorLectureList, studentLectureList)
-        allDeletedUserData(member->getPrimaryKey());
-        // 탈퇴자 member 데이터 제거
-
-        program_interface->getMemberManager().deleteMember(member->getPrimaryKey());
-
-        cout << "회원 탈퇴가 정상적으로 되었습니다." << endl;
-        cout << "로그인 상태가 해제되고 [Enter] 를 누르면 메인 페이지로 이동합니다." << endl;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        return true;
-    }
-    else {
-        cout << "문구를 정상적으로 입력하지 않아 회원 탈퇴를 진행할 수 없습니다." << endl;
-        cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        return false;
-    }
-}
-
-void MyPageManager::allDeletedUserData(unsigned long long primaryKey) {
-    unsigned long long instructorPrimaryKey = primaryKey;
-    Member* member = program_interface->getMemberManager().searchMember(primaryKey);
-    if (member == nullptr) {
-        return;
-    }
-
-    string name = member->getNickName();
-
-    auto& lectureList = program_interface->getLectureManager().getLectureList();
-    auto& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
-    auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
-
-    // 1. 해당 강사가 개설한 강의 리스트 수집 -> lectureList 제거
-    vector<Lecture*> lecturesToDelete;
-    for (auto it = lectureList.begin(); it != lectureList.end(); ) {
-        Lecture* lec = it->second;
-        if (lec && lec->getInstructorName() == name) {
-            lecturesToDelete.push_back(lec);
-            it = lectureList.erase(it);
-        }
-        else {
-            ++it;
-        }
-    }
-
-    // 2. instructorLectureList 에서 해당 강사 항목 제거
-    instructorLectureList.erase(instructorPrimaryKey);
-
-    // 3. 회원이 수강자(Student)인 경우 -> 본인의 수강 리스트(studentLectureList)에서 수강자 수 감소 + 제거
-    auto it = studentLectureList.find(primaryKey);
-    if (it != studentLectureList.end()) {
-        vector<Lecture*>& lectures = it->second;
-        for (Lecture* lec : lectures) {
-            if (lec) {
-                int count = lec->getEnrolledStudentsCount();
-                lec->setEnrolledStudentsCount(count - 1);
-            }
-        }
-        studentLectureList.erase(it);
-    }
-
-    return;
-}
-
 void MyPageManager::displayMenu() {
     int ch;
     bool isContinue = true;
@@ -218,8 +105,8 @@ void MyPageManager::displayMenu() {
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << "               Koflearn My Page                  " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << "  1. 수강 중인 강의 및 수강 종료                     " << endl;
-        cout << "  2. 진행하는 강의 보기                            " << endl;
+        cout << "  1. 수강 중인 강의 보기 및 수강 종료                     " << endl;
+        cout << "  2. 진행하는 강의 보기 및 수강 종료                          " << endl;
         cout << "  3. 패스워드 수정                            " << endl;
         cout << "  4. 회원 탈퇴                       " << endl;
         cout << "  5. 메인 메뉴로 돌아가기                " << endl;
@@ -254,7 +141,7 @@ void MyPageManager::displayMenu() {
             program_interface->getMemberManager().modifyMember(member->getPrimaryKey());
             break;
         case 4:
-            is_delete = this->selfDeleteID();
+            is_delete = program_interface->getMemberManager().deleteUserProcess(program_interface->getSessionManager().getLoginUser()->getPrimaryKey());
             if (is_delete == true) {
                 program_interface->getSessionManager().setIs_login(false);
                 program_interface->getSessionManager().setIs_admin(false);
