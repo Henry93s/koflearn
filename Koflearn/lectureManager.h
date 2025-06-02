@@ -10,11 +10,11 @@ using namespace std;
 
 class LectureManager {
 private:
-	// Manager ê°€ ì¸í„°í˜ì´ìŠ¤ì— ì˜ì¡´í•˜ë„ë¡ ì¸í„°í˜ì´ìŠ¤ í¬ì¸í„° ì„ ì–¸
+	// Manager °¡ ÀÎÅÍÆäÀÌ½º¿¡ ÀÇÁ¸ÇÏµµ·Ï ÀÎÅÍÆäÀÌ½º Æ÷ÀÎÅÍ ¼±¾ğ
 	IKoflearnPlatManager* program_interface;
 
 public:
-	// ìƒì„±ìì—ì„œ ì¸í„°í˜ì´ìŠ¤ íƒ€ì… ì˜ì¡´ì„±ì„ ì£¼ì…ë°›ìŒ
+	// »ı¼ºÀÚ¿¡¼­ ÀÎÅÍÆäÀÌ½º Å¸ÀÔ ÀÇÁ¸¼ºÀ» ÁÖÀÔ¹ŞÀ½
 	LectureManager(IKoflearnPlatManager* program);
 	~LectureManager();
 
@@ -23,16 +23,22 @@ public:
 	void deleteLecture(unsigned long long key);
 	void modifyLecture(unsigned long long key);
 	Lecture* searchLecture(unsigned long long key);
-	void displayAllLecture() const;
+	bool displayAllLecture() const;
+	bool searchLectureList(string text);
+
+	bool deleteLectureProcess(unsigned long long key);
+	void allDeletedLectureData(unsigned long long key);
+
+	void exitLecture(unsigned long long primaryKey);
 
 	unsigned long long makePrimaryKey();
 	vector<string> parseCSV(istream&, char);
 	void displayMenu();
 
-	// ì»¨í…Œì´ë„ˆ ê°ì²´ì˜ ê²½ìš° íŠ¹ì • ë³€ìˆ˜ì— ê°’ì„ í•¨ìˆ˜ì—ì„œ ë°˜í™˜ì„ í†µí•´ í• ë‹¹í–ˆì„ ë•Œ,
-	// "ì„ì‹œ ê°ì²´" ê°€ ìƒì„±ë˜ê³  ë°˜í™˜ ì§í›„ ; ì„ ë§Œë‚˜ ë¬¸ì¥ì´ ëë‚˜ë©´ ì„ì‹œ ì»¨í…Œì´ë„ˆ ê°ì²´ê°€ ì†Œë©¸ë¨.
-	// => "ëŒ•ê¸€ë§ í¬ì¸í„°" ì´ìŠˆ ë°œìƒ!!
-	// * í•´ê²° : ì»¨í…Œì´ë„ˆ ê°ì²´ë¥¼ ë³€ìˆ˜ì— í• ë‹¹í•˜ì—¬ ë°˜í™˜í•  ë•Œ, "ë³µì‚¬í•˜ì§€ ì•Šê³ " "ì°¸ì¡°" ê°’ì„ ë°˜í™˜í•œë‹¤.
+	// ÄÁÅ×ÀÌ³Ê °´Ã¼ÀÇ °æ¿ì Æ¯Á¤ º¯¼ö¿¡ °ªÀ» ÇÔ¼ö¿¡¼­ ¹İÈ¯À» ÅëÇØ ÇÒ´çÇßÀ» ¶§,
+	// "ÀÓ½Ã °´Ã¼" °¡ »ı¼ºµÇ°í ¹İÈ¯ Á÷ÈÄ ; À» ¸¸³ª ¹®ÀåÀÌ ³¡³ª¸é ÀÓ½Ã ÄÁÅ×ÀÌ³Ê °´Ã¼°¡ ¼Ò¸êµÊ.
+	// => "´ó±Û¸µ Æ÷ÀÎÅÍ" ÀÌ½´ ¹ß»ı!!
+	// * ÇØ°á : ÄÁÅ×ÀÌ³Ê °´Ã¼¸¦ º¯¼ö¿¡ ÇÒ´çÇÏ¿© ¹İÈ¯ÇÒ ¶§, "º¹»çÇÏÁö ¾Ê°í" "ÂüÁ¶" °ªÀ» ¹İÈ¯ÇÑ´Ù.
 	map<unsigned long long, Lecture*>& getLectureList();
 
 private:

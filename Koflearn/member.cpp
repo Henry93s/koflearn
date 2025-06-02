@@ -4,14 +4,15 @@
 #include <iomanip>
 using namespace std;
 
-// member ìžì‹ í´ëž˜ìŠ¤ ìƒì„±ìžì—ì„œ ë¶€ëª¨ í´ëž˜ìŠ¤ ìƒì„±ìž í¬í•¨
+// member ÀÚ½Ä Å¬·¡½º »ý¼ºÀÚ¿¡¼­ ºÎ¸ð Å¬·¡½º »ý¼ºÀÚ Æ÷ÇÔ
 Member::Member(unsigned long long primaryKey, string nickName, string email
 	, string password, string phoneNumber, string isManager)
 	: KoflearnPlatform(primaryKey), nickName(nickName), email(email)
 	, password(password), phoneNumber(phoneNumber), isManager(isManager)
-{}
+{
+}
 
-// getter í•¨ìˆ˜ êµ¬í˜„
+// getter ÇÔ¼ö ±¸Çö
 string Member::getNickName() {
 	return this->nickName;
 }
@@ -38,7 +39,7 @@ void Member::displayInfo() {
 }
 
 
-// setter í•¨ìˆ˜ êµ¬í˜„
+// setter ÇÔ¼ö ±¸Çö
 void Member::setNickName(string nickName) {
 	this->nickName = nickName;
 }

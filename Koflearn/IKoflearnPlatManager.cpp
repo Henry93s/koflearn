@@ -1,6 +1,6 @@
 #include "IKoflearnPlatManager.h"
 
-// ìˆœìˆ˜ ê°€ìƒ ì†Œë©¸ì ì •ì˜(í•„ìˆ˜)
+// ¼ø¼ö °¡»ó ¼Ò¸êÀÚ Á¤ÀÇ(ÇÊ¼ö)
 IKoflearnPlatManager::~IKoflearnPlatManager() {
 	cout << "~IKoflearnPlatManager ()\n";
 }

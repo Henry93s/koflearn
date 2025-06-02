@@ -1,10 +1,10 @@
 #include "lecture.h"
 #include "lectureManager.h"
 #include "IKoflearnPlatManager.h"
-// program_interface ë¥¼ í†µí•´ì„œ ì ‘ê·¼í•˜ë ¤ëŠ” ëª¨ë“  
-// Manager í´ë˜ìŠ¤ë“¤ì´ í•„ìš”í•œ í—¤ë” íŒŒì¼ì´ include ë˜ì–´ ìˆì–´ì•¼ í•¨. 
-// why? ìˆœí™˜ì°¸ì¡° ë°©ì§€ë¡œ IKoflearnPlatManager ì—ì„œ Manager í´ë˜ìŠ¤ë“¤ì„ include í•˜ì§€ ì•Šê³ 
-//      ì „ë°©ì„ ì–¸ ì²˜ë¦¬í–ˆìœ¼ë¯€ë¡œ
+// program_interface ¸¦ ÅëÇØ¼­ Á¢±ÙÇÏ·Á´Â ¸ğµç 
+// Manager Å¬·¡½ºµéÀÌ ÇÊ¿äÇÑ Çì´õ ÆÄÀÏÀÌ include µÇ¾î ÀÖ¾î¾ß ÇÔ. 
+// why? ¼øÈ¯ÂüÁ¶ ¹æÁö·Î IKoflearnPlatManager ¿¡¼­ Manager Å¬·¡½ºµéÀ» include ÇÏÁö ¾Ê°í
+//      Àü¹æ¼±¾ğ Ã³¸®ÇßÀ¸¹Ç·Î
 #include "sessionManager.h"
 #include "enrollManager.h"
 
@@ -14,18 +14,20 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>
-using namespace std;
+#include <string>
+#include <chrono> // ½Ã°£ °ü·Ã ±â´É(searching cout Ãâ·Â¿¡ µô·¹ÀÌ ºÎ¿© À§ÇÔ)
+#include <thread> // ½º·¹µå °ü·Ã ±â´É(searching cout Ãâ·Â¿¡ µô·¹ÀÌ ºÎ¿© À§ÇÔ)
 
-// ìƒì„±ìì—ì„œ ì¸í„°í˜ì´ìŠ¤ íƒ€ì…ì˜ ì˜ì¡´ì„±ì„ ì£¼ì…ë°›ìŒ
-LectureManager::LectureManager(IKoflearnPlatManager* program) 
+// »ı¼ºÀÚ¿¡¼­ ÀÎÅÍÆäÀÌ½º Å¸ÀÔÀÇ ÀÇÁ¸¼ºÀ» ÁÖÀÔ¹ŞÀ½
+LectureManager::LectureManager(IKoflearnPlatManager* program)
     : program_interface(program)
 {
     if (!program_interface) {
-        cerr << "ì˜¤ë¥˜: MyPageManagerì— ìœ íš¨í•œ IKoflearnPlatManagerê°€ ì£¼ì…ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!\n";
+        cerr << "¿À·ù: MyPageManager¿¡ À¯È¿ÇÑ IKoflearnPlatManager°¡ ÁÖÀÔµÇÁö ¾Ê¾Ò½À´Ï´Ù!\n";
     }
 
-	ifstream file;
-	file.open("lectureList.txt");
+    ifstream file;
+    file.open("lectureList.csv");
     char* endptr;
     if (!file.fail()) {
         while (!file.eof()) {
@@ -46,11 +48,11 @@ LectureManager::LectureManager(IKoflearnPlatManager* program)
 
 LectureManager::~LectureManager() {
     ofstream file;
-    file.open("lectureList.txt");
+    file.open("lectureList.csv");
     if (!file.fail()) {
         for (const auto& v : lectureList) {
             Lecture* lecture = v.second;
-           file << lecture->getPrimaryKey() << ", "
+            file << lecture->getPrimaryKey() << ", "
                 << lecture->getLectureTitle() << ", "
                 << lecture->getInstructorName() << ", "
                 << lecture->getPrice() << ", "
@@ -68,49 +70,53 @@ Lecture* LectureManager::inputLecture() {
 
     unsigned long long primaryKey = makePrimaryKey();
     if (primaryKey == -1) {
-        cout << "ê°•ì˜ ìµœëŒ€ ìˆ˜ìš©ëŸ‰ì´ ì´ˆê³¼í•˜ì˜€ìŠµë‹ˆë‹¤. (99,999,999,999)" << endl;
+        cout << "°­ÀÇ ÃÖ´ë ¼ö¿ë·®ÀÌ ÃÊ°úÇÏ¿´½À´Ï´Ù. (99,999,999,999)" << endl;
         return nullptr;
     }
 
-    // í•œ ì‚¬ëŒë‹¹ ê°•ì˜ ê°œì„¤ì€ ìµœëŒ€ 9ê°œê¹Œì§€ ê°œì„¤ ê°€ëŠ¥.
-    // ì»¨í…Œì´ë„ˆ ê°ì²´ ë°˜í™˜ë°›ì„ ë•Œ ì„ì‹œ ê°ì²´ ì´ìŠˆë¡œ ëŒ•ê¸€ë§ í¬ì¸í„°ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì°¸ì¡° ê°’ ë°›ê¸°
+    // ÇÑ »ç¶÷´ç °­ÀÇ °³¼³Àº ÃÖ´ë 9°³±îÁö °³¼³ °¡´É.
+    // ÄÁÅ×ÀÌ³Ê °´Ã¼ ¹İÈ¯¹ŞÀ» ¶§ ÀÓ½Ã °´Ã¼ ÀÌ½´·Î ´ó±Û¸µ Æ÷ÀÎÅÍµÉ ¼ö ÀÖÀ¸¹Ç·Î ÂüÁ¶ °ª ¹Ş±â
     map<unsigned long long, vector<Lecture*>>& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
     for (const auto& i : instructorLectureList) {
         Lecture* lecture = nullptr;
         if (i.first == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
-            if (i.second.size() > 9) {
-                cout << "í•œ ì‚¬ëŒë‹¹ ê°•ì˜ ìµœëŒ€ ê°œì„¤ì€ 9ê°œê¹Œì§€ë§Œ ê°€ëŠ¥í•©ë‹ˆë‹¤." << endl;
+            if (i.second.size() >= 9) {
+                cout << "ÇÑ »ç¶÷´ç °­ÀÇ ÃÖ´ë °³¼³Àº 9°³±îÁö¸¸ °¡´ÉÇÕ´Ï´Ù." << endl;
                 return nullptr;
             }
         }
     }
 
-    cout << "ê°•ì˜ ëª… : ";
+    cout << "°­ÀÇ ¸í : ";
     getline(cin, lectureTitle, '\n');
-    cout << "ê°•ì‚¬ ëª… : ";
+    if (lectureTitle.size() >= 27) {
+        cout << "°­ÀÇ ¸íÀº 27ÀÚ ÀÌ»ó »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù." << endl;
+        return nullptr;
+    }
+    cout << "°­»ç ¸í : ";
     cout << program_interface->getSessionManager().getLoginUser()->getNickName() << endl;
     instructorName = program_interface->getSessionManager().getLoginUser()->getNickName();
-    cout << "ê°€ê²© : ";
+    cout << "°¡°İ : ";
     cin >> price;
-    enrolledStudentsCount = 0; // ê¸°ë³¸ ìˆ˜ê°•ì ìˆ˜ëŠ” 0 ë¶€í„° ì‹œì‘
-    cout << "ìˆ˜ê°• ì‹œê°„ : ";
+    enrolledStudentsCount = 0; // ±âº» ¼ö°­ÀÚ ¼ö´Â 0 ºÎÅÍ ½ÃÀÛ
+    cout << "¼ö°­ ½Ã°£ : ";
     cin >> durationHours;
     int selectLevel = 2;
-    cout << "ê°•ì˜ ë‚œì´ë„ (1 : ì‰¬ì›€, 2 : ë³´í†µ, 3 : ì–´ë ¤ì›€) : ";
+    cout << "°­ÀÇ ³­ÀÌµµ (1 : ½¬¿ò, 2 : º¸Åë, 3 : ¾î·Á¿ò) : ";
     cin >> selectLevel;
     switch (selectLevel)
     {
     case 1:
-        difficultyLevel = "ì‰¬ì›€";
+        difficultyLevel = "½¬¿ò";
         break;
     case 2:
-        difficultyLevel = "ë³´í†µ";
+        difficultyLevel = "º¸Åë";
         break;
     case 3:
-        difficultyLevel = "ì–´ë ¤ì›€";
+        difficultyLevel = "¾î·Á¿ò";
         break;
     default:
-        difficultyLevel = "ë³´í†µ";
+        difficultyLevel = "º¸Åë";
         break;
     }
 
@@ -119,22 +125,22 @@ Lecture* LectureManager::inputLecture() {
         enrolledStudentsCount, durationHours, difficultyLevel);
 
     lectureList.insert({ primaryKey, lecture });
-    // ê°•ì˜ë¥¼ ë“±ë¡í–ˆì„ ë•Œ "ë‚´ ê°•ì˜ ë³´ê¸°" ë¦¬ìŠ¤íŠ¸ë¥¼ ì¶œë ¥í•˜ê¸° ìœ„í•œ instructor(ê°•ì˜ì) ê¸°ì¤€ ë¦¬ìŠ¤íŠ¸ì— ë°ì´í„° ì¶”ê°€
+    // °­ÀÇ¸¦ µî·ÏÇßÀ» ¶§ "³» °­ÀÇ º¸±â" ¸®½ºÆ®¸¦ Ãâ·ÂÇÏ±â À§ÇÑ instructor(°­ÀÇÀÚ) ±âÁØ ¸®½ºÆ®¿¡ µ¥ÀÌÅÍ Ãß°¡
     Member* member = program_interface->getSessionManager().getLoginUser();
 
-    // íŠ¹ì • member privateKey ë¥¼ key ë¡œ vector ì— ì—¬ëŸ¬ ê°œ ìš”ì†Œ ì‚½ì…í•˜ê¸° !
+    // Æ¯Á¤ member privateKey ¸¦ key ·Î vector ¿¡ ¿©·¯ °³ ¿ä¼Ò »ğÀÔÇÏ±â !
     unsigned long long instructorKey = member->getPrimaryKey();
 
-    // ê°•ì‚¬ í‚¤ë¡œ map ì—ì„œ vector ì°¾ê¸°
+    // °­»ç Å°·Î map ¿¡¼­ vector Ã£±â
     auto it = instructorLectureList.find(instructorKey);
 
     if (it != instructorLectureList.end()) {
-        // ê°•ì˜ìê°€ ì´ë¯¸ ì¡´ì¬í•  ë•Œ í•´ë‹¹ ê°•ì˜ìì˜ ê°•ì˜ ë¦¬ìŠ¤íŠ¸ì— ìƒˆ ê°•ì˜ë¥¼ ì¶”ê°€í•œë‹¤.
-        // push_back : ë²¡í„°ì˜ ë§¨ ëì— í•­ëª© ì¶”ê°€
+        // °­ÀÇÀÚ°¡ ÀÌ¹Ì Á¸ÀçÇÒ ¶§ ÇØ´ç °­ÀÇÀÚÀÇ °­ÀÇ ¸®½ºÆ®¿¡ »õ °­ÀÇ¸¦ Ãß°¡ÇÑ´Ù.
+        // push_back : º¤ÅÍÀÇ ¸Ç ³¡¿¡ Ç×¸ñ Ãß°¡
         it->second.push_back(lecture);
     }
     else {
-        // ê°•ì˜ìê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ ìƒˆ ì—”íŠ¸ë¦¬ ìƒì„± (ìƒˆë¡œìš´ ë²¡í„°ë¥¼ ë§Œë“¤ê³  ê°•ì˜ ì¶”ê°€)
+        // °­ÀÇÀÚ°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é »õ ¿£Æ®¸® »ı¼º (»õ·Î¿î º¤ÅÍ¸¦ ¸¸µé°í °­ÀÇ Ãß°¡)
         instructorLectureList.insert({ instructorKey, {lecture} });
     }
 
@@ -142,9 +148,9 @@ Lecture* LectureManager::inputLecture() {
 }
 
 Lecture* LectureManager::searchLecture(unsigned long long primaryKey) {
-    // lecture = lectureList[primaryKey] ë¡œ lecture ê°ì²´ í¬ì¸í„°ë¥¼ ì°¾ì„ ë•Œ
-    // ê°ì²´ í¬ì¸í„°ê°€ ì—†ì„ ë•Œ nullptr ì´ í•´ë‹¹ primary key ê°’ ì¸ë±ìŠ¤ì— "ì‹¤ì œ ë§µ" ì— ì €ì¥ë  ìˆ˜ ìˆìŒ !
-    // => ë”°ë¼ì„œ lectureë¥¼ ì°¾ëŠ” ë°©ë²•ì„ ì „ì²´ lectureList ë¥¼ ìˆœíšŒí•˜ë©´ì„œ ìš”ì†Œì˜ first ì™€ primarykeyê°€ ë™ì¼í•œ lecture ë¥¼ ë°˜í™˜í•˜ë„ë¡ í•¨
+    // lecture = lectureList[primaryKey] ·Î lecture °´Ã¼ Æ÷ÀÎÅÍ¸¦ Ã£À» ¶§
+    // °´Ã¼ Æ÷ÀÎÅÍ°¡ ¾øÀ» ¶§ nullptr ÀÌ ÇØ´ç primary key °ª ÀÎµ¦½º¿¡ "½ÇÁ¦ ¸Ê" ¿¡ ÀúÀåµÉ ¼ö ÀÖÀ½ !
+    // => µû¶ó¼­ lecture¸¦ Ã£´Â ¹æ¹ıÀ» ÀüÃ¼ lectureList ¸¦ ¼øÈ¸ÇÏ¸é¼­ ¿ä¼ÒÀÇ first ¿Í primarykey°¡ µ¿ÀÏÇÑ lecture ¸¦ ¹İÈ¯ÇÏµµ·Ï ÇÔ
     for (const auto& i : lectureList) {
         if (i.first == primaryKey) {
             return i.second;
@@ -153,31 +159,99 @@ Lecture* LectureManager::searchLecture(unsigned long long primaryKey) {
     return nullptr;
 }
 
-void LectureManager::displayAllLecture() const {
-    if (lectureList.empty()) {
-        cout << "ë“±ë¡ëœ ê°•ì˜ê°€ ì—†ìŠµë‹ˆë‹¤." << endl;
-        cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        return;
-    }
+bool LectureManager::searchLectureList(string text) {
+    bool is_size = false;
+    char* endptr;
+    unsigned long long searchKey = strtoull(text.c_str(), &endptr, 10);
 
-    cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
-    for (const auto& lecture : lectureList) {
-        lecture.second->displayInfo(); // ë‹¨ìˆœ ê°•ì˜ ê°ì²´(Lecture()) read ì±…ì„ì€ Lecture í´ë˜ìŠ¤ì—ì„œ ì²˜ë¦¬
+    cout << endl;
+    // 1. text °¡ ¼ıÀÚ¿³À» °æ¿ì -> Lecture ÀÇ primaryKey ·Î¸¸ Á¶È¸
+    if (*endptr == '\0' && !text.empty()) {
+        cout << "primaryKey ·Î °Ë»ö ÁßÀÔ´Ï´Ù .";
+        for (auto i = 0; i < 5;i++) {
+            cout << " .";
+            this_thread::sleep_for(chrono::milliseconds(250));
+            cout.flush(); // ¹öÆÛ¿¡ ÀÖ´Â ³»¿ëÀ» ¹Ù·Î È­¸é¿¡ »Ñ¸²À¸·Î½á
+                          // Á¡µéÀÌ thread chrono timer ¿¡ ¸ÂÃç¼­ ÇÏ³ª¾¿ ³ªÅ¸³ª´Â ÇÁ·Î¼¼½Ì È¿°ú ºÎ¿©
+        }
+        cout << endl;
+
+        // ¸ÕÀú µ¥ÀÌÅÍ¸¦ Ã£¾Æº¸°í ¾øÀ¸¸é ÀÌÅÍ·¹ÀÌÅÍ°¡ end() ¸¦ ¹İÈ¯ÇÏ´Â °É Ã¼Å©ÇÑ´Ù.
+        auto it = this->lectureList.find(searchKey);
+        if (it != lectureList.end()) {
+            // Ãâ·ÂµÇ´Â Lecture °¡ ÀÖÀ» ¶§ is_size = true
+            is_size = true;
+            cout << "    key      |            Title                 |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+            it->second->displayInfo();
+        }
+    } 
+
+    cout << endl << endl;
+    
+    // 2. text °¡ ¼ıÀÚÀÌ°Å³ª ¹®ÀÚ°¡ ÇÏ³ª¶óµµ Æ÷ÇÔµÈ ¹®ÀÚ¿­ÀÌ¿´À» °æ¿ì 
+    //    -> Lecture ÀÇ title ¶Ç´Â instructorName À¸·Î Á¶È¸
+    cout << "°­ÀÇ¸í ¶Ç´Â °­»ç ÀÌ¸§À¸·Î °Ë»ö ÁßÀÔ´Ï´Ù .";
+    for (auto i = 0; i < 5;i++) {
+        cout << " .";
+        this_thread::sleep_for(chrono::milliseconds(250));
+        cout.flush(); // ¹öÆÛ¿¡ ÀÖ´Â ³»¿ëÀ» ¹Ù·Î È­¸é¿¡ »Ñ¸²À¸·Î½á
+                        // Á¡µéÀÌ thread chrono timer ¿¡ ¸ÂÃç¼­ ÇÏ³ª¾¿ ³ªÅ¸³ª´Â ÇÁ·Î¼¼½Ì È¿°ú ºÎ¿©
     }
-    cout << endl << endl << endl;
-    return;
+    cout << endl;
+
+    /* ºÎºĞ ¹®ÀÚ¿­ Ã£±â ¸Ş¼Òµå Àû¿ë : find()
+        ºÎºĞ ¹®ÀÚ¿­À» Ã£À¸¸é ÇØ´ç ºÎºĞ ¹®ÀÚ¿­ÀÌ ½ÃÀÛÇÏ´Â ÀÎµ¦½º(À§Ä¡)¸¦ ¹İÈ¯
+        Ã£Áö ¸øÇÏ¸é string::npos Æ¯¼ö °ªÀ» ¹İÈ¯ÇÑ´Ù.
+    */
+    for (const auto& i : this->lectureList) {
+        if (i.second->getLectureTitle().find(text) != string::npos
+            || i.second->getInstructorName().find(text) != string::npos) {
+            if (is_size == false) {
+                cout << "    key      |            Title                 |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+                // Ãâ·ÂµÇ´Â Lecture °¡ ÇÏ³ª¶óµµ ÀÖÀ» ¶§ is_size = true
+                is_size = true;
+            }
+            i.second->displayInfo();
+        }
+    }
+    
+    return is_size;
 }
 
-void LectureManager::deleteLecture(unsigned long long primaryKey){
-    // erase : primaryKey ì¸ë±ìŠ¤ì— value ê°€ ìˆìœ¼ë©´ pair ë¥¼ ì§€ìš°ê³ , value ê°€ ì—†ìœ¼ë©´ ê·¸ëƒ¥ ë„˜ì–´ê°
+bool LectureManager::displayAllLecture() const {
+    if (lectureList.empty()) {
+        cout << "µî·ÏµÈ °­ÀÇ°¡ ¾ø½À´Ï´Ù." << endl;
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        return false;
+    }
+
+    cout << endl;
+    int cnt = 0;
+    for (const auto& lecture : lectureList) {
+        if (cnt == 0) {
+            cout << "    key      |            Title                 |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+        }
+        lecture.second->displayInfo(); // ´Ü¼ø °­ÀÇ °´Ã¼(Lecture()) read Ã¥ÀÓÀº Lecture Å¬·¡½º¿¡¼­ Ã³¸®
+        cnt++;
+        // Ã³À½ Ãâ·ÂÀº ÃÖ´ë 50°³ ±îÁö¸¸ Ãâ·Â ÀÌÈÄ Á¶È¸¸¦ ÅëÇØ¼­ Ã³¸® °¡´É
+        if (cnt == 50) {
+            break;
+        }
+    }
+    cout << endl << endl << endl;
+    return true;
+}
+
+void LectureManager::deleteLecture(unsigned long long primaryKey) {
+    // erase : primaryKey ÀÎµ¦½º¿¡ value °¡ ÀÖÀ¸¸é pair ¸¦ Áö¿ì°í, value °¡ ¾øÀ¸¸é ±×³É ³Ñ¾î°¨
     lectureList.erase(primaryKey);
 }
 
 void LectureManager::modifyLecture(unsigned long long primaryKey) {
     Lecture* lecture = searchLecture(primaryKey);
     if (lecture != nullptr) {
-        cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+        cout << "    key      |            Title                 |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
         lecture->displayInfo();
 
         int op = -1;
@@ -185,45 +259,49 @@ void LectureManager::modifyLecture(unsigned long long primaryKey) {
         int price;
         int durationHours;
         int integerLevel = 2;
-        string difficultyLevel = "ë³´í†µ";
+        string difficultyLevel = "º¸Åë";
 
         while (1) {
-            cout << "ìˆ˜ì •í•  í•­ëª©ì„ ì„ íƒí•˜ì„¸ìš”. \n(ê°•ì˜ ëª… : 1, ê°€ê²© : 2, ê°•ì˜ ì‹œê°„ : 3, ë‚œì´ë„ : 4, [ìˆ˜ì • ì¢…ë£Œ] : 5) : ";
+            cout << "¼öÁ¤ÇÒ Ç×¸ñÀ» ¼±ÅÃÇÏ¼¼¿ä. \n(°­ÀÇ ¸í : 1, °¡°İ : 2, °­ÀÇ ½Ã°£ : 3, ³­ÀÌµµ : 4, [¼öÁ¤ Á¾·á] : 5) : ";
             cin >> op;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             switch (op)
             {
             case 1:
-                cout << "ê°•ì˜ ëª… ìˆ˜ì • : ";
+                cout << "°­ÀÇ ¸í ¼öÁ¤ : ";
                 getline(cin, lectureTitle, '\n');
+                if (lectureTitle.size() >= 27) {
+                    cout << "°­ÀÇ ¸íÀº 27ÀÚ ÀÌ»ó »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù." << endl;
+                    break;
+                }
                 lecture->setLectureTitle(lectureTitle);
                 break;
             case 2:
-                cout << "ê°€ê²© ìˆ˜ì • : ";
+                cout << "°¡°İ ¼öÁ¤ : ";
                 cin >> price;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 lecture->setPrice(price);
                 break;
             case 3:
-                cout << "ê°•ì˜ ì‹œê°„ ìˆ˜ì • : ";
+                cout << "°­ÀÇ ½Ã°£ ¼öÁ¤ : ";
                 cin >> durationHours;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 lecture->setDurationHours(durationHours);
                 break;
             case 4:
-                cout << "ë‚œì´ë„ ìˆ˜ì •(1 : ì‰¬ì›€, 2: ë³´í†µ, 3 : ì–´ë ¤ì›€) : ";
+                cout << "³­ÀÌµµ ¼öÁ¤(1 : ½¬¿ò, 2: º¸Åë, 3 : ¾î·Á¿ò) : ";
                 cin >> integerLevel;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
                 if (integerLevel == 1) {
-                    difficultyLevel = "ì‰¬ì›€";
+                    difficultyLevel = "½¬¿ò";
                 }
                 else if (integerLevel == 3) {
-                    difficultyLevel = "ì–´ë ¤ì›€";
+                    difficultyLevel = "¾î·Á¿ò";
                 }
                 else {
-                    difficultyLevel = "ë³´í†µ";
+                    difficultyLevel = "º¸Åë";
                 }
                 lecture->setDifficultyLevel(difficultyLevel);
                 break;
@@ -235,7 +313,7 @@ void LectureManager::modifyLecture(unsigned long long primaryKey) {
         lectureList[primaryKey] = lecture;
     }
     else {
-        cout << "primaryKey ë¡œ ì¡°íšŒëœ ê°•ì˜ê°€ ì—†ìŠµë‹ˆë‹¤." << endl;
+        cout << "primaryKey ·Î Á¶È¸µÈ °­ÀÇ°¡ ¾ø½À´Ï´Ù." << endl;
     }
 }
 
@@ -283,90 +361,283 @@ vector<string> LectureManager::parseCSV(istream& file, char delimiter)
     return row;
 }
 
-// ì»¨í…Œì´ë„ˆ ê°ì²´ì˜ ê²½ìš° íŠ¹ì • ë³€ìˆ˜ì— ê°’ì„ í•¨ìˆ˜ì—ì„œ ë°˜í™˜ì„ í†µí•´ í• ë‹¹í–ˆì„ ë•Œ,
-// "ì„ì‹œ ê°ì²´" ê°€ ìƒì„±ë˜ê³  ë°˜í™˜ ì§í›„ ; ì„ ë§Œë‚˜ ë¬¸ì¥ì´ ëë‚˜ë©´ ì„ì‹œ ì»¨í…Œì´ë„ˆ ê°ì²´ê°€ ì†Œë©¸ë¨.
-// => "ëŒ•ê¸€ë§ í¬ì¸í„°" ì´ìŠˆ ë°œìƒ!!
-// * í•´ê²° : ì»¨í…Œì´ë„ˆ ê°ì²´ë¥¼ ë³€ìˆ˜ì— í• ë‹¹í•˜ì—¬ ë°˜í™˜í•  ë•Œ, "ë³µì‚¬í•˜ì§€ ì•Šê³ " "ì°¸ì¡°" ê°’ì„ ë°˜í™˜í•œë‹¤.
+// ÄÁÅ×ÀÌ³Ê °´Ã¼ÀÇ °æ¿ì Æ¯Á¤ º¯¼ö¿¡ °ªÀ» ÇÔ¼ö¿¡¼­ ¹İÈ¯À» ÅëÇØ ÇÒ´çÇßÀ» ¶§,
+// "ÀÓ½Ã °´Ã¼" °¡ »ı¼ºµÇ°í ¹İÈ¯ Á÷ÈÄ ; À» ¸¸³ª ¹®ÀåÀÌ ³¡³ª¸é ÀÓ½Ã ÄÁÅ×ÀÌ³Ê °´Ã¼°¡ ¼Ò¸êµÊ.
+// => "´ó±Û¸µ Æ÷ÀÎÅÍ" ÀÌ½´ ¹ß»ı!!
+// * ÇØ°á : ÄÁÅ×ÀÌ³Ê °´Ã¼¸¦ º¯¼ö¿¡ ÇÒ´çÇÏ¿© ¹İÈ¯ÇÒ ¶§, "º¹»çÇÏÁö ¾Ê°í" "ÂüÁ¶" °ªÀ» ¹İÈ¯ÇÑ´Ù.
 map<unsigned long long, Lecture*>& LectureManager::getLectureList() {
     return this->lectureList;
 }
 
+bool LectureManager::deleteLectureProcess(unsigned long long key) {
+    bool is_deleted = false;
+    string deleteText = "";
+
+    cout << "»èÁ¦ ½Ã ¼±ÅÃ °­ÀÇ ¹× ¸ğµç ¼ö°­ ¸®½ºÆ®¿¡¼­ ÇØ´ç °­ÀÇµµ ¸ğµÎ Á¦°ÅµË´Ï´Ù." << endl;
+    cout << "Á¤¸» Á¦°ÅÇÏ½Ã°Ú½À´Ï±î?" << endl;
+    cout << "Á¦°ÅÇÏ½Ã·Á¸é [Delete lecture] ÀÇ [ ] ¾È ¹®±¸¸¦ Á¤È®È÷ ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+    cout << "ÀÔ·Â : ";
+    getline(cin, deleteText, '\n');
+
+    if (deleteText.compare("Delete lecture") == 0) {
+        Lecture* lecture = program_interface->getLectureManager().searchLecture(key);
+        
+        if (lecture != nullptr) {
+            // »èÁ¦ ´ë»ó °­ÀÇ °ü·Ã µ¥ÀÌÅÍ ¿ì¼± Á¦°Å(instructorLectureList, studentLectureList)
+            allDeletedLectureData(key);
+
+            // »èÁ¦ ´ë»ó °­ÀÇ º» µ¥ÀÌÅÍ Á¦°Å(lectureList)
+            lectureList.erase(key);
+
+            cout << "°­ÀÇ »èÁ¦°¡ Á¤»óÀûÀ¸·Î ¿Ï·áµÇ¾ú½À´Ï´Ù." << endl;
+            cout << "[Enter] ¸¦ ´©¸£¸é ¸ŞÀÎ ÆäÀÌÁö·Î ÀÌµ¿ÇÕ´Ï´Ù." << endl;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+        return true;
+    }
+    else {
+        cout << "¹®±¸¸¦ Á¤»óÀûÀ¸·Î ÀÔ·ÂÇÏÁö ¾Ê¾Æ °­ÀÇ »èÁ¦¸¦ ÁøÇàÇÒ ¼ö ¾ø½À´Ï´Ù." << endl;
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        return false;
+    }
+}
+
+void LectureManager::allDeletedLectureData(unsigned long long key) {
+    unsigned long long lecturePrimaryKey = key;
+    Lecture* lecture = this->searchLecture(lecturePrimaryKey);
+    if (lecture == nullptr) {
+        return;
+    }
+
+    auto& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
+    auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
+
+    // 1. instructorLectureList ¿¡¼­ lecture Á¦°Å
+    /* LectureList ¿¡ ÇÑ °³¸¸ ÀÖÀ» ¶§ Á¦°ÅÇÒ ¶§ ¿¡·¯ ¹ß»ı
+       for ·çÇÁÀÇ ¼¼ ¹øÂ° ÀÎÀÚ¿¡¼­ ++it¸¦ Á¦°ÅÇÏ°í, 
+       ·çÇÁ º»¹® ³»¿¡¼­ Á¶°ÇºÎ·Î ÀÌÅÍ·¹ÀÌÅÍ¸¦ Áõ°¡½ÃÅ°´Â ¹æ½ÄÀ¸·Î º¯°æ
+    */
+    for (auto it = instructorLectureList.begin(); it != instructorLectureList.end(); ) {
+        vector<Lecture*>& lectures = it->second;
+        
+        for (auto vecIt = lectures.begin(); vecIt != lectures.end(); ) {
+            if ((*vecIt)->getPrimaryKey() == lecturePrimaryKey) {
+                // ÇöÀç ¿ä¼Ò¸¦ »èÁ¦ÇÏ°í list ÀÇ ´ÙÀ½ ÀÌÅÍ·¹ÀÌÅÍ¸¦ ¹ŞÀ½
+                vecIt = lectures.erase(vecIt);
+            }
+            else {
+                // next
+                ++vecIt;
+            }
+        }
+
+        // º¤ÅÍ¿¡¼­ lecture ¸¦ Á¦°ÅÇÔÀ¸·Î½á list °¡ ºñ¾îÀÖ´Ù¸é ÇØ´ç ÄÁÅ×ÀÌ³Ê¿¡¼­ ¿£Æ®¸® ÀÚÃ¼¸¦ »èÁ¦ÇØ¾ßÇÑ´Ù.
+        if (lectures.empty()) {
+            it = instructorLectureList.erase(it);
+        }
+        else {
+            ++it; // next
+        }
+    }
+
+    // 2. studentLectureList ¿¡¼­ lecture Á¦°Å
+    /* LectureList ¿¡ ÇÑ °³¸¸ ÀÖÀ» ¶§ Á¦°ÅÇÒ ¶§ ¿¡·¯ ¹ß»ı
+       for ·çÇÁÀÇ ¼¼ ¹øÂ° ÀÎÀÚ¿¡¼­ ++it¸¦ Á¦°ÅÇÏ°í,
+       ·çÇÁ º»¹® ³»¿¡¼­ Á¶°ÇºÎ·Î ÀÌÅÍ·¹ÀÌÅÍ¸¦ Áõ°¡½ÃÅ°´Â ¹æ½ÄÀ¸·Î º¯°æ
+    */
+    for (auto it = studentLectureList.begin(); it != studentLectureList.end(); ) {
+        vector<Lecture*>& lectures = it->second;
+
+        for (auto vecIt = lectures.begin(); vecIt != lectures.end();) {
+            if ((*vecIt)->getPrimaryKey() == lecturePrimaryKey) {
+                // ÇöÀç ¿ä¼Ò¸¦ »èÁ¦ÇÏ°í studentLectureListÀÇ ´ÙÀ½ ÀÌÅÍ·¹ÀÌÅÍ ¹Ş±â
+                vecIt = lectures.erase(vecIt);
+            }
+            else {
+                // next
+                ++vecIt;
+            }
+        }
+
+        // º¤ÅÍ¿¡¼­ lecture ¸¦ Á¦°ÅÇÔÀ¸·Î½á list °¡ ºñ¾îÀÖ´Ù¸é ÇØ´ç ÄÁÅ×ÀÌ³Ê¿¡¼­ ¿£Æ®¸® ÀÚÃ¼¸¦ »èÁ¦ÇØ¾ßÇÑ´Ù.
+        if (lectures.empty()) {
+            it = studentLectureList.erase(it);
+        }
+        else {
+            ++it; // next
+        }
+    }
+
+    return;
+}
+
+void LectureManager::exitLecture(unsigned long long primaryKey) {
+    Lecture* lecture = this->searchLecture(primaryKey);
+    unsigned long long myPrimaryKey = program_interface->getSessionManager().getLoginUser()->getPrimaryKey();
+    auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
+
+    // È¸¿øÀÇ ¼ö°­ ¸®½ºÆ®(studentLectureList)¿¡¼­ ¼ö°­ÀÚ ¼ö °¨¼Ò
+    auto it = studentLectureList.find(myPrimaryKey);
+    if (lecture && it != studentLectureList.end()) {
+        vector<Lecture*>& lectures = it->second;
+        // º¤ÅÍ¿¡¼­ ÇØ´ç °­ÀÇ¸¦ Ã£¾Æ ¼ö°­ÀÚ ¼ö °¨¼Ò ¹× Á¦°Å
+        for (auto vecIt = lectures.begin(); vecIt != lectures.end(); ++vecIt) {
+            if (*vecIt && (*vecIt)->getPrimaryKey() == primaryKey) {
+                int count = (*vecIt)->getEnrolledStudentsCount();
+                (*vecIt)->setEnrolledStudentsCount(count - 1);  // ¼ö°­ÀÚ ¼ö °¨¼Ò
+
+                lectures.erase(vecIt);  // °­ÀÇ º¤ÅÍ¿¡¼­ Á¦°Å
+                break;  // ÇÏ³ª¸¸ »èÁ¦ÇÏ°í Á¾·á(¾îÂ÷ÇÇ È¸¿øÀÌ Áßº¹ °­ÀÇ¸¦ ¼ö°­ÇÒ ¼ö ´Â ¾øÀ½)
+            }
+        }
+
+        // ÇØ´ç ÇĞ»ıÀÇ ¼ö°­ ¸ñ·ÏÀÌ ºñ¾úÀ¸¸é map¿¡¼­µµ »èÁ¦
+        if (lectures.empty()) {
+            studentLectureList.erase(it);
+        }
+
+        cout << lecture->getLectureTitle() << " °­ÀÇ¸¦ ¼ö°­ Á¾·áÃ³¸®ÇÏ¿´½À´Ï´Ù." << endl;
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+    else {
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    return;
+}
+
 void LectureManager::displayMenu()
 {
-    int ch;
-    unsigned long long key;
+    int ch, ch2;
     bool isContinue = true;
     Lecture* lecture = nullptr;
+    string text = "";
+    bool all_is_size = false;
+    bool is_size = false;
+    unsigned long long primaryKey = 0;
+    bool is_deleted = false;
 
     while (isContinue == true) {
         cout << "\033[2J\033[1;1H";
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << "          Koflearn Lecture Manager                 " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << "  1. Koflearn ê°•ì˜(ìƒí’ˆ) ë¦¬ìŠ¤íŠ¸ ì¶œë ¥                     " << endl;
-        cout << "  2. ê°•ì˜ ì¶”ê°€                            " << endl;
-        cout << "  3. ê°•ì˜ ì‚­ì œ                           " << endl;
-        cout << "  4. ê°•ì˜ ìˆ˜ì •                           " << endl;
-        cout << "  5. ë©”ì¸ ë©”ë‰´ë¡œ ëŒì•„ê°€ê¸°                       " << endl;
+        cout << "  1. Koflearn °­ÀÇ(»óÇ°) ¸®½ºÆ® Á¶È¸(»èÁ¦, ¼öÁ¤)         " << endl;
+        cout << "  2. °­ÀÇ Ãß°¡                            " << endl;
+        cout << "  3. ¸ŞÀÎ ¸Ş´º·Î µ¹¾Æ°¡±â                           " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << " ê¸°ëŠ¥ì„ ì„ íƒí•˜ì„¸ìš” : ";
+        cout << " ±â´ÉÀ» ¼±ÅÃÇÏ¼¼¿ä : ";
         cin >> ch;
-        
-        // ë©”ë‰´ì—ì„œ ìˆ«ì ëª…ë ¹ì–´ë¥¼ ë°›ìœ¼ë ¤ê³  í•  ë•Œ ì˜ë¬¸ì ë“±ì„ ì…ë ¥í–ˆì„ ë•Œ 
-        // ë¬´í•œ ê¹œë¹¡ì„ í˜„ìƒ í•´ê²°
+
+        // ¸Ş´º¿¡¼­ ¼ıÀÚ ¸í·É¾î¸¦ ¹ŞÀ¸·Á°í ÇÒ ¶§ ¿µ¹®ÀÚ µîÀ» ÀÔ·ÂÇßÀ» ¶§ 
+        // ¹«ÇÑ ±ôºıÀÓ Çö»ó ÇØ°á
         if (cin.fail()) {
-            cout << "ì˜ëª»ëœ ì…ë ¥ì…ë‹ˆë‹¤. ìˆ«ìë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”." << endl;
-            // ìŠ¤íŠ¸ë¦¼ì˜ ì˜¤ë¥˜ ìƒíƒœë¥¼ ì´ˆê¸°í™”
+            cout << "Àß¸øµÈ ÀÔ·ÂÀÔ´Ï´Ù. ¼ıÀÚ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+            // ½ºÆ®¸²ÀÇ ¿À·ù »óÅÂ¸¦ ÃÊ±âÈ­
             cin.clear();
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+            cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-            // ë²„í¼ì˜ ìµœëŒ€ í¬ê¸°, '\n'ì€ ë²„í¼ë¥¼ ë¹„ìš¸ ë•Œê¹Œì§€ ì°¾ì„ ë¬¸ì
+            // ¹öÆÛÀÇ ÃÖ´ë Å©±â, '\n'Àº ¹öÆÛ¸¦ ºñ¿ï ¶§±îÁö Ã£À» ¹®ÀÚ
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
         }
-        // ë²„í¼ì˜ ìµœëŒ€ í¬ê¸°, '\n'ì€ ë²„í¼ë¥¼ ë¹„ìš¸ ë•Œê¹Œì§€ ì°¾ì„ ë¬¸ì
+        // ¹öÆÛÀÇ ÃÖ´ë Å©±â, '\n'Àº ¹öÆÛ¸¦ ºñ¿ï ¶§±îÁö Ã£À» ¹®ÀÚ
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-
         switch (ch) {
-        case 1: default:
-            displayAllLecture();
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        case 1:
+            cout << " °­ÀÇ Á¶È¸ ¸ŞÀÎ È­¸é¿¡¼­´Â ÃÖ´ë 50°³ÀÇ °­ÀÇ¸¸ Á¶È¸µË´Ï´Ù. " << endl;
+            cout << "  [ Æ¯Á¤ °­ÀÇ È®ÀÎÀº °Ë»ö ±â´ÉÀ» È°¿ëÇÏ¼¼¿ä. ] " << endl;
+            all_is_size = displayAllLecture();
+            if(all_is_size == true){
+                // ¼öÁ¤ ¶Ç´Â »èÁ¦ÇÒ °­ÀÇ Á¶È¸ text ¸¦ ÀÔ·Â¹Ş°í Ãâ·Â Ã³¸®
+                cout << endl;
+                cout << "   'primaryKey' ¶Ç´Â '°­ÀÇ¸í' ¶Ç´Â '°­»ç ÀÌ¸§' À» ÀÔ·ÂÇÏ¼¼¿ä" << endl;
+                cout << "       primaryKey Á¶È¸´Â Á¤È®È÷ ÀÏÄ¡ÇØ¾ßÇÏ¸ç, '°­ÀÇ¸í' ¶Ç´Â '°­»ç ÀÌ¸§' Àº ºÎºĞ Á¶È¸°¡ °¡´ÉÇÕ´Ï´Ù." << endl;
+                cout << endl;
+                cout << "-1 : Ãë¼Ò" << endl;
+                cout << "°Ë»ö : ";
+                getline(cin, text, '\n');
+                if (text == "-1") {
+                    continue;
+                }
+                // Á¶È¸µÈ °­ÀÇ°¡ ÀÖÀ» ¶© true, ¾øÀ» ¶© false ¹İÈ¯Ã³¸®
+                is_size = this->searchLectureList(text);
+                if (is_size == true) {
+                    cout << "Á¶È¸µÈ °­ÀÇ Áß ¼öÁ¤ ¶Ç´Â »èÁ¦ÇÒ °­ÀÇ ÀÇ privateKey ¸¦ ÀÔ·ÂÇÏ¼¼¿ä." << endl;
+                    cout << "-1 : Ãë¼Ò" << endl;
+                    cout << "ÀÔ·Â : ";
+                    cin >> primaryKey;
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    if (primaryKey == -1) {
+                        continue;
+                    }
+                    lecture = this->searchLecture(primaryKey);
+                    if (lecture != nullptr) {
+                        cout << "     1. ¼öÁ¤ ÇÏ±â        " << endl;
+                        cout << "     2. »èÁ¦ ÇÏ±â        " << endl;
+                        cout << "     3. ¸ŞÀÎ ¸Ş´º·Î µ¹¾Æ°¡±â        " << endl;
+                        cout << "   ±â´ÉÀ» ¼±ÅÃÇÏ¼¼¿ä : ";
+                        cin >> ch2;
+
+                        // ¸Ş´º¿¡¼­ ¼ıÀÚ ¸í·É¾î¸¦ ¹ŞÀ¸·Á°í ÇÒ ¶§ ¿µ¹®ÀÚ µîÀ» ÀÔ·ÂÇßÀ» ¶§ 
+                        // ¹«ÇÑ ±ôºıÀÓ Çö»ó ÇØ°á
+                        if (cin.fail()) {
+                            cout << "Àß¸øµÈ ÀÔ·ÂÀÔ´Ï´Ù. ¼ıÀÚ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+                            // ½ºÆ®¸²ÀÇ ¿À·ù »óÅÂ¸¦ ÃÊ±âÈ­
+                            cin.clear();
+                            cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+                            // ¹öÆÛÀÇ ÃÖ´ë Å©±â, '\n'Àº ¹öÆÛ¸¦ ºñ¿ï ¶§±îÁö Ã£À» ¹®ÀÚ
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                            continue;
+                        }
+                        // ¹öÆÛÀÇ ÃÖ´ë Å©±â, '\n'Àº ¹öÆÛ¸¦ ºñ¿ï ¶§±îÁö Ã£À» ¹®ÀÚ
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+                        if (ch2 == 1) {
+                            this->modifyLecture(primaryKey);
+                        }
+                        else if (ch2 == 2) {
+                            is_deleted = this->deleteLectureProcess(primaryKey);
+                            if (is_deleted == true) {
+                                isContinue = false;
+                            }
+                        }
+                        else {
+                            continue;
+                        }
+                    }
+                    else {
+                        cout << "°Ë»öµÈ °­ÀÇ°¡ ¾ø½À´Ï´Ù." << endl;
+                    }
+                }
+                else {
+                    cout << "Á¶È¸µÈ °­ÀÇ°¡ ¾ø½À´Ï´Ù." << endl;
+                }
+                cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
             break;
         case 2:
             lecture = inputLecture();
             if (lecture != nullptr) {
-                cout << "ê°•ì˜ ë“±ë¡ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
+                cout << "°­ÀÇ µî·ÏÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù." << endl;
             }
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+            cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         case 3:
-            displayAllLecture();
-            cout << "   ë©¤ë²„ primaryKey ì…ë ¥ : ";
-            cin >> key;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-            deleteLecture(key);
-            cout << "ê°•ì˜ ì‚­ì œ ì‘ì—…ì´ ì¢…ë£Œë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            break;
-        case 4:
-            displayAllLecture();
-            cout << "   ë©¤ë²„ primaryKey ì…ë ¥ : ";
-            cin >> key;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-            modifyLecture(key);
-            cout << "ê°•ì˜ ìˆ˜ì • ì‘ì—…ì´ ì¢…ë£Œë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            break;
-        case 5:
             isContinue = false;
+            break;
+        default:
             break;
         }
     }

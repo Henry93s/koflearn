@@ -4,10 +4,10 @@
 #include <iostream>
 using namespace std;
 
-// ìˆœí™˜ ì°¸ì¡° ë°©ì§€ë¡œ ê° ë§¤ë‹ˆì € í´ë˜ìŠ¤ë“¤ì„ [ì „ë°© ì„ ì–¸]
-/* ì „ë°© ì„ ì–¸ ì‚¬ìš© CASE
- í—¤ë” íŒŒì¼ì—ì„œ ë‹¤ë¥¸ í´ë˜ìŠ¤ì˜ ì „ì²´ ì •ì˜ê°€ í•„ìš” ì—†ê³  
- ë‹¨ìˆœíˆ í¬ì¸í„°ë‚˜ ì°¸ì¡° íƒ€ì…ìœ¼ë¡œë§Œ ì‚¬ìš©í•  ê²½ìš°, #include ëŒ€ì‹  ì „ë°© ì„ ì–¸ì„ ì‚¬ìš©
+// ¼øÈ¯ ÂüÁ¶ ¹æÁö·Î °¢ ¸Å´ÏÀú Å¬·¡½ºµéÀ» [Àü¹æ ¼±¾ğ]
+/* Àü¹æ ¼±¾ğ »ç¿ë CASE
+ Çì´õ ÆÄÀÏ¿¡¼­ ´Ù¸¥ Å¬·¡½ºÀÇ ÀüÃ¼ Á¤ÀÇ°¡ ÇÊ¿ä ¾ø°í
+ ´Ü¼øÈ÷ Æ÷ÀÎÅÍ³ª ÂüÁ¶ Å¸ÀÔÀ¸·Î¸¸ »ç¿ëÇÒ °æ¿ì, #include ´ë½Å Àü¹æ ¼±¾ğÀ» »ç¿ë
 */
 class MemberManager;
 class LectureManager;
@@ -16,18 +16,18 @@ class EnrollManager;
 class MyPageManager;
 class SessionManager;
 
-// KoflearnPlatManager ì˜ ì¸í„°í˜ì´ìŠ¤ ì •ì˜
+// KoflearnPlatManager ÀÇ ÀÎÅÍÆäÀÌ½º Á¤ÀÇ
 class IKoflearnPlatManager {
 public:
 	virtual ~IKoflearnPlatManager() = 0;
 
-	// ëª¨ë“  ë§¤ë‹ˆì €(ì»¨íŠ¸ë¡¤ëŸ¬) ì— ëŒ€í•œ ê°€ìƒ getter ìˆœìˆ˜ í•¨ìˆ˜ë¥¼ í¬í•¨
+	// ¸ğµç ¸Å´ÏÀú(ÄÁÆ®·Ñ·¯) ¿¡ ´ëÇÑ °¡»ó getter ¼ø¼ö ÇÔ¼ö¸¦ Æ÷ÇÔ
 	virtual MemberManager& getMemberManager() = 0;
 	virtual LectureManager& getLectureManager() = 0;
 	virtual LoginManager& getLoginManager() = 0;
 	virtual EnrollManager& getEnrollManager() = 0;
 	virtual MyPageManager& getMyPageManager() = 0;
-	// SessionManager í—¤ë”íŒŒì¼ & í´ë˜ìŠ¤ ì¶”ê°€
+	// SessionManager Çì´õÆÄÀÏ & Å¬·¡½º Ãß°¡
 	virtual SessionManager& getSessionManager() = 0;
 };
 

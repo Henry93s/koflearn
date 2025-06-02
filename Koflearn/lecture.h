@@ -6,7 +6,7 @@ using namespace std;
 
 class Lecture : public KoflearnPlatform {
 public:
-	// ìƒì„±ì ì„ ì–¸
+	// »ı¼ºÀÚ ¼±¾ğ
 	Lecture(unsigned long long primaryKey, string lectureTitle, string instructorName, int price,
 		int enrolledStudentsCount, int durationHours, string difficultyLevel);
 

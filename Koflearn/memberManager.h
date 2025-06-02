@@ -11,35 +11,40 @@ using namespace std;
 
 class MemberManager {
 private:
-    // Manager ê°€ ì¸í„°í˜ì´ìŠ¤ì— ì˜ì¡´í•˜ë„ë¡ ì¸í„°í˜ì´ìŠ¤ í¬ì¸í„° ì„ ì–¸
+    // Manager °¡ ÀÎÅÍÆäÀÌ½º¿¡ ÀÇÁ¸ÇÏµµ·Ï ÀÎÅÍÆäÀÌ½º Æ÷ÀÎÅÍ ¼±¾ğ
     IKoflearnPlatManager* program_interface;
 
 public:
-    // ìƒì„±ìì—ì„œ ì¸í„°í˜ì´ìŠ¤ íƒ€ì… ì˜ì¡´ì„±ì„ ì£¼ì…ë°›ìŒ
-    MemberManager(IKoflearnPlatManager* program);               // ìƒì„±ì ì„ ì–¸
-    ~MemberManager();              // ì†Œë©¸ì ì„ ì–¸
+    // »ı¼ºÀÚ¿¡¼­ ÀÎÅÍÆäÀÌ½º Å¸ÀÔ ÀÇÁ¸¼ºÀ» ÁÖÀÔ¹ŞÀ½
+    MemberManager(IKoflearnPlatManager* program);               // »ı¼ºÀÚ ¼±¾ğ
+    ~MemberManager();              // ¼Ò¸êÀÚ ¼±¾ğ
 
     Member* inputMember();
     void addMember(Member*);
     void deleteMember(unsigned long long key);
     void modifyMember(unsigned long long key);
     Member* searchMember(unsigned long long key);
-    // login ê´€ë ¨ìœ¼ë¡œ ì´ë©”ì¼ë¡œ ë©¤ë²„ ì°¾ê¸° í•¨ìˆ˜ ì¶”ê°€(ì˜¤ë²„ë¡œë”©)
+    // login °ü·ÃÀ¸·Î ÀÌ¸ŞÀÏ·Î ¸â¹ö Ã£±â ÇÔ¼ö Ãß°¡(¿À¹ö·Îµù)
     Member* searchMember(string email);
-    int nickNameDuplicationCheck(string nickName); // ë‹‰ë„¤ì„ ì¤‘ë³µ ê²€ì‚¬
-    int emailDuplicationCheck(string email); // ì´ë©”ì¼ ì¤‘ë³µ ê²€ì‚¬
-    int phoneDuplicationCheck(string phoneNumber); // íœ´ëŒ€í° ë²ˆí˜¸ ì¤‘ë³µ ê²€ì‚¬
-    void displayAllMembers() const;
+    int nickNameDuplicationCheck(string nickName); // ´Ğ³×ÀÓ Áßº¹ °Ë»ç
+    int emailDuplicationCheck(string email); // ÀÌ¸ŞÀÏ Áßº¹ °Ë»ç
+    int phoneDuplicationCheck(string phoneNumber); // ÈŞ´ëÆù ¹øÈ£ Áßº¹ °Ë»ç
+    bool displayAllMembers() const;
 
     unsigned long long makePrimaryKey();
     string getManagerKey();
     vector<string> parseCSV(istream&, char);
+
+    void allDeletedUserData(unsigned long long primaryKey);
+    bool deleteUserProcess(unsigned long long key);
+    bool searchMemberList(string text);
+
     void displayMenu();
 
-    // ì»¨í…Œì´ë„ˆ ê°ì²´ì˜ ê²½ìš° íŠ¹ì • ë³€ìˆ˜ì— ê°’ì„ í•¨ìˆ˜ì—ì„œ ë°˜í™˜ì„ í†µí•´ í• ë‹¹í–ˆì„ ë•Œ,
-    // "ì„ì‹œ ê°ì²´" ê°€ ìƒì„±ë˜ê³  ë°˜í™˜ ì§í›„ ; ì„ ë§Œë‚˜ ë¬¸ì¥ì´ ëë‚˜ë©´ ì„ì‹œ ì»¨í…Œì´ë„ˆ ê°ì²´ê°€ ì†Œë©¸ë¨.
-    // => "ëŒ•ê¸€ë§ í¬ì¸í„°" ì´ìŠˆ ë°œìƒ!!
-    // * í•´ê²° : ì»¨í…Œì´ë„ˆ ê°ì²´ë¥¼ ë³€ìˆ˜ì— í• ë‹¹í•˜ì—¬ ë°˜í™˜í•  ë•Œ, "ë³µì‚¬í•˜ì§€ ì•Šê³ " "ì°¸ì¡°" ê°’ì„ ë°˜í™˜í•œë‹¤.
+    // ÄÁÅ×ÀÌ³Ê °´Ã¼ÀÇ °æ¿ì Æ¯Á¤ º¯¼ö¿¡ °ªÀ» ÇÔ¼ö¿¡¼­ ¹İÈ¯À» ÅëÇØ ÇÒ´çÇßÀ» ¶§,
+    // "ÀÓ½Ã °´Ã¼" °¡ »ı¼ºµÇ°í ¹İÈ¯ Á÷ÈÄ ; À» ¸¸³ª ¹®ÀåÀÌ ³¡³ª¸é ÀÓ½Ã ÄÁÅ×ÀÌ³Ê °´Ã¼°¡ ¼Ò¸êµÊ.
+    // => "´ó±Û¸µ Æ÷ÀÎÅÍ" ÀÌ½´ ¹ß»ı!!
+    // * ÇØ°á : ÄÁÅ×ÀÌ³Ê °´Ã¼¸¦ º¯¼ö¿¡ ÇÒ´çÇÏ¿© ¹İÈ¯ÇÒ ¶§, "º¹»çÇÏÁö ¾Ê°í" "ÂüÁ¶" °ªÀ» ¹İÈ¯ÇÑ´Ù.
     map<unsigned long long, Member*>& getMemberList();
 
 private:
@@ -47,4 +52,3 @@ private:
 };
 
 #endif // ! _MEMBER_MANAGER_H_
-

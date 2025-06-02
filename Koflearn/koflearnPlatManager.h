@@ -9,14 +9,14 @@
 #include "IKoflearnPlatManager.h"
 #include <iostream>
 
-// ì¸í„°í˜ì´ìŠ¤ë¥¼ ìƒì†ë°›ì€ êµ¬í˜„ì²´
+// ÀÎÅÍÆäÀÌ½º¸¦ »ó¼Ó¹ŞÀº ±¸ÇöÃ¼
 class KoflearnPlatManager : public IKoflearnPlatManager {
 private:
-	// ì‹¤ì œ manager ê°ì²´ë“¤ ì„ ì–¸
-	// KoflearnPlatManager ë©”ì¸ ì»¨íŠ¸ë¡¤ëŸ¬ Manager í´ë˜ìŠ¤ì˜ ê°ì²´ê°€ ë§Œë“¤ì–´ ì§ˆ ë•Œ
-	// ì´ë¯¸ ì‹¤ì œ manager ê°ì²´ë“¤ì´ KoflearnPlatManager() ìƒì„±ìì˜ ì´ˆê¸°í™” ë¦¬ìŠ¤íŠ¸ì—ì„œ 
-	// 'this' í¬ì¸í„°ë¥¼ ì‚¬ìš©í•˜ì—¬ ê° ë§¤ë‹ˆì €ì˜ ìƒì„±ìì— ì£¼ì… !!
-	// í•´ë‹¹ ê°ì²´ë“¤ì€ KoflearnPlatManager ë©”ì¸ ì»¨íŠ¸ë¡¤ëŸ¬ì™€ ìˆ˜ëª… ì£¼ê¸°ë¥¼ í•¨ê»˜í•œë‹¤.
+	// ½ÇÁ¦ manager °´Ã¼µé ¼±¾ğ
+	// KoflearnPlatManager ¸ŞÀÎ ÄÁÆ®·Ñ·¯ Manager Å¬·¡½ºÀÇ °´Ã¼°¡ ¸¸µé¾î Áú ¶§
+	// ÀÌ¹Ì ½ÇÁ¦ manager °´Ã¼µéÀÌ KoflearnPlatManager() »ı¼ºÀÚÀÇ ÃÊ±âÈ­ ¸®½ºÆ®¿¡¼­ 
+	// 'this' Æ÷ÀÎÅÍ¸¦ »ç¿ëÇÏ¿© °¢ ¸Å´ÏÀúÀÇ »ı¼ºÀÚ¿¡ ÁÖÀÔ !!
+	// ÇØ´ç °´Ã¼µéÀº KoflearnPlatManager ¸ŞÀÎ ÄÁÆ®·Ñ·¯¿Í ¼ö¸í ÁÖ±â¸¦ ÇÔ²²ÇÑ´Ù.
 	MemberManager memberManager;
 	LectureManager lectureManager;
 	LoginManager loginManager;
@@ -27,7 +27,7 @@ private:
 public:
 	KoflearnPlatManager();
 
-	// ë©”ì¸ ì»¨íŠ¸ë¡¤ëŸ¬ Manager í´ë˜ìŠ¤ì— ìˆëŠ” íŠ¹ì • ë©¤ë²„ ë³€ìˆ˜ì— ëŒ€í•œ reference value ë°˜í™˜ì„ ìœ„í•¨
+	// ¸ŞÀÎ ÄÁÆ®·Ñ·¯ Manager Å¬·¡½º¿¡ ÀÖ´Â Æ¯Á¤ ¸â¹ö º¯¼ö¿¡ ´ëÇÑ reference value ¹İÈ¯À» À§ÇÔ
 	MemberManager& getMemberManager() override;
 	LectureManager& getLectureManager() override;
 	LoginManager& getLoginManager() override;
@@ -35,8 +35,8 @@ public:
 	EnrollManager& getEnrollManager() override;
 	SessionManager& getSessionManager() override;
 
-	// main ì—ì„œ KoflearnPlatManager ë¥¼ í•œ ë²ˆ ìƒì„±í•˜ë¯€ë¡œ displayMenu() ë©¤ë²„ í•¨ìˆ˜ëŠ” 
-	// ì¢…í•© ì»¨íŠ¸ë¡¤ëŸ¬ Manager(ì¸í„°í˜ì´ìŠ¤ êµ¬í˜„ì²´) ì—ì„œ ì„ ì–¸ !
+	// main ¿¡¼­ KoflearnPlatManager ¸¦ ÇÑ ¹ø »ı¼ºÇÏ¹Ç·Î displayMenu() ¸â¹ö ÇÔ¼ö´Â 
+	// Á¾ÇÕ ÄÁÆ®·Ñ·¯ Manager(ÀÎÅÍÆäÀÌ½º ±¸ÇöÃ¼) ¿¡¼­ ¼±¾ğ !
 	void displayMenu(IKoflearnPlatManager* program);
 };
 
