@@ -32,7 +32,7 @@ void MyPageManager::myStudentLecturePrint() {
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     else {
-        cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+        cout << "    key      |            Title                 |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
         for (const auto& i : lectureList) {
             i->displayInfo();
         }
@@ -83,7 +83,7 @@ void MyPageManager::myInstructorLecturePrint() {
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     else {
-        cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+        cout << "    key      |            Title                 |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
         for (const auto& i : lectureList) {
             i->displayInfo();
         }

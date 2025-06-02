@@ -89,6 +89,10 @@ Lecture* LectureManager::inputLecture() {
 
     cout << "강의 명 : ";
     getline(cin, lectureTitle, '\n');
+    if (lectureTitle.size() >= 27) {
+        cout << "강의 명은 27자 이상 사용할 수 없습니다." << endl;
+        return nullptr;
+    }
     cout << "강사 명 : ";
     cout << program_interface->getSessionManager().getLoginUser()->getNickName() << endl;
     instructorName = program_interface->getSessionManager().getLoginUser()->getNickName();
@@ -163,7 +167,7 @@ bool LectureManager::searchLectureList(string text) {
     cout << endl;
     // 1. text 가 숫자엿을 경우 -> Lecture 의 primaryKey 로만 조회
     if (*endptr == '\0' && !text.empty()) {
-        cout << "searching PrimaryKey .";
+        cout << "primaryKey 로 검색 중입니다 .";
         for (auto i = 0; i < 5;i++) {
             cout << " .";
             this_thread::sleep_for(chrono::milliseconds(250));
@@ -177,7 +181,7 @@ bool LectureManager::searchLectureList(string text) {
         if (it != lectureList.end()) {
             // 출력되는 Lecture 가 있을 때 is_size = true
             is_size = true;
-            cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+            cout << "    key      |            Title                 |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
             it->second->displayInfo();
         }
     } 
@@ -186,7 +190,7 @@ bool LectureManager::searchLectureList(string text) {
     
     // 2. text 가 숫자이거나 문자가 하나라도 포함된 문자열이였을 경우 
     //    -> Lecture 의 title 또는 instructorName 으로 조회
-    cout << "searching title or instructorName .";
+    cout << "강의명 또는 강사 이름으로 검색 중입니다 .";
     for (auto i = 0; i < 5;i++) {
         cout << " .";
         this_thread::sleep_for(chrono::milliseconds(250));
@@ -203,7 +207,7 @@ bool LectureManager::searchLectureList(string text) {
         if (i.second->getLectureTitle().find(text) != string::npos
             || i.second->getInstructorName().find(text) != string::npos) {
             if (is_size == false) {
-                cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+                cout << "    key      |            Title                 |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
                 // 출력되는 Lecture 가 하나라도 있을 때 is_size = true
                 is_size = true;
             }
@@ -226,7 +230,7 @@ bool LectureManager::displayAllLecture() const {
     int cnt = 0;
     for (const auto& lecture : lectureList) {
         if (cnt == 0) {
-            cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+            cout << "    key      |            Title                 |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
         }
         lecture.second->displayInfo(); // 단순 강의 객체(Lecture()) read 책임은 Lecture 클래스에서 처리
         cnt++;
@@ -247,7 +251,7 @@ void LectureManager::deleteLecture(unsigned long long primaryKey) {
 void LectureManager::modifyLecture(unsigned long long primaryKey) {
     Lecture* lecture = searchLecture(primaryKey);
     if (lecture != nullptr) {
-        cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+        cout << "    key      |            Title                 |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
         lecture->displayInfo();
 
         int op = -1;
@@ -267,6 +271,10 @@ void LectureManager::modifyLecture(unsigned long long primaryKey) {
             case 1:
                 cout << "강의 명 수정 : ";
                 getline(cin, lectureTitle, '\n');
+                if (lectureTitle.size() >= 27) {
+                    cout << "강의 명은 27자 이상 사용할 수 없습니다." << endl;
+                    break;
+                }
                 lecture->setLectureTitle(lectureTitle);
                 break;
             case 2:

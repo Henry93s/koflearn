@@ -47,7 +47,18 @@ EnrollManager::EnrollManager(IKoflearnPlatManager* program)
                 한 학생은 하나의 강의 밖에 수강하지 못함 : 한 key 는 고유하기 때문에 중복해서
                 같은 key 를 삽입할 수 없음.
                 */
-                studentLectureList.insert({ member->getPrimaryKey(), { lecture } });
+
+                // 해당 학생의 primaryKey가 맵에 존재하는지 확인
+                auto it = studentLectureList.find(member->getPrimaryKey());
+
+                if (it != studentLectureList.end()) {
+                    // 이미 존재하는 경우, 해당 vector<Lecture*>에 새로운 강의를 push_back
+                    it->second.push_back(lecture);
+                }
+                else {
+                    // 존재하지 않는 경우, 새로운 엔트리를 추가하고 vector에 강의를 넣음
+                    studentLectureList.insert({ member->getPrimaryKey(), { lecture } });
+                }
             }
         }
     }
@@ -71,7 +82,17 @@ EnrollManager::EnrollManager(IKoflearnPlatManager* program)
                 unsigned long long primaryKey2 = strtoull(row[6].c_str(), &endptr4, 10);
                 Lecture* lecture = program_interface->getLectureManager().searchLecture(primaryKey2);
 
-                instructorLectureList.insert({ member->getPrimaryKey(), { lecture } });
+                // 해당 강사의 primaryKey가 맵에 존재하는지 확인
+                auto it = instructorLectureList.find(member->getPrimaryKey());
+
+                if (it != instructorLectureList.end()) {
+                    // 이미 존재하는 경우, 해당 vector<Lecture*>에 새로운 강의를 push_back
+                    it->second.push_back(lecture);
+                }
+                else {
+                    // 존재하지 않는 경우, 새로운 엔트리를 추가하고 vector에 강의를 넣음
+                    instructorLectureList.insert({ member->getPrimaryKey(), { lecture } });
+                }
             }
         }
     }
@@ -79,8 +100,8 @@ EnrollManager::EnrollManager(IKoflearnPlatManager* program)
 }
 EnrollManager::~EnrollManager() {
     ofstream file1, file2;
-    file1.open("studentLectureList.txt");
-    file2.open("instructorLectureList.txt");
+    file1.open("studentLectureList.csv");
+    file2.open("instructorLectureList.csv");
 
     if (!file1.fail()) {
         for (const auto& v : studentLectureList) {
@@ -390,6 +411,7 @@ vector<Lecture*>& EnrollManager::findInstructorLectureAllList(unsigned long long
         // 컨테이너 객체 반환받을 때 임시 객체 이슈로 댕글링 포인터될 수 있으므로 참조 값 받기
         map<unsigned long long, vector<Lecture*>>& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
         auto it = instructorLectureList.find(primaryKey);
+        
         if (it != instructorLectureList.end()) {
             return it->second;
         }
