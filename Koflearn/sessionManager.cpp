@@ -1,12 +1,12 @@
 #include "member.h"
 #include "sessionManager.h"
 
-// ìƒì„±ìì—ì„œ ì¸í„°í˜ì´ìŠ¤ íƒ€ì…ì˜ ì˜ì¡´ì„±ì„ ì£¼ì…ë°›ìŒ
+// »ı¼ºÀÚ¿¡¼­ ÀÎÅÍÆäÀÌ½º Å¸ÀÔÀÇ ÀÇÁ¸¼ºÀ» ÁÖÀÔ¹ŞÀ½
 SessionManager::SessionManager(IKoflearnPlatManager* program)
     : program_interface(program)
 {
     if (!program_interface) {
-        cerr << "ì˜¤ë¥˜: MyPageManagerì— ìœ íš¨í•œ IKoflearnPlatManagerê°€ ì£¼ì…ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!\n";
+        cerr << "¿À·ù: MyPageManager¿¡ À¯È¿ÇÑ IKoflearnPlatManager°¡ ÁÖÀÔµÇÁö ¾Ê¾Ò½À´Ï´Ù!\n";
     }
 }
 SessionManager::~SessionManager() {}

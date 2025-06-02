@@ -7,11 +7,11 @@ using namespace std;
 
 class LoginManager {
 private:
-	// Manager ê°€ ì¸í„°í˜ì´ìŠ¤ì— ì˜ì¡´í•˜ë„ë¡ ì¸í„°í˜ì´ìŠ¤ í¬ì¸í„° ì„ ì–¸
+	// Manager °¡ ÀÎÅÍÆäÀÌ½º¿¡ ÀÇÁ¸ÇÏµµ·Ï ÀÎÅÍÆäÀÌ½º Æ÷ÀÎÅÍ ¼±¾ğ
 	IKoflearnPlatManager* program_interface;
 
 public:
-	// ìƒì„±ìì—ì„œ ì¸í„°í˜ì´ìŠ¤ íƒ€ì… ì˜ì¡´ì„±ì„ ì£¼ì…ë°›ìŒ
+	// »ı¼ºÀÚ¿¡¼­ ÀÎÅÍÆäÀÌ½º Å¸ÀÔ ÀÇÁ¸¼ºÀ» ÁÖÀÔ¹ŞÀ½
 	LoginManager(IKoflearnPlatManager* program);
 	~LoginManager();
 

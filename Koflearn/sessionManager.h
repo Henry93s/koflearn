@@ -2,25 +2,25 @@
 #define SESSION_MANAGER_H
 
 #include "IKoflearnPlatManager.h"
-// program_interface ë¥¼ í†µí•´ì„œ ì ‘ê·¼í•˜ë ¤ëŠ” ëª¨ë“  
-// Manager í´ë˜ìŠ¤ë“¤ì´ í•„ìš”í•œ í—¤ë” íŒŒì¼ì´ include ë˜ì–´ ìˆì–´ì•¼ í•¨. 
-// why? ìˆœí™˜ì°¸ì¡° ë°©ì§€ë¡œ IKoflearnPlatManager ì—ì„œ Manager í´ë˜ìŠ¤ë“¤ì„ include í•˜ì§€ ì•Šê³ 
-//      ì „ë°©ì„ ì–¸ ì²˜ë¦¬í–ˆìœ¼ë¯€ë¡œ
+// program_interface ¸¦ ÅëÇØ¼­ Á¢±ÙÇÏ·Á´Â ¸ğµç 
+// Manager Å¬·¡½ºµéÀÌ ÇÊ¿äÇÑ Çì´õ ÆÄÀÏÀÌ include µÇ¾î ÀÖ¾î¾ß ÇÔ. 
+// why? ¼øÈ¯ÂüÁ¶ ¹æÁö·Î IKoflearnPlatManager ¿¡¼­ Manager Å¬·¡½ºµéÀ» include ÇÏÁö ¾Ê°í
+//      Àü¹æ¼±¾ğ Ã³¸®ÇßÀ¸¹Ç·Î
 #include "member.h"
 #include <iostream>
 using namespace std;
 
 class SessionManager {
 private:
-    // Manager ê°€ ì¸í„°í˜ì´ìŠ¤ì— ì˜ì¡´í•˜ë„ë¡ ì¸í„°í˜ì´ìŠ¤ í¬ì¸í„° ì„ ì–¸
+    // Manager °¡ ÀÎÅÍÆäÀÌ½º¿¡ ÀÇÁ¸ÇÏµµ·Ï ÀÎÅÍÆäÀÌ½º Æ÷ÀÎÅÍ ¼±¾ğ
     IKoflearnPlatManager* program_interface;
 
 public:
-    // ìƒì„±ìì—ì„œ ì¸í„°í˜ì´ìŠ¤ íƒ€ì… ì˜ì¡´ì„±ì„ ì£¼ì…ë°›ìŒ
+    // »ı¼ºÀÚ¿¡¼­ ÀÎÅÍÆäÀÌ½º Å¸ÀÔ ÀÇÁ¸¼ºÀ» ÁÖÀÔ¹ŞÀ½
     SessionManager(IKoflearnPlatManager* program);
     ~SessionManager();
 
-    // ì „ì²´ í”„ë¡œê·¸ë¨ì—ì„œ ë¡œê·¸ì¸ ìœ ë¬´ì— ë”°ë¼ ë™ì‘ì„ ë‹¬ë¦¬í•˜ê¸° ìœ„í•¨(ë¡œê·¸ì¸ ì„¸ì…˜ ê´€ë¦¬)
+    // ÀüÃ¼ ÇÁ·Î±×·¥¿¡¼­ ·Î±×ÀÎ À¯¹«¿¡ µû¶ó µ¿ÀÛÀ» ´Ş¸®ÇÏ±â À§ÇÔ(·Î±×ÀÎ ¼¼¼Ç °ü¸®)
     Member* getLoginUser();
     void setLoginUser(Member* member);
     bool getIs_login();

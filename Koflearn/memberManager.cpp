@@ -1,6 +1,9 @@
 #include "member.h"
 #include "memberManager.h"
 #include "myPageManager.h"
+#include "enrollManager.h"
+#include "lectureManager.h"
+#include "sessionManager.h"
 
 #include <vector>
 #include <algorithm>
@@ -8,17 +11,18 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>
-using namespace std;
+#include <chrono> // ½Ã°£ °ü·Ã ±â´É(searching cout Ãâ·Â¿¡ µô·¹ÀÌ ºÎ¿© À§ÇÔ)
+#include <thread> // ½º·¹µå °ü·Ã ±â´É(searching cout Ãâ·Â¿¡ µô·¹ÀÌ ºÎ¿© À§ÇÔ)
 
-// ìƒì„±ìì—ì„œ ì¸í„°í˜ì´ìŠ¤ íƒ€ì…ì˜ ì˜ì¡´ì„±ì„ ì£¼ì…ë°›ìŒ
+// »ı¼ºÀÚ¿¡¼­ ÀÎÅÍÆäÀÌ½º Å¸ÀÔÀÇ ÀÇÁ¸¼ºÀ» ÁÖÀÔ¹ŞÀ½
 MemberManager::MemberManager(IKoflearnPlatManager* program)
     : program_interface(program)
-{ 
+{
     if (!program_interface) {
-        cerr << "ì˜¤ë¥˜: MyPageManagerì— ìœ íš¨í•œ IKoflearnPlatManagerê°€ ì£¼ì…ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!\n";
+        cerr << "¿À·ù: MyPageManager¿¡ À¯È¿ÇÑ IKoflearnPlatManager°¡ ÁÖÀÔµÇÁö ¾Ê¾Ò½À´Ï´Ù!\n";
     }
     ifstream file;
-    file.open("memberList.txt");
+    file.open("memberList.csv");
     char* endptr;
     if (!file.fail()) {
         while (!file.eof()) {
@@ -26,7 +30,7 @@ MemberManager::MemberManager(IKoflearnPlatManager* program)
             if (row.size()) {
                 // strtoull : str to Unsigned Long Long
                 unsigned long long primaryKey = strtoull(row[0].c_str(), &endptr, 10);
-                
+
                 Member* member = new Member(primaryKey, row[1], row[2], row[3], row[4], row[5]);
                 memberList.insert({ primaryKey, member });
             }
@@ -38,12 +42,12 @@ MemberManager::MemberManager(IKoflearnPlatManager* program)
 MemberManager::~MemberManager()
 {
     ofstream file;
-    file.open("memberList.txt");
+    file.open("memberList.csv");
     if (!file.fail()) {
         for (const auto& v : memberList) {
             Member* member = v.second;
-            file << member->getPrimaryKey() << ", " 
-                << member->getNickName() << ", " 
+            file << member->getPrimaryKey() << ", "
+                << member->getNickName() << ", "
                 << member->getEmail() << ", "
                 << member->getPassword() << ", "
                 << member->getPhoneNumber() << ", "
@@ -60,29 +64,29 @@ Member* MemberManager::inputMember()
 
     unsigned long long primaryKey = this->makePrimaryKey();
     if (primaryKey == -1) {
-        cout << "íšŒì› ìµœëŒ€ ìˆ˜ìš©ëŸ‰ì„ ì´ˆê³¼í•˜ì˜€ìŠµë‹ˆë‹¤. (9,999,999,999)" << endl;
+        cout << "È¸¿ø ÃÖ´ë ¼ö¿ë·®À» ÃÊ°úÇÏ¿´½À´Ï´Ù. (9,999,999,999)" << endl;
         return nullptr;
     }
 
     int isDuplicationNickName = 0;
     while (1) {
-        cout << "ì´ë¦„ (2ì ì´ìƒ) : ";
+        cout << "ÀÌ¸§ (2ÀÚ ÀÌ»ó) : ";
         getline(cin, nickname, '\n');
         if (nickname.compare("F") == 0) {
-            cout << "'F' í‚¤ë¥¼ ì…ë ¥í–ˆìœ¼ë¯€ë¡œ íšŒì›ê°€ì…ì„ ì¤‘ë‹¨í•©ë‹ˆë‹¤." << endl;
+            cout << "'F' Å°¸¦ ÀÔ·ÂÇßÀ¸¹Ç·Î È¸¿ø°¡ÀÔÀ» Áß´ÜÇÕ´Ï´Ù." << endl;
             return nullptr;
         }
 
         else if (nickname.length() < 2) {
-            cout << "ì´ë¦„ì˜ ê¸¸ì´ëŠ” 2ìë¦¬ ì´ìƒì´ì–´ì•¼ í•©ë‹ˆë‹¤." << endl;
-            cout << "íšŒì›ê°€ì…ì„ ì¤‘ë‹¨í•˜ì‹œë ¤ë©´ 'F' í‚¤ë¥¼ ëˆ„ë¥´ê³  [Enter] ë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”. " << endl;
+            cout << "ÀÌ¸§ÀÇ ±æÀÌ´Â 2ÀÚ¸® ÀÌ»óÀÌ¾î¾ß ÇÕ´Ï´Ù." << endl;
+            cout << "È¸¿ø°¡ÀÔÀ» Áß´ÜÇÏ½Ã·Á¸é 'F' Å°¸¦ ´©¸£°í [Enter] ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä. " << endl;
             continue;
         }
 
         isDuplicationNickName = this->nickNameDuplicationCheck(nickname);
         if (isDuplicationNickName == 1) {
-            cout << "ì¤‘ë³µëœ ì´ë¦„ì…ë‹ˆë‹¤. ë‹¤ì‹œ ì…ë ¥í•´ì£¼ì„¸ìš”." << endl;
-            cout << "íšŒì›ê°€ì…ì„ ì¤‘ë‹¨í•˜ì‹œë ¤ë©´ 'F' í‚¤ë¥¼ ëˆ„ë¥´ê³  [Enter] ë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”. " << endl;
+            cout << "Áßº¹µÈ ÀÌ¸§ÀÔ´Ï´Ù. ´Ù½Ã ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+            cout << "È¸¿ø°¡ÀÔÀ» Áß´ÜÇÏ½Ã·Á¸é 'F' Å°¸¦ ´©¸£°í [Enter] ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä. " << endl;
             continue;
         }
         else if (isDuplicationNickName == 0) { break; }
@@ -90,39 +94,39 @@ Member* MemberManager::inputMember()
 
     int isDuplicationEmail = 0;
     while (1) {
-        cout << "ì´ë©”ì¼(ID) : ";
+        cout << "ÀÌ¸ŞÀÏ(ID) : ";
         getline(cin, email, '\n');
         if (email.compare("F") == 0) {
-            cout << "'F' í‚¤ë¥¼ ì…ë ¥í–ˆìœ¼ë¯€ë¡œ íšŒì›ê°€ì…ì„ ì¤‘ë‹¨í•©ë‹ˆë‹¤." << endl;
+            cout << "'F' Å°¸¦ ÀÔ·ÂÇßÀ¸¹Ç·Î È¸¿ø°¡ÀÔÀ» Áß´ÜÇÕ´Ï´Ù." << endl;
             return nullptr;
         }
 
         isDuplicationEmail = this->emailDuplicationCheck(email);
         if (isDuplicationEmail == 1) {
-            cout << "ì´ë¯¸ ê°€ì…í•œ ì´ë©”ì¼ì…ë‹ˆë‹¤. ë‹¤ì‹œ ì…ë ¥í•´ì£¼ì„¸ìš”." << endl;
-            cout << "íšŒì›ê°€ì…ì„ ì¤‘ë‹¨í•˜ì‹œë ¤ë©´ 'F' í‚¤ë¥¼ ëˆ„ë¥´ê³  [Enter] ë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”. " << endl;
+            cout << "ÀÌ¹Ì °¡ÀÔÇÑ ÀÌ¸ŞÀÏÀÔ´Ï´Ù. ´Ù½Ã ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+            cout << "È¸¿ø°¡ÀÔÀ» Áß´ÜÇÏ½Ã·Á¸é 'F' Å°¸¦ ´©¸£°í [Enter] ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä. " << endl;
         }
         else if (isDuplicationEmail == 0) { break; }
     }
 
     int isSamePassword = 0;
     while (1) {
-        cout << "íŒ¨ìŠ¤ì›Œë“œ : ";
+        cout << "ÆĞ½º¿öµå : ";
         getline(cin, password, '\n');
         if (password == "F") {
-            cout << "'F' í‚¤ë¥¼ ì…ë ¥í–ˆìœ¼ë¯€ë¡œ íšŒì›ê°€ì…ì„ ì¤‘ë‹¨í•©ë‹ˆë‹¤." << endl;
+            cout << "'F' Å°¸¦ ÀÔ·ÂÇßÀ¸¹Ç·Î È¸¿ø°¡ÀÔÀ» Áß´ÜÇÕ´Ï´Ù." << endl;
             return nullptr;
         }
         else if (password.length() < 8) {
-            cout << "íŒ¨ìŠ¤ì›Œë“œì˜ ê¸¸ì´ëŠ” 8ìë¦¬ ì´ìƒì´ì–´ì•¼ í•©ë‹ˆë‹¤." << endl;
-            cout << "íšŒì›ê°€ì…ì„ ì¤‘ë‹¨í•˜ì‹œë ¤ë©´ 'F' í‚¤ë¥¼ ëˆ„ë¥´ê³  [Enter] ë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”. " << endl;
+            cout << "ÆĞ½º¿öµåÀÇ ±æÀÌ´Â 8ÀÚ¸® ÀÌ»óÀÌ¾î¾ß ÇÕ´Ï´Ù." << endl;
+            cout << "È¸¿ø°¡ÀÔÀ» Áß´ÜÇÏ½Ã·Á¸é 'F' Å°¸¦ ´©¸£°í [Enter] ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä. " << endl;
             continue;
         }
-        cout << "íŒ¨ìŠ¤ì›Œë“œ í™•ì¸ : ";
+        cout << "ÆĞ½º¿öµå È®ÀÎ : ";
         getline(cin, rePassword, '\n');
         if (password.compare(rePassword) != 0) {
-            cout << "íŒ¨ìŠ¤ì›Œë“œ ì…ë ¥ ê°’ì´ ì¼ì¹˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ë‹¤ì‹œ ì…ë ¥í•´ì£¼ì„¸ìš”." << endl;
-            cout << "íšŒì›ê°€ì…ì„ ì¤‘ë‹¨í•˜ì‹œë ¤ë©´ 'F' í‚¤ë¥¼ ëˆ„ë¥´ê³  [Enter] ë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”. " << endl;
+            cout << "ÆĞ½º¿öµå ÀÔ·Â °ªÀÌ ÀÏÄ¡ÇÏÁö ¾Ê½À´Ï´Ù. ´Ù½Ã ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+            cout << "È¸¿ø°¡ÀÔÀ» Áß´ÜÇÏ½Ã·Á¸é 'F' Å°¸¦ ´©¸£°í [Enter] ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä. " << endl;
             continue;
         }
         else {
@@ -132,17 +136,17 @@ Member* MemberManager::inputMember()
 
     int isDuplicationPhone = 0;
     while (1) {
-        cout << "íœ´ëŒ€í° ë²ˆí˜¸ : ";
+        cout << "ÈŞ´ëÆù ¹øÈ£ : ";
         getline(cin, phoneNumber, '\n');
         if (phoneNumber.compare("F") == 0) {
-            cout << "'F' í‚¤ë¥¼ ì…ë ¥í–ˆìœ¼ë¯€ë¡œ íšŒì›ê°€ì…ì„ ì¤‘ë‹¨í•©ë‹ˆë‹¤." << endl;
+            cout << "'F' Å°¸¦ ÀÔ·ÂÇßÀ¸¹Ç·Î È¸¿ø°¡ÀÔÀ» Áß´ÜÇÕ´Ï´Ù." << endl;
             return nullptr;
         }
 
         isDuplicationPhone = this->phoneDuplicationCheck(phoneNumber);
         if (isDuplicationPhone == 1) {
-            cout << "ì¤‘ë³µëœ íœ´ëŒ€í° ë²ˆí˜¸ì…ë‹ˆë‹¤. ë‹¤ì‹œ ì…ë ¥í•´ì£¼ì„¸ìš”." << endl;
-            cout << "íšŒì›ê°€ì…ì„ ì¤‘ë‹¨í•˜ì‹œë ¤ë©´ 'F' í‚¤ë¥¼ ëˆ„ë¥´ê³  [Enter] ë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”. " << endl;
+            cout << "Áßº¹µÈ ÈŞ´ëÆù ¹øÈ£ÀÔ´Ï´Ù. ´Ù½Ã ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+            cout << "È¸¿ø°¡ÀÔÀ» Áß´ÜÇÏ½Ã·Á¸é 'F' Å°¸¦ ´©¸£°í [Enter] ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä. " << endl;
             continue;
         }
         else if (isDuplicationPhone == 0) { break; }
@@ -151,15 +155,15 @@ Member* MemberManager::inputMember()
     string managerPassKey;
     string isManager = "false";
     while (1) {
-        cout << "ê´€ë¦¬ìì¼ ê²½ìš° ê´€ë¦¬ì ë³´ì•ˆ í‚¤ë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš” : ";
+        cout << "°ü¸®ÀÚÀÏ °æ¿ì °ü¸®ÀÚ º¸¾È Å°¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä : ";
         getline(cin, managerPassKey, '\n');
         if (managerPassKey.compare("A") == 0) {
-            cout << "'A' í‚¤ë¥¼ ì…ë ¥í–ˆìœ¼ë¯€ë¡œ ì¼ë°˜ íšŒì›ìœ¼ë¡œ ê°€ì…ì„ ê³„ì† ì§„í–‰í•©ë‹ˆë‹¤." << endl;
+            cout << "'A' Å°¸¦ ÀÔ·ÂÇßÀ¸¹Ç·Î ÀÏ¹İ È¸¿øÀ¸·Î °¡ÀÔÀ» °è¼Ó ÁøÇàÇÕ´Ï´Ù." << endl;
             break;
         }
         if (managerPassKey.compare(getManagerKey()) != 0) {
-            cout << "ê´€ë¦¬ì í‚¤ ê°’ì´ ì¼ì¹˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ë‹¤ì‹œ ì…ë ¥í•´ì£¼ì„¸ìš”." << endl;
-            cout << "ì¼ë°˜ íšŒì›ìœ¼ë¡œ ê°€ì…ì„ ê³„ì† ì§„í–‰í•˜ì‹¤ ê²½ìš° 'A' í‚¤ë¥¼ ëˆ„ë¥´ê³  [Enter] ë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”. " << endl;
+            cout << "°ü¸®ÀÚ Å° °ªÀÌ ÀÏÄ¡ÇÏÁö ¾Ê½À´Ï´Ù. ´Ù½Ã ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+            cout << "ÀÏ¹İ È¸¿øÀ¸·Î °¡ÀÔÀ» °è¼Ó ÁøÇàÇÏ½Ç °æ¿ì 'A' Å°¸¦ ´©¸£°í [Enter] ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä. " << endl;
             continue;
         }
         else if (managerPassKey.compare(getManagerKey()) == 0) {
@@ -169,7 +173,7 @@ Member* MemberManager::inputMember()
     }
 
     Member* member = new Member(primaryKey, nickname, email,
-                                password, phoneNumber, isManager);
+        password, phoneNumber, isManager);
     memberList.insert({ primaryKey, member });
     return member;
 }
@@ -185,7 +189,7 @@ Member* MemberManager::searchMember(unsigned long long primaryKey)
     return nullptr;
 }
 
-// login ê´€ë ¨ìœ¼ë¡œ ì´ë©”ì¼ë¡œ ë©¤ë²„ ì°¾ê¸° ì¶”ê°€
+// login °ü·ÃÀ¸·Î ÀÌ¸ŞÀÏ·Î ¸â¹ö Ã£±â Ãß°¡
 Member* MemberManager::searchMember(string email)
 {
     Member* ret = nullptr;
@@ -197,7 +201,7 @@ Member* MemberManager::searchMember(string email)
     return ret;
 }
 
-// ë‹‰ë„¤ì„ ì¤‘ë³µ ê²€ì‚¬ í•¨ìˆ˜ ì •ì˜
+// ´Ğ³×ÀÓ Áßº¹ °Ë»ç ÇÔ¼ö Á¤ÀÇ
 int MemberManager::nickNameDuplicationCheck(string nickName)
 {
     for (auto& i : memberList) {
@@ -208,7 +212,7 @@ int MemberManager::nickNameDuplicationCheck(string nickName)
     return 0;
 }
 
-// ì´ë©”ì¼ ì¤‘ë³µ ê²€ì‚¬ í•¨ìˆ˜ ì •ì˜
+// ÀÌ¸ŞÀÏ Áßº¹ °Ë»ç ÇÔ¼ö Á¤ÀÇ
 int MemberManager::emailDuplicationCheck(string email)
 {
     for (auto& i : memberList) {
@@ -219,7 +223,7 @@ int MemberManager::emailDuplicationCheck(string email)
     return 0;
 }
 
-// íœ´ëŒ€í° ë²ˆí˜¸ ì¤‘ë³µ ê²€ì‚¬ í•¨ìˆ˜ ì •ì˜
+// ÈŞ´ëÆù ¹øÈ£ Áßº¹ °Ë»ç ÇÔ¼ö Á¤ÀÇ
 int MemberManager::phoneDuplicationCheck(string phoneNumber)
 {
     for (auto& i : memberList) {
@@ -230,24 +234,36 @@ int MemberManager::phoneDuplicationCheck(string phoneNumber)
     return 0;
 }
 
-void MemberManager::displayAllMembers() const {
+bool MemberManager::displayAllMembers() const {
+    bool is_size = false;
     if (memberList.empty()) {
-        cout << "ë“±ë¡ëœ ë©¤ë²„ê°€ ì—†ìŠµë‹ˆë‹¤." << endl;
-        cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+        cout << "µî·ÏµÈ ¸â¹ö°¡ ¾ø½À´Ï´Ù." << endl;
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        return;
+        return is_size;
     }
 
-    cout << "    key      |            Email(ID)          |     Name     |    Phone Number    |   isManager   |" << endl;
+    cout << endl;
+    int cnt = 0;
     for (const auto& member : memberList) {
-        member.second->displayInfo(); // ë‹¨ìˆœ ë©¤ë²„ ê°ì²´(Member) read ì±…ì„ì€ Member í´ë˜ìŠ¤ê°€ ë§¡ìŒ
+        if (cnt == 0) {
+            cout << "    key      |            Email(ID)          |     Name     |    Phone Number    |   isManager   |" << endl;
+        }
+        member.second->displayInfo(); // ´Ü¼ø ¸â¹ö °´Ã¼(Member) read Ã¥ÀÓÀº Member Å¬·¡½º°¡ ¸ÃÀ½
+        cnt++;
+        is_size = true;
+        // Ã³À½ Ãâ·ÂÀº ÃÖ´ë 50¸í ±îÁö¸¸ Ãâ·Â ÀÌÈÄ Á¶È¸¸¦ ÅëÇØ¼­ Ã³¸® °¡´É
+        if (cnt == 50) {
+            break;
+        }
     }
     cout << endl << endl;
+    return is_size;
 }
 
 void MemberManager::deleteMember(unsigned long long primaryKey)
 {
-    // erase : primaryKey ì¸ë±ìŠ¤ì— value ê°€ ìˆìœ¼ë©´ pair ë¥¼ ì§€ìš°ê³ , value ê°€ ì—†ìœ¼ë©´ ê·¸ëƒ¥ ë„˜ì–´ê°
+    // erase : primaryKey ÀÎµ¦½º¿¡ value °¡ ÀÖÀ¸¸é pair ¸¦ Áö¿ì°í, value °¡ ¾øÀ¸¸é ±×³É ³Ñ¾î°¨
     memberList.erase(primaryKey);
 }
 
@@ -267,26 +283,26 @@ void MemberManager::modifyMember(unsigned long long primaryKey)
         string rePassword;
 
         while (1) {
-            cout << "íŒ¨ìŠ¤ì›Œë“œ : ";
+            cout << "ÆĞ½º¿öµå : ";
             getline(cin, password, '\n');
             if (password == "F") {
-                cout << "'F' í‚¤ë¥¼ ì…ë ¥í–ˆìœ¼ë¯€ë¡œ ìˆ˜ì •ì„ ì¤‘ë‹¨í•©ë‹ˆë‹¤." << endl;
+                cout << "'F' Å°¸¦ ÀÔ·ÂÇßÀ¸¹Ç·Î ¼öÁ¤À» Áß´ÜÇÕ´Ï´Ù." << endl;
                 return;
             }
             else if (password.length() < 8) {
-                cout << "íŒ¨ìŠ¤ì›Œë“œì˜ ê¸¸ì´ëŠ” 8ìë¦¬ ì´ìƒì´ì–´ì•¼ í•©ë‹ˆë‹¤." << endl;
-                cout << "ìˆ˜ì •ì„ ì¤‘ë‹¨í•˜ì‹œë ¤ë©´ 'F' í‚¤ë¥¼ ëˆ„ë¥´ê³  [Enter] ë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”. " << endl;
+                cout << "ÆĞ½º¿öµåÀÇ ±æÀÌ´Â 8ÀÚ¸® ÀÌ»óÀÌ¾î¾ß ÇÕ´Ï´Ù." << endl;
+                cout << "¼öÁ¤À» Áß´ÜÇÏ½Ã·Á¸é 'F' Å°¸¦ ´©¸£°í [Enter] ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä. " << endl;
                 continue;
             }
-            cout << "íŒ¨ìŠ¤ì›Œë“œ í™•ì¸ : ";
+            cout << "ÆĞ½º¿öµå È®ÀÎ : ";
             getline(cin, rePassword, '\n');
             if (password.compare(rePassword) != 0) {
-                cout << "íŒ¨ìŠ¤ì›Œë“œ ì…ë ¥ ê°’ì´ ì¼ì¹˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ë‹¤ì‹œ ì…ë ¥í•´ì£¼ì„¸ìš”." << endl;
-                cout << "ìˆ˜ì •ì„ ì¤‘ë‹¨í•˜ì‹œë ¤ë©´ 'F' í‚¤ë¥¼ ëˆ„ë¥´ê³  [Enter] ë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”. " << endl;
+                cout << "ÆĞ½º¿öµå ÀÔ·Â °ªÀÌ ÀÏÄ¡ÇÏÁö ¾Ê½À´Ï´Ù. ´Ù½Ã ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+                cout << "¼öÁ¤À» Áß´ÜÇÏ½Ã·Á¸é 'F' Å°¸¦ ´©¸£°í [Enter] ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä. " << endl;
                 continue;
             }
             else {
-                cout << "ìˆ˜ì •ì´ ì •ìƒì ìœ¼ë¡œ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
+                cout << "¼öÁ¤ÀÌ Á¤»óÀûÀ¸·Î ¿Ï·áµÇ¾ú½À´Ï´Ù." << endl;
                 break;
             }
         }
@@ -295,7 +311,7 @@ void MemberManager::modifyMember(unsigned long long primaryKey)
         memberList[primaryKey] = member;
     }
     else {
-        cout << "ì…ë ¥í•œ primaryKey ë¡œ ì¡°íšŒë˜ëŠ” ë©¤ë²„ê°€ ì—†ìŠµë‹ˆë‹¤." << endl;
+        cout << "ÀÔ·ÂÇÑ primaryKey ·Î Á¶È¸µÇ´Â ¸â¹ö°¡ ¾ø½À´Ï´Ù." << endl;
     }
 }
 
@@ -307,8 +323,8 @@ void MemberManager::addMember(Member* member)
 unsigned long long MemberManager::makePrimaryKey()
 {
     if (memberList.size() == 0) {
-        // member ì˜ ê³ ìœ  key ê°’ì€ 1 ë¶€í„° ì‹œì‘ *(ìµœëŒ€ 10,000,000,000 100 ì–µ)
-        // lecture ì˜ ê³ ìœ  key ê°’ì€ 10,000,000,001 ë¶€í„° ì‹œì‘
+        // member ÀÇ °íÀ¯ key °ªÀº 1 ºÎÅÍ ½ÃÀÛ *(ÃÖ´ë 10,000,000,000 100 ¾ï)
+        // lecture ÀÇ °íÀ¯ key °ªÀº 10,000,000,001 ºÎÅÍ ½ÃÀÛ
         return 1;
     }
     else {
@@ -323,7 +339,7 @@ unsigned long long MemberManager::makePrimaryKey()
 
 string MemberManager::getManagerKey() {
     ifstream file;
-    file.open("managerKey.txt");
+    file.open("managerKey.csv");
     if (!file.fail()) {
         while (!file.eof()) {
             vector<string> row = parseCSV(file, '\n');
@@ -358,91 +374,284 @@ vector<string> MemberManager::parseCSV(istream& file, char delimiter)
     return row;
 }
 
-// ì»¨í…Œì´ë„ˆ ê°ì²´ì˜ ê²½ìš° íŠ¹ì • ë³€ìˆ˜ì— ê°’ì„ í•¨ìˆ˜ì—ì„œ ë°˜í™˜ì„ í†µí•´ í• ë‹¹í–ˆì„ ë•Œ,
-// "ì„ì‹œ ê°ì²´" ê°€ ìƒì„±ë˜ê³  ë°˜í™˜ ì§í›„ ; ì„ ë§Œë‚˜ ë¬¸ì¥ì´ ëë‚˜ë©´ ì„ì‹œ ì»¨í…Œì´ë„ˆ ê°ì²´ê°€ ì†Œë©¸ë¨.
-// => "ëŒ•ê¸€ë§ í¬ì¸í„°" ì´ìŠˆ ë°œìƒ!!
-// * í•´ê²° : ì»¨í…Œì´ë„ˆ ê°ì²´ë¥¼ ë³€ìˆ˜ì— í• ë‹¹í•˜ì—¬ ë°˜í™˜í•  ë•Œ, "ë³µì‚¬í•˜ì§€ ì•Šê³ " "ì°¸ì¡°" ê°’ì„ ë°˜í™˜í•œë‹¤.
+// ÄÁÅ×ÀÌ³Ê °´Ã¼ÀÇ °æ¿ì Æ¯Á¤ º¯¼ö¿¡ °ªÀ» ÇÔ¼ö¿¡¼­ ¹İÈ¯À» ÅëÇØ ÇÒ´çÇßÀ» ¶§,
+// "ÀÓ½Ã °´Ã¼" °¡ »ı¼ºµÇ°í ¹İÈ¯ Á÷ÈÄ ; À» ¸¸³ª ¹®ÀåÀÌ ³¡³ª¸é ÀÓ½Ã ÄÁÅ×ÀÌ³Ê °´Ã¼°¡ ¼Ò¸êµÊ.
+// => "´ó±Û¸µ Æ÷ÀÎÅÍ" ÀÌ½´ ¹ß»ı!!
+// * ÇØ°á : ÄÁÅ×ÀÌ³Ê °´Ã¼¸¦ º¯¼ö¿¡ ÇÒ´çÇÏ¿© ¹İÈ¯ÇÒ ¶§, "º¹»çÇÏÁö ¾Ê°í" "ÂüÁ¶" °ªÀ» ¹İÈ¯ÇÑ´Ù.
 map<unsigned long long, Member*>& MemberManager::getMemberList() {
     return this->memberList;
 }
 
+bool MemberManager::deleteUserProcess(unsigned long long key) {
+    string is_delete = "";
+
+    cout << "Å»Åğ ½Ã ¼ö°­ÇÏ½Ã´Â °­ÀÇ, °­ÀÇÇÏ½Ã´Â °­ÁÂ ¸ğµÎ Á¦°ÅµË´Ï´Ù." << endl;
+    cout << "Á¤¸» Å»ÅğÇÏ½Ã°Ú½À´Ï±î?" << endl;
+    cout << "Å»ÅğÇÏ½Ã·Á¸é [I agree to withdraw from member] ÀÇ [ ] ¾È ¹®±¸¸¦ Á¤È®È÷ ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+    getline(cin, is_delete, '\n');
+
+    if (is_delete.compare("I agree to withdraw from member") == 0) {
+        Member* member = this->searchMember(key);
+        // Å»ÅğÀÚ °ü·Ã µ¥ÀÌÅÍ ¿ì¼± Á¦°Å(lectureList, instructorLectureList, studentLectureList)
+        allDeletedUserData(key);
+
+        // Å»ÅğÀÚ member µ¥ÀÌÅÍ Á¦°Å
+        deleteMember(key);
+
+        cout << "È¸¿ø Å»Åğ°¡ Á¤»óÀûÀ¸·Î µÇ¾ú½À´Ï´Ù." << endl;
+        if (member->getPrimaryKey() == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
+            cout << "·Î±×ÀÎ »óÅÂ°¡ ÇØÁ¦µÇ°í [Enter] ¸¦ ´©¸£¸é ¸ŞÀÎ ÆäÀÌÁö·Î ÀÌµ¿ÇÕ´Ï´Ù." << endl;
+            program_interface->getSessionManager().setIs_login(false);
+            program_interface->getSessionManager().setIs_admin(false);
+            program_interface->getSessionManager().setLoginUser(nullptr);
+        }
+        else {
+            cout << "[Enter] ¸¦ ´­·¯ µÇµ¹¾Æ°¡±â" << endl;
+        }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        return true;
+    }
+    else {
+        cout << "¹®±¸¸¦ Á¤»óÀûÀ¸·Î ÀÔ·ÂÇÏÁö ¾Ê¾Æ È¸¿ø Å»Åğ¸¦ ÁøÇàÇÒ ¼ö ¾ø½À´Ï´Ù." << endl;
+        cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        return false;
+    }
+}
+
+void MemberManager::allDeletedUserData(unsigned long long primaryKey) {
+    unsigned long long instructorPrimaryKey = primaryKey;
+    Member* member = this->searchMember(primaryKey);
+    if (member == nullptr) {
+        return;
+    }
+
+    string name = member->getNickName();
+
+    auto& lectureList = program_interface->getLectureManager().getLectureList();
+    auto& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
+    auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
+
+    // 1. ÇØ´ç °­»ç°¡ °³¼³ÇÑ °­ÀÇ ¸®½ºÆ® ¼öÁı -> lectureList Á¦°Å
+    vector<Lecture*> lecturesToDelete;
+    for (auto it = lectureList.begin(); it != lectureList.end(); ) {
+        Lecture* lec = it->second;
+        if (lec && lec->getInstructorName() == name) {
+            lecturesToDelete.push_back(lec);
+            it = lectureList.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+
+    // 2. instructorLectureList ¿¡¼­ ÇØ´ç °­»ç Ç×¸ñ Á¦°Å
+    instructorLectureList.erase(instructorPrimaryKey);
+
+    // 3. È¸¿øÀÌ ¼ö°­ÀÚ(Student)ÀÎ °æ¿ì -> º»ÀÎÀÇ ¼ö°­ ¸®½ºÆ®(studentLectureList)¿¡¼­ ¼ö°­ÀÚ ¼ö °¨¼Ò + Á¦°Å
+    auto it = studentLectureList.find(primaryKey);
+    if (it != studentLectureList.end()) {
+        vector<Lecture*>& lectures = it->second;
+        for (Lecture* lec : lectures) {
+            if (lec) {
+                int count = lec->getEnrolledStudentsCount();
+                lec->setEnrolledStudentsCount(count - 1);
+            }
+        }
+        studentLectureList.erase(it);
+    }
+
+    return;
+}
+
+bool MemberManager::searchMemberList(string text) {
+    bool is_size = false;
+    char* endptr;
+    unsigned long long searchKey = strtoull(text.c_str(), &endptr, 10);
+
+    cout << endl;
+    // 1. text °¡ ¼ıÀÚ¿³À» °æ¿ì -> Member ÀÇ primaryKey ·Î¸¸ Á¶È¸
+    if (*endptr == '\0' && !text.empty()) {
+        cout << "Member PrimaryKey ·Î °Ë»ö ÁßÀÔ´Ï´Ù .";
+        for (auto i = 0; i < 5;i++) {
+            cout << " .";
+            this_thread::sleep_for(chrono::milliseconds(250));
+            cout.flush(); // ¹öÆÛ¿¡ ÀÖ´Â ³»¿ëÀ» ¹Ù·Î È­¸é¿¡ »Ñ¸²À¸·Î½á
+            // Á¡µéÀÌ thread chrono timer ¿¡ ¸ÂÃç¼­ ÇÏ³ª¾¿ ³ªÅ¸³ª´Â ÇÁ·Î¼¼½Ì È¿°ú ºÎ¿©
+        }
+        cout << endl;
+
+        // ¸ÕÀú µ¥ÀÌÅÍ¸¦ Ã£¾Æº¸°í ¾øÀ¸¸é ÀÌÅÍ·¹ÀÌÅÍ°¡ end() ¸¦ ¹İÈ¯ÇÏ´Â °É Ã¼Å©ÇÑ´Ù.
+        auto it = this->memberList.find(searchKey);
+        if (it != this->memberList.end()) {
+            // Ãâ·ÂµÇ´Â Member °¡ ÀÖÀ» ¶§ is_size = true
+            is_size = true;
+            cout << "    key      |            Email(ID)          |     Name     |    Phone Number    |   isManager   |" << endl;
+            it->second->displayInfo();
+        }
+    }
+
+    cout << endl << endl;
+
+    // 2. text °¡ ¼ıÀÚÀÌ°Å³ª ¹®ÀÚ°¡ ÇÏ³ª¶óµµ Æ÷ÇÔµÈ ¹®ÀÚ¿­ÀÌ¿´À» °æ¿ì 
+    //    -> Member ÀÇ ÀÌ¸§ ¶Ç´Â ÈŞ´ëÆù¹øÈ£ ¶Ç´Â ID(email) À¸·Î Á¶È¸
+    cout << "Member ÀÇ ÀÌ¸§ ¶Ç´Â ÈŞ´ëÆù¹øÈ£ ¶Ç´Â ID(email) ·Î °Ë»ö ÁßÀÔ´Ï´Ù .";
+    for (auto i = 0; i < 5;i++) {
+        cout << " .";
+        this_thread::sleep_for(chrono::milliseconds(250));
+        cout.flush(); // ¹öÆÛ¿¡ ÀÖ´Â ³»¿ëÀ» ¹Ù·Î È­¸é¿¡ »Ñ¸²À¸·Î½á
+        // Á¡µéÀÌ thread chrono timer ¿¡ ¸ÂÃç¼­ ÇÏ³ª¾¿ ³ªÅ¸³ª´Â ÇÁ·Î¼¼½Ì È¿°ú ºÎ¿©
+    }
+    cout << endl;
+
+    /* ºÎºĞ ¹®ÀÚ¿­ Ã£±â ¸Ş¼Òµå Àû¿ë : find()
+        ºÎºĞ ¹®ÀÚ¿­À» Ã£À¸¸é ÇØ´ç ºÎºĞ ¹®ÀÚ¿­ÀÌ ½ÃÀÛÇÏ´Â ÀÎµ¦½º(À§Ä¡)¸¦ ¹İÈ¯
+        Ã£Áö ¸øÇÏ¸é string::npos Æ¯¼ö °ªÀ» ¹İÈ¯ÇÑ´Ù.
+    */
+    for (const auto& i : this->memberList) {
+        if (i.second->getEmail().find(text) != string::npos
+            || i.second->getNickName().find(text) != string::npos
+            || i.second->getPhoneNumber().find(text) != string::npos) {
+            if (is_size == false) {
+                cout << "    key      |            Email(ID)          |     Name     |    Phone Number    |   isManager   |" << endl;
+                // Ãâ·ÂµÇ´Â Member °¡ ÇÏ³ª¶óµµ ÀÖÀ» ¶§ is_size = true
+                is_size = true;
+            }
+            i.second->displayInfo();
+        }
+    }
+
+    return is_size;
+}
+
 void MemberManager::displayMenu()
 {
-    int ch;
-    unsigned long long key;
+    int ch, ch2;
+    unsigned long long primaryKey = 0;
     bool isContinue = true;
     Member* member = nullptr;
+    bool all_is_size = false;
+    string text = "";
+    bool is_size = false;
+    bool is_deleted = false;
 
     while (isContinue == true) {
         cout << "\033[2J\033[1;1H";
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << "          Koflearn Member Manager                 " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << "  1. Koflearn ë©¤ë²„(íšŒì›) ë¦¬ìŠ¤íŠ¸ ì¶œë ¥                     " << endl;
-        cout << "  2. ë©¤ë²„ ì¶”ê°€                            " << endl;
-        cout << "  3. ë©¤ë²„ ì‚­ì œ                           " << endl;
-        cout << "  4. ë©¤ë²„ ìˆ˜ì •                           " << endl;
-        cout << "  5. ë©”ì¸ ë©”ë‰´ë¡œ ëŒì•„ê°€ê¸°                       " << endl;
+        cout << "  1. Koflearn ¸â¹ö(È¸¿ø) ¸®½ºÆ® Á¶È¸(»èÁ¦, ÆĞ½º¿öµå ¼öÁ¤)     " << endl;
+        cout << "  2. ¸â¹ö Ãß°¡                            " << endl;
+        cout << "  3. ¸ŞÀÎ ¸Ş´º·Î µ¹¾Æ°¡±â                       " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << " ê¸°ëŠ¥ì„ ì„ íƒí•˜ì„¸ìš” : ";
+        cout << " ±â´ÉÀ» ¼±ÅÃÇÏ¼¼¿ä : ";
         cin >> ch;
-        
-        // ë©”ë‰´ì—ì„œ ìˆ«ì ëª…ë ¹ì–´ë¥¼ ë°›ìœ¼ë ¤ê³  í•  ë•Œ ì˜ë¬¸ì ë“±ì„ ì…ë ¥í–ˆì„ ë•Œ 
-        // ë¬´í•œ ê¹œë¹¡ì„ í˜„ìƒ í•´ê²°
+
+        // ¸Ş´º¿¡¼­ ¼ıÀÚ ¸í·É¾î¸¦ ¹ŞÀ¸·Á°í ÇÒ ¶§ ¿µ¹®ÀÚ µîÀ» ÀÔ·ÂÇßÀ» ¶§ 
+        // ¹«ÇÑ ±ôºıÀÓ Çö»ó ÇØ°á
         if (cin.fail()) {
-            cout << "ì˜ëª»ëœ ì…ë ¥ì…ë‹ˆë‹¤. ìˆ«ìë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”." << endl;
-            // ìŠ¤íŠ¸ë¦¼ì˜ ì˜¤ë¥˜ ìƒíƒœë¥¼ ì´ˆê¸°í™”
+            cout << "Àß¸øµÈ ÀÔ·ÂÀÔ´Ï´Ù. ¼ıÀÚ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+            // ½ºÆ®¸²ÀÇ ¿À·ù »óÅÂ¸¦ ÃÊ±âÈ­
             cin.clear();
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+            cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-            // ë²„í¼ì˜ ìµœëŒ€ í¬ê¸°, '\n'ì€ ë²„í¼ë¥¼ ë¹„ìš¸ ë•Œê¹Œì§€ ì°¾ì„ ë¬¸ì
+            // ¹öÆÛÀÇ ÃÖ´ë Å©±â, '\n'Àº ¹öÆÛ¸¦ ºñ¿ï ¶§±îÁö Ã£À» ¹®ÀÚ
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
         }
-        // ë²„í¼ì˜ ìµœëŒ€ í¬ê¸°, '\n'ì€ ë²„í¼ë¥¼ ë¹„ìš¸ ë•Œê¹Œì§€ ì°¾ì„ ë¬¸ì
+        // ¹öÆÛÀÇ ÃÖ´ë Å©±â, '\n'Àº ¹öÆÛ¸¦ ºñ¿ï ¶§±îÁö Ã£À» ¹®ÀÚ
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         switch (ch) {
-        case 1: default:
-            displayAllMembers();
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        case 1:
+            cout << " ¸â¹ö Á¶È¸ ¸ŞÀÎ È­¸é¿¡¼­´Â ÃÖ´ë 50¸íÀÇ È¸¿ø¸¸ Á¶È¸µË´Ï´Ù. " << endl;
+            cout << "  [ Æ¯Á¤ ¸â¹ö È®ÀÎÀº °Ë»ö ±â´ÉÀ» È°¿ëÇÏ¼¼¿ä. ] " << endl;
+            all_is_size = displayAllMembers();
+            if (all_is_size == true) {
+                // ¼öÁ¤ ¶Ç´Â »èÁ¦ÇÒ ¸â¹ö Á¶È¸ text ¸¦ ÀÔ·Â¹Ş°í Ãâ·Â Ã³¸®
+                cout << endl;
+                cout << "   'primaryKey' ¶Ç´Â 'ÈŞ´ëÆù ¹øÈ£' ¶Ç´Â 'È¸¿ø ÀÌ¸§' ¶Ç´Â ID(email) À» ÀÔ·ÂÇÏ¼¼¿ä" << endl;
+                cout << "       primaryKey Á¶È¸´Â Á¤È®È÷ ÀÏÄ¡ÇØ¾ßÇÏ¸ç,  'ÈŞ´ëÆù ¹øÈ£' ¶Ç´Â 'È¸¿ø ÀÌ¸§' ¶Ç´Â ID(email) Àº ºÎºĞ Á¶È¸°¡ °¡´ÉÇÕ´Ï´Ù." << endl;
+                cout << endl;
+                cout << "-1 : Ãë¼Ò" << endl;
+                cout << "°Ë»ö : ";
+                getline(cin, text, '\n');
+                if (text == "-1") {
+                    continue;
+                }
+                // Á¶È¸µÈ °­ÀÇ°¡ ÀÖÀ» ¶© true, ¾øÀ» ¶© false ¹İÈ¯Ã³¸®
+                is_size = this->searchMemberList(text);
+                if (is_size == true) {
+                    cout << "Á¶È¸µÈ È¸¿ø Áß ¼öÁ¤ ¶Ç´Â »èÁ¦ÇÒ È¸¿ø ÀÇ privateKey ¸¦ ÀÔ·ÂÇÏ¼¼¿ä." << endl;
+                    cout << "-1 : Ãë¼Ò" << endl;
+                    cout << "ÀÔ·Â : ";
+                    cin >> primaryKey;
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    if (primaryKey == -1) {
+                        continue;
+                    }
+                    member = this->searchMember(primaryKey);
+                    if (member != nullptr) {
+                        cout << "     1. ¼öÁ¤ ÇÏ±â        " << endl;
+                        cout << "     2. »èÁ¦ ÇÏ±â        " << endl;
+                        cout << "     3. ¸ŞÀÎ ¸Ş´º·Î µ¹¾Æ°¡±â        " << endl;
+                        cout << "   ±â´ÉÀ» ¼±ÅÃÇÏ¼¼¿ä : ";
+                        cin >> ch2;
 
+                        // ¸Ş´º¿¡¼­ ¼ıÀÚ ¸í·É¾î¸¦ ¹ŞÀ¸·Á°í ÇÒ ¶§ ¿µ¹®ÀÚ µîÀ» ÀÔ·ÂÇßÀ» ¶§ 
+                        // ¹«ÇÑ ±ôºıÀÓ Çö»ó ÇØ°á
+                        if (cin.fail()) {
+                            cout << "Àß¸øµÈ ÀÔ·ÂÀÔ´Ï´Ù. ¼ıÀÚ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+                            // ½ºÆ®¸²ÀÇ ¿À·ù »óÅÂ¸¦ ÃÊ±âÈ­
+                            cin.clear();
+                            cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+                            // ¹öÆÛÀÇ ÃÖ´ë Å©±â, '\n'Àº ¹öÆÛ¸¦ ºñ¿ï ¶§±îÁö Ã£À» ¹®ÀÚ
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                            continue;
+                        }
+                        // ¹öÆÛÀÇ ÃÖ´ë Å©±â, '\n'Àº ¹öÆÛ¸¦ ºñ¿ï ¶§±îÁö Ã£À» ¹®ÀÚ
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+                        if (ch2 == 1) {
+                            this->modifyMember(primaryKey);
+                        }
+                        else if (ch2 == 2) {
+                            is_deleted = this->deleteUserProcess(primaryKey);
+                            if (is_deleted == true && member->getPrimaryKey() == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
+                                isContinue = false;
+                            }
+                        }
+                        else {
+                            continue;
+                        }
+                    }
+                    else {
+                        cout << "°Ë»öµÈ ¸â¹ö°¡ ¾ø½À´Ï´Ù." << endl;
+                    }
+                }
+                else {
+                    cout << "Á¶È¸µÈ ¸â¹ö°¡ ¾ø½À´Ï´Ù." << endl;
+                }
+                cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
             break;
         case 2:
             member = inputMember();
             if (member != nullptr) {
-                cout << "íšŒì›ê°€ì…ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
+                cout << "È¸¿ø°¡ÀÔÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù." << endl;
             }
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+            cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             break;
         case 3:
-            displayAllMembers();
-            cout << "   ë©¤ë²„ primaryKey ì…ë ¥ : ";
-            cin >> key;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            program_interface->getMyPageManager().allDeletedUserData(key);
-            deleteMember(key);
-            cout << "ë©¤ë²„ ì‚­ì œ ì‘ì—…ì´ ì¢…ë£Œë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            break;
-        case 4:
-            displayAllMembers();
-            cout << "   ë©¤ë²„ primaryKey ì…ë ¥ : ";
-            cin >> key;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-            modifyMember(key);
-            cout << "ë©¤ë²„ ìˆ˜ì • ì‘ì—…ì´ ì¢…ë£Œë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            break;
-        case 5:
             isContinue = false;
+            break;
+        default:
             break;
         }
     }

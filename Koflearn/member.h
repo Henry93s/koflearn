@@ -6,19 +6,19 @@ using namespace std;
 
 class Member : public KoflearnPlatform {
 public:
-	// ìƒì„±ì ì„ ì–¸
+	// »ı¼ºÀÚ ¼±¾ğ
 	Member(unsigned long long primaryKey, string nickName, string email
 		, string password, string phoneNumber, string isManager);
 
 	// getter Method
 	// unsigned long long getPrimaryKey(); KoflearnPlatform
 	string getNickName();
-	string getEmail(); 
+	string getEmail();
 	string getPassword();
 	string getPhoneNumber();
 	string getIsManager();
 	void displayInfo() override;
-	
+
 	// setter Method
 	// void setPrimaryKey(unsigned long long primaryKey); KoflearnPlatform
 	void setNickName(string nickName);
@@ -28,11 +28,11 @@ public:
 	void setIsManager(string isManager);
 
 private:
-	string nickName; // Member ê³ ìœ  ë‹‰ë„¤ì„
-	string email; // Member ê³ ìœ  ì´ë©”ì¼ (id ì—­í• )
-	string password; // íŒ¨ìŠ¤ì›Œë“œ
-	string phoneNumber; // Member ê³ ìœ  íœ´ëŒ€í° ë²ˆí˜¸
-	string isManager; // ê´€ë¦¬ì ì—¬ë¶€ êµ¬ë¶„ ( true, false )
+	string nickName; // Member °íÀ¯ ´Ğ³×ÀÓ
+	string email; // Member °íÀ¯ ÀÌ¸ŞÀÏ (id ¿ªÇÒ)
+	string password; // ÆĞ½º¿öµå
+	string phoneNumber; // Member °íÀ¯ ÈŞ´ëÆù ¹øÈ£
+	string isManager; // °ü¸®ÀÚ ¿©ºÎ ±¸ºĞ ( true, false )
 };
 
 #endif // !_MEMBER_H

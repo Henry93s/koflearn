@@ -1,20 +1,20 @@
 #include "loginManager.h"
-// program_interface ë¥¼ í†µí•´ì„œ ì ‘ê·¼í•˜ë ¤ëŠ” ëª¨ë“  
-// Manager í´ë˜ìŠ¤ë“¤ì´ í•„ìš”í•œ í—¤ë” íŒŒì¼ì´ include ë˜ì–´ ìˆì–´ì•¼ í•¨. 
-// why? ìˆœí™˜ì°¸ì¡° ë°©ì§€ë¡œ IKoflearnPlatManager ì—ì„œ Manager í´ë˜ìŠ¤ë“¤ì„ include í•˜ì§€ ì•Šê³ 
-//      ì „ë°©ì„ ì–¸ ì²˜ë¦¬í–ˆìœ¼ë¯€ë¡œ
+// program_interface ¸¦ ÅëÇØ¼­ Á¢±ÙÇÏ·Á´Â ¸ğµç 
+// Manager Å¬·¡½ºµéÀÌ ÇÊ¿äÇÑ Çì´õ ÆÄÀÏÀÌ include µÇ¾î ÀÖ¾î¾ß ÇÔ. 
+// why? ¼øÈ¯ÂüÁ¶ ¹æÁö·Î IKoflearnPlatManager ¿¡¼­ Manager Å¬·¡½ºµéÀ» include ÇÏÁö ¾Ê°í
+//      Àü¹æ¼±¾ğ Ã³¸®ÇßÀ¸¹Ç·Î
 #include "memberManager.h"
 #include "sessionManager.h"
 
 #include <string>
 using namespace std;
 
-// ìƒì„±ìì—ì„œ ì¸í„°í˜ì´ìŠ¤ íƒ€ì…ì˜ ì˜ì¡´ì„±ì„ ì£¼ì…ë°›ìŒ
-LoginManager::LoginManager(IKoflearnPlatManager* program) 
+// »ı¼ºÀÚ¿¡¼­ ÀÎÅÍÆäÀÌ½º Å¸ÀÔÀÇ ÀÇÁ¸¼ºÀ» ÁÖÀÔ¹ŞÀ½
+LoginManager::LoginManager(IKoflearnPlatManager* program)
     : program_interface(program)
 {
     if (!program_interface) {
-        cerr << "ì˜¤ë¥˜: MyPageManagerì— ìœ íš¨í•œ IKoflearnPlatManagerê°€ ì£¼ì…ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!\n";
+        cerr << "¿À·ù: MyPageManager¿¡ À¯È¿ÇÑ IKoflearnPlatManager°¡ ÁÖÀÔµÇÁö ¾Ê¾Ò½À´Ï´Ù!\n";
     }
 }
 LoginManager::~LoginManager() {}
@@ -23,7 +23,7 @@ void LoginManager::displayMenu()
 {
     int ch;
     bool isContinue = true;
-    
+
     string email, password;
     Member* loginMember = nullptr;
     Member* member = nullptr;
@@ -34,27 +34,27 @@ void LoginManager::displayMenu()
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << "               Koflearn Login                  " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << "  1. ë¡œê·¸ì¸                     " << endl;
-        cout << "  2. íšŒì› ê°€ì…                            " << endl;
-        cout << "  3. ë©”ì¸ ë©”ë‰´ë¡œ ëŒì•„ê°€ê¸°                       " << endl;
+        cout << "  1. ·Î±×ÀÎ                     " << endl;
+        cout << "  2. È¸¿ø °¡ÀÔ                            " << endl;
+        cout << "  3. ¸ŞÀÎ ¸Ş´º·Î µ¹¾Æ°¡±â                       " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << " ê¸°ëŠ¥ì„ ì„ íƒí•˜ì„¸ìš” : ";
+        cout << " ±â´ÉÀ» ¼±ÅÃÇÏ¼¼¿ä : ";
         cin >> ch;
 
-        // ë©”ë‰´ì—ì„œ ìˆ«ì ëª…ë ¹ì–´ë¥¼ ë°›ìœ¼ë ¤ê³  í•  ë•Œ ì˜ë¬¸ì ë“±ì„ ì…ë ¥í–ˆì„ ë•Œ 
-         // ë¬´í•œ ê¹œë¹¡ì„ í˜„ìƒ í•´ê²°
+        // ¸Ş´º¿¡¼­ ¼ıÀÚ ¸í·É¾î¸¦ ¹ŞÀ¸·Á°í ÇÒ ¶§ ¿µ¹®ÀÚ µîÀ» ÀÔ·ÂÇßÀ» ¶§ 
+         // ¹«ÇÑ ±ôºıÀÓ Çö»ó ÇØ°á
         if (cin.fail()) {
-            cout << "ì˜ëª»ëœ ì…ë ¥ì…ë‹ˆë‹¤. ìˆ«ìë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”." << endl;
-            // ìŠ¤íŠ¸ë¦¼ì˜ ì˜¤ë¥˜ ìƒíƒœë¥¼ ì´ˆê¸°í™”
+            cout << "Àß¸øµÈ ÀÔ·ÂÀÔ´Ï´Ù. ¼ıÀÚ¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä." << endl;
+            // ½ºÆ®¸²ÀÇ ¿À·ù »óÅÂ¸¦ ÃÊ±âÈ­
             cin.clear();
-            cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+            cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-            // ë²„í¼ì˜ ìµœëŒ€ í¬ê¸°, '\n'ì€ ë²„í¼ë¥¼ ë¹„ìš¸ ë•Œê¹Œì§€ ì°¾ì„ ë¬¸ì
+            // ¹öÆÛÀÇ ÃÖ´ë Å©±â, '\n'Àº ¹öÆÛ¸¦ ºñ¿ï ¶§±îÁö Ã£À» ¹®ÀÚ
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
         }
-        // ë²„í¼ì˜ ìµœëŒ€ í¬ê¸°, '\n'ì€ ë²„í¼ë¥¼ ë¹„ìš¸ ë•Œê¹Œì§€ ì°¾ì„ ë¬¸ì
+        // ¹öÆÛÀÇ ÃÖ´ë Å©±â, '\n'Àº ¹öÆÛ¸¦ ºñ¿ï ¶§±îÁö Ã£À» ¹®ÀÚ
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         switch (ch) {
@@ -63,50 +63,50 @@ void LoginManager::displayMenu()
             getline(cin, email, '\n');
             loginMember = program_interface->getMemberManager().searchMember(email);
             if (loginMember == nullptr) {
-                cout << "ê°€ì…ë˜ì§€ ì•Šì€ ì´ë©”ì¼ì…ë‹ˆë‹¤." << endl;
-                cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+                cout << "°¡ÀÔµÇÁö ¾ÊÀº ÀÌ¸ŞÀÏÀÔ´Ï´Ù." << endl;
+                cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             else {
-                cout << "ë¹„ë°€ë²ˆí˜¸ : ";
+                cout << "ºñ¹Ğ¹øÈ£ : ";
                 getline(cin, password, '\n');
                 if (password != loginMember->getPassword()) {
-                    cout << "íŒ¨ìŠ¤ì›Œë“œë¥¼ ë‹¤ì‹œ í™•ì¸í•´ì£¼ì„¸ìš”." << endl;
-                    cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë’¤ë¡œê°€ê¸°" << endl;
+                    cout << "ÆĞ½º¿öµå¸¦ ´Ù½Ã È®ÀÎÇØÁÖ¼¼¿ä." << endl;
+                    cout << "[Enter] ¸¦ ´­·¯ µÚ·Î°¡±â" << endl;
                     cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 }
                 else {
-                    cout << loginMember->getNickName() + " ë‹˜ í™˜ì˜í•©ë‹ˆë‹¤." << endl;
+                    cout << loginMember->getNickName() + " ´Ô È¯¿µÇÕ´Ï´Ù." << endl;
                     program_interface->getSessionManager().setIs_login(true);
                     program_interface->getSessionManager().setLoginUser(loginMember);
 
                     if (loginMember->getIsManager() == "true") {
                         program_interface->getSessionManager().setIs_admin(true);
                     }
-                    cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë©”ì¸ í˜ì´ì§€ë¡œ ì´ë™" << endl;
+                    cout << "[Enter] ¸¦ ´­·¯ ¸ŞÀÎ ÆäÀÌÁö·Î ÀÌµ¿" << endl;
                     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
                     isContinue = false;
                 }
             }
             break;
-        case 2: 
+        case 2:
             joinMember = program_interface->getMemberManager().inputMember();
-            if (joinMember != nullptr)  {
-                cout << "íšŒì› ê°€ì…ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
+            if (joinMember != nullptr) {
+                cout << "È¸¿ø °¡ÀÔÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù." << endl;
                 program_interface->getSessionManager().setIs_login(true);
                 program_interface->getSessionManager().setLoginUser(joinMember);
                 member = program_interface->getSessionManager().getLoginUser();
                 if (member->getIsManager() == "true") {
                     program_interface->getSessionManager().setIs_admin(true);
                 }
-                cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë©”ì¸ í˜ì´ì§€ë¡œ ìë™ ë¡œê·¸ì¸ë©ë‹ˆë‹¤." << endl;
+                cout << "[Enter] ¸¦ ´­·¯ ¸ŞÀÎ ÆäÀÌÁö·Î ÀÚµ¿ ·Î±×ÀÎµË´Ï´Ù." << endl;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 isContinue = false;
             }
             else {
-                cout << "íšŒì› ê°€ì…ì´ ì·¨ì†Œë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
-                cout << "[Enter] ë¥¼ ëˆŒëŸ¬ ë©”ì¸ í˜ì´ì§€ë¡œ ëŒì•„ê°€ê¸°" << endl;
+                cout << "È¸¿ø °¡ÀÔÀÌ Ãë¼ÒµÇ¾ú½À´Ï´Ù." << endl;
+                cout << "[Enter] ¸¦ ´­·¯ ¸ŞÀÎ ÆäÀÌÁö·Î µ¹¾Æ°¡±â" << endl;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 isContinue = false;
             }
