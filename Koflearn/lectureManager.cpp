@@ -80,7 +80,7 @@ Lecture* LectureManager::inputLecture() {
     for (const auto& i : instructorLectureList) {
         Lecture* lecture = nullptr;
         if (i.first == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
-            if (i.second.size() > 9) {
+            if (i.second.size() >= 9) {
                 cout << "한 사람당 강의 최대 개설은 9개까지만 가능합니다." << endl;
                 return nullptr;
             }
@@ -584,7 +584,9 @@ void LectureManager::displayMenu()
                         }
                         else if (ch2 == 2) {
                             is_deleted = this->deleteLectureProcess(primaryKey);
-                            isContinue = false;
+                            if (is_deleted == true) {
+                                isContinue = false;
+                            }
                         }
                         else {
                             continue;

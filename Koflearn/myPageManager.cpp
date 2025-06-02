@@ -87,8 +87,39 @@ void MyPageManager::myInstructorLecturePrint() {
             i->displayInfo();
         }
         cout << endl;
-        cout << "[Enter] 를 눌러 뒤로가기" << endl;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        int ch;
+        bool is_deleted = false;
+        while (1) {
+            cout << "1. 뒤로 가기" << endl;
+            cout << "2. 강의 진행 종료하기" << endl;
+            cin >> ch;
+            if (cin.fail()) {
+                cout << "잘못된 입력입니다. 숫자를 입력해주세요." << endl;
+                // 스트림의 오류 상태를 초기화
+                cin.clear();
+                cout << "[Enter] 를 눌러 다시 입력하기" << endl;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
+            if (ch == 1) {
+                cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                break;
+            }
+            else if (ch == 2) {
+                unsigned long long primaryKey;
+                cout << "강의 진행을 종료할 강좌의 key 를 입력하세요 : ";
+                cin >> primaryKey;
+                is_deleted = program_interface->getLectureManager().deleteLectureProcess(primaryKey);
+                if (is_deleted == true) {
+                    break;
+                }
+            }
+            else {
+                continue;
+            }
+        }
     }
 }
 
@@ -106,7 +137,7 @@ void MyPageManager::displayMenu() {
         cout << "               Koflearn My Page                  " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << "  1. 수강 중인 강의 보기 및 수강 종료                     " << endl;
-        cout << "  2. 진행하는 강의 보기 및 수강 종료                          " << endl;
+        cout << "  2. 진행하는 강의 보기 및 강의 진행 종료                          " << endl;
         cout << "  3. 패스워드 수정                            " << endl;
         cout << "  4. 회원 탈퇴                       " << endl;
         cout << "  5. 메인 메뉴로 돌아가기                " << endl;
