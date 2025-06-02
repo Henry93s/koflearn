@@ -3,6 +3,7 @@
 #include "myPageManager.h"
 #include "enrollManager.h"
 #include "lectureManager.h"
+#include "sessionManager.h"
 
 #include <vector>
 #include <algorithm>
@@ -10,7 +11,8 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>
-using namespace std;
+#include <chrono> // 시간 관련 기능(searching cout 출력에 딜레이 부여 위함)
+#include <thread> // 스레드 관련 기능(searching cout 출력에 딜레이 부여 위함)
 
 // 생성자에서 인터페이스 타입의 의존성을 주입받음
 MemberManager::MemberManager(IKoflearnPlatManager* program)
@@ -232,19 +234,31 @@ int MemberManager::phoneDuplicationCheck(string phoneNumber)
     return 0;
 }
 
-void MemberManager::displayAllMembers() const {
+bool MemberManager::displayAllMembers() const {
+    bool is_size = false;
     if (memberList.empty()) {
         cout << "등록된 멤버가 없습니다." << endl;
         cout << "[Enter] 를 눌러 뒤로가기" << endl;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        return;
+        return is_size;
     }
 
-    cout << "    key      |            Email(ID)          |     Name     |    Phone Number    |   isManager   |" << endl;
+    cout << endl;
+    int cnt = 0;
     for (const auto& member : memberList) {
+        if (cnt == 0) {
+            cout << "    key      |            Email(ID)          |     Name     |    Phone Number    |   isManager   |" << endl;
+        }
         member.second->displayInfo(); // 단순 멤버 객체(Member) read 책임은 Member 클래스가 맡음
+        cnt++;
+        is_size = true;
+        // 처음 출력은 최대 50명 까지만 출력 이후 조회를 통해서 처리 가능
+        if (cnt == 50) {
+            break;
+        }
     }
     cout << endl << endl;
+    return is_size;
 }
 
 void MemberManager::deleteMember(unsigned long long primaryKey)
@@ -385,7 +399,15 @@ bool MemberManager::deleteUserProcess(unsigned long long key) {
         deleteMember(key);
 
         cout << "회원 탈퇴가 정상적으로 되었습니다." << endl;
-        cout << "로그인 상태가 해제되고 [Enter] 를 누르면 메인 페이지로 이동합니다." << endl;
+        if (member->getPrimaryKey() == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
+            cout << "로그인 상태가 해제되고 [Enter] 를 누르면 메인 페이지로 이동합니다." << endl;
+            program_interface->getSessionManager().setIs_login(false);
+            program_interface->getSessionManager().setIs_admin(false);
+            program_interface->getSessionManager().setLoginUser(nullptr);
+        }
+        else {
+            cout << "[Enter] 를 눌러 되돌아가기" << endl;
+        }
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         return true;
     }
@@ -442,23 +464,85 @@ void MemberManager::allDeletedUserData(unsigned long long primaryKey) {
     return;
 }
 
+bool MemberManager::searchMemberList(string text) {
+    bool is_size = false;
+    char* endptr;
+    unsigned long long searchKey = strtoull(text.c_str(), &endptr, 10);
+
+    cout << endl;
+    // 1. text 가 숫자엿을 경우 -> Member 의 primaryKey 로만 조회
+    if (*endptr == '\0' && !text.empty()) {
+        cout << "Member PrimaryKey 로 검색 중입니다 .";
+        for (auto i = 0; i < 5;i++) {
+            cout << " .";
+            this_thread::sleep_for(chrono::milliseconds(250));
+            cout.flush(); // 버퍼에 있는 내용을 바로 화면에 뿌림으로써
+            // 점들이 thread chrono timer 에 맞춰서 하나씩 나타나는 프로세싱 효과 부여
+        }
+        cout << endl;
+
+        // 먼저 데이터를 찾아보고 없으면 이터레이터가 end() 를 반환하는 걸 체크한다.
+        auto it = this->memberList.find(searchKey);
+        if (it != this->memberList.end()) {
+            // 출력되는 Member 가 있을 때 is_size = true
+            is_size = true;
+            cout << "    key      |            Email(ID)          |     Name     |    Phone Number    |   isManager   |" << endl;
+            it->second->displayInfo();
+        }
+    }
+
+    cout << endl << endl;
+
+    // 2. text 가 숫자이거나 문자가 하나라도 포함된 문자열이였을 경우 
+    //    -> Member 의 이름 또는 휴대폰번호 또는 ID(email) 으로 조회
+    cout << "Member 의 이름 또는 휴대폰번호 또는 ID(email) 로 검색 중입니다 .";
+    for (auto i = 0; i < 5;i++) {
+        cout << " .";
+        this_thread::sleep_for(chrono::milliseconds(250));
+        cout.flush(); // 버퍼에 있는 내용을 바로 화면에 뿌림으로써
+        // 점들이 thread chrono timer 에 맞춰서 하나씩 나타나는 프로세싱 효과 부여
+    }
+    cout << endl;
+
+    /* 부분 문자열 찾기 메소드 적용 : find()
+        부분 문자열을 찾으면 해당 부분 문자열이 시작하는 인덱스(위치)를 반환
+        찾지 못하면 string::npos 특수 값을 반환한다.
+    */
+    for (const auto& i : this->memberList) {
+        if (i.second->getEmail().find(text) != string::npos
+            || i.second->getNickName().find(text) != string::npos
+            || i.second->getPhoneNumber().find(text) != string::npos) {
+            if (is_size == false) {
+                cout << "    key      |            Email(ID)          |     Name     |    Phone Number    |   isManager   |" << endl;
+                // 출력되는 Member 가 하나라도 있을 때 is_size = true
+                is_size = true;
+            }
+            i.second->displayInfo();
+        }
+    }
+
+    return is_size;
+}
+
 void MemberManager::displayMenu()
 {
-    int ch;
-    unsigned long long key;
+    int ch, ch2;
+    unsigned long long primaryKey = 0;
     bool isContinue = true;
     Member* member = nullptr;
+    bool all_is_size = false;
+    string text = "";
+    bool is_size = false;
+    bool is_deleted = false;
 
     while (isContinue == true) {
         cout << "\033[2J\033[1;1H";
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << "          Koflearn Member Manager                 " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        cout << "  1. Koflearn 멤버(회원) 리스트 출력                     " << endl;
+        cout << "  1. Koflearn 멤버(회원) 리스트 조회(삭제, 패스워드 수정)     " << endl;
         cout << "  2. 멤버 추가                            " << endl;
-        cout << "  3. 멤버 삭제                           " << endl;
-        cout << "  4. 멤버 수정                           " << endl;
-        cout << "  5. 메인 메뉴로 돌아가기                       " << endl;
+        cout << "  3. 메인 메뉴로 돌아가기                       " << endl;
         cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << " 기능을 선택하세요 : ";
         cin >> ch;
@@ -480,11 +564,80 @@ void MemberManager::displayMenu()
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         switch (ch) {
-        case 1: default:
-            displayAllMembers();
-            cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        case 1:
+            cout << " 멤버 조회 메인 화면에서는 최대 50명의 회원만 조회됩니다. " << endl;
+            cout << "  [ 특정 멤버 확인은 검색 기능을 활용하세요. ] " << endl;
+            all_is_size = displayAllMembers();
+            if (all_is_size == true) {
+                // 수정 또는 삭제할 멤버 조회 text 를 입력받고 출력 처리
+                cout << endl;
+                cout << "   'primaryKey' 또는 '휴대폰 번호' 또는 '회원 이름' 또는 ID(email) 을 입력하세요" << endl;
+                cout << "       primaryKey 조회는 정확히 일치해야하며,  '휴대폰 번호' 또는 '회원 이름' 또는 ID(email) 은 부분 조회가 가능합니다." << endl;
+                cout << endl;
+                cout << "-1 : 취소" << endl;
+                cout << "검색 : ";
+                getline(cin, text, '\n');
+                if (text == "-1") {
+                    continue;
+                }
+                // 조회된 강의가 있을 땐 true, 없을 땐 false 반환처리
+                is_size = this->searchMemberList(text);
+                if (is_size == true) {
+                    cout << "조회된 회원 중 수정 또는 삭제할 회원 의 privateKey 를 입력하세요." << endl;
+                    cout << "-1 : 취소" << endl;
+                    cout << "입력 : ";
+                    cin >> primaryKey;
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    if (primaryKey == -1) {
+                        continue;
+                    }
+                    member = this->searchMember(primaryKey);
+                    if (member != nullptr) {
+                        cout << "     1. 수정 하기        " << endl;
+                        cout << "     2. 삭제 하기        " << endl;
+                        cout << "     3. 메인 메뉴로 돌아가기        " << endl;
+                        cout << "   기능을 선택하세요 : ";
+                        cin >> ch2;
 
+                        // 메뉴에서 숫자 명령어를 받으려고 할 때 영문자 등을 입력했을 때 
+                        // 무한 깜빡임 현상 해결
+                        if (cin.fail()) {
+                            cout << "잘못된 입력입니다. 숫자를 입력해주세요." << endl;
+                            // 스트림의 오류 상태를 초기화
+                            cin.clear();
+                            cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+                            // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                            continue;
+                        }
+                        // 버퍼의 최대 크기, '\n'은 버퍼를 비울 때까지 찾을 문자
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+                        if (ch2 == 1) {
+                            this->modifyMember(primaryKey);
+                        }
+                        else if (ch2 == 2) {
+                            is_deleted = this->deleteUserProcess(primaryKey);
+                            if (is_deleted == true && member->getPrimaryKey() == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
+                                isContinue = false;
+                            }
+                        }
+                        else {
+                            continue;
+                        }
+                    }
+                    else {
+                        cout << "검색된 멤버가 없습니다." << endl;
+                    }
+                }
+                else {
+                    cout << "조회된 멤버가 없습니다." << endl;
+                }
+                cout << "[Enter] 를 눌러 뒤로가기" << endl;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
             break;
         case 2:
             member = inputMember();
@@ -496,29 +649,9 @@ void MemberManager::displayMenu()
 
             break;
         case 3:
-            displayAllMembers();
-            cout << "   멤버 primaryKey 입력 : ";
-            cin >> key;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            program_interface->getMemberManager().allDeletedUserData(key);
-            deleteMember(key);
-            cout << "멤버 삭제 작업이 종료되었습니다." << endl;
-            cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            break;
-        case 4:
-            displayAllMembers();
-            cout << "   멤버 primaryKey 입력 : ";
-            cin >> key;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-            modifyMember(key);
-            cout << "멤버 수정 작업이 종료되었습니다." << endl;
-            cout << "[Enter] 를 눌러 뒤로가기" << endl;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            break;
-        case 5:
             isContinue = false;
+            break;
+        default:
             break;
         }
     }

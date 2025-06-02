@@ -29,7 +29,7 @@ public:
     int nickNameDuplicationCheck(string nickName); // 닉네임 중복 검사
     int emailDuplicationCheck(string email); // 이메일 중복 검사
     int phoneDuplicationCheck(string phoneNumber); // 휴대폰 번호 중복 검사
-    void displayAllMembers() const;
+    bool displayAllMembers() const;
 
     unsigned long long makePrimaryKey();
     string getManagerKey();
@@ -37,6 +37,8 @@ public:
 
     void allDeletedUserData(unsigned long long primaryKey);
     bool deleteUserProcess(unsigned long long key);
+    bool searchMemberList(string text);
+
     void displayMenu();
 
     // 컨테이너 객체의 경우 특정 변수에 값을 함수에서 반환을 통해 할당했을 때,

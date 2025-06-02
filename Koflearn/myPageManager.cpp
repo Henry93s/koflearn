@@ -141,12 +141,8 @@ void MyPageManager::displayMenu() {
             program_interface->getMemberManager().modifyMember(member->getPrimaryKey());
             break;
         case 4:
-            is_delete = program_interface->getMemberManager().deleteUserProcess(program_interface->getSessionManager().getLoginUser()->getPrimaryKey());
+            is_delete = program_interface->getMemberManager().deleteUserProcess(member->getPrimaryKey());
             if (is_delete == true) {
-                program_interface->getSessionManager().setIs_login(false);
-                program_interface->getSessionManager().setIs_admin(false);
-                program_interface->getSessionManager().setLoginUser(nullptr);
-
                 isContinue = false;
             }
             break;

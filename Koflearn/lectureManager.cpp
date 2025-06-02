@@ -166,7 +166,7 @@ bool LectureManager::searchLectureList(string text) {
         cout << "searching PrimaryKey .";
         for (auto i = 0; i < 5;i++) {
             cout << " .";
-            this_thread::sleep_for(chrono::milliseconds(350));
+            this_thread::sleep_for(chrono::milliseconds(250));
             cout.flush(); // 버퍼에 있는 내용을 바로 화면에 뿌림으로써
                           // 점들이 thread chrono timer 에 맞춰서 하나씩 나타나는 프로세싱 효과 부여
         }
@@ -189,7 +189,7 @@ bool LectureManager::searchLectureList(string text) {
     cout << "searching title or instructorName .";
     for (auto i = 0; i < 5;i++) {
         cout << " .";
-        this_thread::sleep_for(chrono::milliseconds(350));
+        this_thread::sleep_for(chrono::milliseconds(250));
         cout.flush(); // 버퍼에 있는 내용을 바로 화면에 뿌림으로써
                         // 점들이 thread chrono timer 에 맞춰서 하나씩 나타나는 프로세싱 효과 부여
     }
@@ -199,7 +199,7 @@ bool LectureManager::searchLectureList(string text) {
         부분 문자열을 찾으면 해당 부분 문자열이 시작하는 인덱스(위치)를 반환
         찾지 못하면 string::npos 특수 값을 반환한다.
     */
-    for (const auto& i : lectureList) {
+    for (const auto& i : this->lectureList) {
         if (i.second->getLectureTitle().find(text) != string::npos
             || i.second->getInstructorName().find(text) != string::npos) {
             if (is_size == false) {
@@ -223,9 +223,11 @@ bool LectureManager::displayAllLecture() const {
     }
 
     cout << endl;
-    cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
     int cnt = 0;
     for (const auto& lecture : lectureList) {
+        if (cnt == 0) {
+            cout << "    key      |            Title          |   teacher   |    price    |   students   |   hours   |   level  |" << endl;
+        }
         lecture.second->displayInfo(); // 단순 강의 객체(Lecture()) read 책임은 Lecture 클래스에서 처리
         cnt++;
         // 처음 출력은 최대 50개 까지만 출력 이후 조회를 통해서 처리 가능
@@ -543,7 +545,7 @@ void LectureManager::displayMenu()
                     continue;
                 }
                 // 조회된 강의가 있을 땐 true, 없을 땐 false 반환처리
-                is_size = program_interface->getLectureManager().searchLectureList(text);
+                is_size = this->searchLectureList(text);
                 if (is_size == true) {
                     cout << "조회된 강의 중 수정 또는 삭제할 강의 의 privateKey 를 입력하세요." << endl;
                     cout << "-1 : 취소" << endl;
@@ -553,7 +555,7 @@ void LectureManager::displayMenu()
                     if (primaryKey == -1) {
                         continue;
                     }
-                    lecture = program_interface->getLectureManager().searchLecture(primaryKey);
+                    lecture = this->searchLecture(primaryKey);
                     if (lecture != nullptr) {
                         cout << "     1. 수정 하기        " << endl;
                         cout << "     2. 삭제 하기        " << endl;
@@ -578,16 +580,22 @@ void LectureManager::displayMenu()
                         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
                         if (ch2 == 1) {
-                            program_interface->getLectureManager().modifyLecture(primaryKey);
+                            this->modifyLecture(primaryKey);
                         }
                         else if (ch2 == 2) {
-                            is_deleted = deleteLectureProcess(primaryKey);
+                            is_deleted = this->deleteLectureProcess(primaryKey);
                             isContinue = false;
                         }
                         else {
                             continue;
                         }
                     }
+                    else {
+                        cout << "검색된 강의가 없습니다." << endl;
+                    }
+                }
+                else {
+                    cout << "조회된 강의가 없습니다." << endl;
                 }
                 cout << "[Enter] 를 눌러 뒤로가기" << endl;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
