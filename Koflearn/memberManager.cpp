@@ -70,22 +70,28 @@ Member* MemberManager::inputMember()
 
     int isDuplicationNickName = 0;
     while (1) {
-        cout << "이름 (2자 이상) : ";
+        cout << "닉네임(이름) (한글 2자 이상) : ";
         getline(cin, nickname, '\n');
         if (nickname.compare("F") == 0) {
             cout << "'F' 키를 입력했으므로 회원가입을 중단합니다." << endl;
             return nullptr;
         }
 
-        else if (nickname.length() < 2) {
-            cout << "이름의 길이는 2자리 이상이어야 합니다." << endl;
+        else if (nickname.length() < 6) {
+            cout << "닉네임(이름)의 길이는 한글 기준 2자리 이상이어야 합니다." << endl;
+            cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
+            continue;
+        }
+        else if (nickname.length() > 15) {
+            cout << "닉네임(이름)의 길이는 한글 기준 5자리 이하여야 합니다." << endl;
             cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
             continue;
         }
 
+
         isDuplicationNickName = this->nickNameDuplicationCheck(nickname);
         if (isDuplicationNickName == 1) {
-            cout << "중복된 이름입니다. 다시 입력해주세요." << endl;
+            cout << "중복된 닉네임(이름)입니다. 다시 입력해주세요." << endl;
             cout << "회원가입을 중단하시려면 'F' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
             continue;
         }
@@ -161,6 +167,8 @@ Member* MemberManager::inputMember()
             cout << "'A' 키를 입력했으므로 일반 회원으로 가입을 계속 진행합니다." << endl;
             break;
         }
+        cout << getManagerKey() << endl;
+        cout << managerPassKey << endl;
         if (managerPassKey.compare(getManagerKey()) != 0) {
             cout << "관리자 키 값이 일치하지 않습니다. 다시 입력해주세요." << endl;
             cout << "일반 회원으로 가입을 계속 진행하실 경우 'A' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
@@ -201,7 +209,7 @@ Member* MemberManager::searchMember(string email)
     return ret;
 }
 
-// 닉네임 중복 검사 함수 정의
+// 닉네임(이름) 중복 검사 함수 정의
 int MemberManager::nickNameDuplicationCheck(string nickName)
 {
     for (auto& i : memberList) {
@@ -420,37 +428,34 @@ bool MemberManager::deleteUserProcess(unsigned long long key) {
 }
 
 void MemberManager::allDeletedUserData(unsigned long long primaryKey) {
-    unsigned long long instructorPrimaryKey = primaryKey;
+    unsigned long long userPrimaryKey = primaryKey;
     Member* member = this->searchMember(primaryKey);
     if (member == nullptr) {
         return;
     }
-
-    string name = member->getNickName();
+    string userName = member->getNickName();
+    cout << "userName " << userName << endl;
 
     auto& lectureList = program_interface->getLectureManager().getLectureList();
     auto& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
     auto& studentLectureList = program_interface->getEnrollManager().getStudentLectureList();
 
-    // 1. 해당 강사가 개설한 강의 리스트 수집 -> lectureList 제거
-    vector<Lecture*> lecturesToDelete;
-    for (auto it = lectureList.begin(); it != lectureList.end(); ) {
-        Lecture* lec = it->second;
-        if (lec && lec->getInstructorName() == name) {
-            lecturesToDelete.push_back(lec);
-            it = lectureList.erase(it);
+    // 1. instructorLectureList 에서 instructor 제거
+    for (auto it = instructorLectureList.begin(); it != instructorLectureList.end(); ) {
+        if (it->first == userPrimaryKey) {
+            // 현재 요소를 삭제하고 list 의 다음 이터레이터를 받음
+            it = instructorLectureList.erase(it);
         }
         else {
-            ++it;
+            ++it; // next
         }
     }
 
-    // 2. instructorLectureList 에서 해당 강사 항목 제거
-    instructorLectureList.erase(instructorPrimaryKey);
 
-    // 3. 회원이 수강자(Student)인 경우 -> 본인의 수강 리스트(studentLectureList)에서 수강자 수 감소 + 제거
+    // 2. 회원이 수강자(Student)인 경우 -> 본인의 수강 리스트(studentLectureList)에서 수강자 수 감소 + 제거
     auto it = studentLectureList.find(primaryKey);
-    if (it != studentLectureList.end()) {
+    // find ~ if(~end()) : 검출될 때(primaryKey 가 한 개일 때 주로 사용하는 로직)
+    if (it != studentLectureList.end()) { 
         vector<Lecture*>& lectures = it->second;
         for (Lecture* lec : lectures) {
             if (lec) {
@@ -459,6 +464,39 @@ void MemberManager::allDeletedUserData(unsigned long long primaryKey) {
             }
         }
         studentLectureList.erase(it);
+    }
+    // 3. 모든 회원이 수강하고 있는 강의 리스트(studentLectureList)에서 삭제 회원이 진행하던 강좌 제거
+    for (auto it = studentLectureList.begin(); it != studentLectureList.end();) {
+        vector<Lecture*>& lectures = it->second;
+        for (auto vecIt = lectures.begin(); vecIt != lectures.end();) {
+            if ((*vecIt)->getInstructorName() == userName) {
+                vecIt = lectures.erase(vecIt);
+            }
+            else {
+                ++vecIt; // next lectures iterator
+            }
+        }
+
+        // StudentLectureList 의 lectures 가 비어있게 될 경우 해당 map 엔트리 제거 
+        if (lectures.empty()) {
+            it = studentLectureList.erase(it);
+        }
+        else {
+            ++it; // next iterator
+        }
+    }
+
+
+    // 4. 해당 강사가 개설한 lectureList 제거
+    for (auto it = lectureList.begin(); it != lectureList.end(); ) {
+        Lecture* lec = it->second;
+        if (lec && lec->getInstructorName() == userName) {
+            // 현재 요소를 삭제하고 list 의 다음 이터레이터를 받음
+            it = lectureList.erase(it);
+        }
+        else {
+            ++it; // next
+        }
     }
 
     return;
@@ -494,8 +532,8 @@ bool MemberManager::searchMemberList(string text) {
     cout << endl << endl;
 
     // 2. text 가 숫자이거나 문자가 하나라도 포함된 문자열이였을 경우 
-    //    -> Member 의 이름 또는 휴대폰번호 또는 ID(email) 으로 조회
-    cout << "Member 의 이름 또는 휴대폰번호 또는 ID(email) 로 검색 중입니다 .";
+    //    -> Member 의 닉네임(이름) 또는 휴대폰번호 또는 ID(email) 으로 조회
+    cout << "Member 의 닉네임(이름) 또는 휴대폰번호 또는 ID(email) 로 검색 중입니다 .";
     for (auto i = 0; i < 5;i++) {
         cout << " .";
         this_thread::sleep_for(chrono::milliseconds(250));
@@ -571,8 +609,8 @@ void MemberManager::displayMenu()
             if (all_is_size == true) {
                 // 수정 또는 삭제할 멤버 조회 text 를 입력받고 출력 처리
                 cout << endl;
-                cout << "   'primaryKey' 또는 '휴대폰 번호' 또는 '회원 이름' 또는 ID(email) 을 입력하세요" << endl;
-                cout << "       primaryKey 조회는 정확히 일치해야하며,  '휴대폰 번호' 또는 '회원 이름' 또는 ID(email) 은 부분 조회가 가능합니다." << endl;
+                cout << "   'primaryKey' 또는 '휴대폰 번호' 또는 '회원 닉네임(이름)' 또는 ID(email) 을 입력하세요" << endl;
+                cout << "       primaryKey 조회는 정확히 일치해야하며,  '휴대폰 번호' 또는 '회원 닉네임(이름)' 또는 ID(email) 은 부분 조회가 가능합니다." << endl;
                 cout << endl;
                 cout << "-1 : 취소" << endl;
                 cout << "검색 : ";
@@ -620,7 +658,7 @@ void MemberManager::displayMenu()
                         }
                         else if (ch2 == 2) {
                             is_deleted = this->deleteUserProcess(primaryKey);
-                            if (is_deleted == true && member->getPrimaryKey() == program_interface->getSessionManager().getLoginUser()->getPrimaryKey()) {
+                            if (is_deleted == true) {
                                 isContinue = false;
                             }
                         }
