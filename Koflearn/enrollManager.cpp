@@ -226,8 +226,8 @@ void EnrollManager::searchAndStudentEnrollLecture() {
         case 1: 
             // 수강할 강의 조회 text 를 입력받고 출력 처리
             cout << endl;
-            cout << "   'primaryKey' 또는 '강의명' 또는 '강사 이름' 을 입력하세요" << endl;
-            cout << "       primaryKey 조회는 정확히 일치해야하며, '강의명' 또는 '강사 이름' 은 부분 조회가 가능합니다." << endl;
+            cout << "   'primaryKey' 또는 '강의명' 또는 '강사 닉네임(이름)' 을 입력하세요" << endl;
+            cout << "       primaryKey 조회는 정확히 일치해야하며, '강의명' 또는 '강사 닉네임(이름)' 은 부분 조회가 가능합니다." << endl;
             cout << endl;
             cout << "검색 : ";
             getline(cin, text, '\n');

@@ -28,7 +28,7 @@ public:
 	void setIsManager(string isManager);
 
 private:
-	string nickName; // Member 고유 닉네임
+	string nickName; // Member 고유 닉네임(이름)
 	string email; // Member 고유 이메일 (id 역할)
 	string password; // 패스워드
 	string phoneNumber; // Member 고유 휴대폰 번호

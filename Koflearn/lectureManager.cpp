@@ -190,7 +190,7 @@ bool LectureManager::searchLectureList(string text) {
     
     // 2. text 가 숫자이거나 문자가 하나라도 포함된 문자열이였을 경우 
     //    -> Lecture 의 title 또는 instructorName 으로 조회
-    cout << "강의명 또는 강사 이름으로 검색 중입니다 .";
+    cout << "강의명 또는 강사 닉네임(이름)으로 검색 중입니다 .";
     for (auto i = 0; i < 5;i++) {
         cout << " .";
         this_thread::sleep_for(chrono::milliseconds(250));
@@ -558,8 +558,8 @@ void LectureManager::displayMenu()
             if(all_is_size == true){
                 // 수정 또는 삭제할 강의 조회 text 를 입력받고 출력 처리
                 cout << endl;
-                cout << "   'primaryKey' 또는 '강의명' 또는 '강사 이름' 을 입력하세요" << endl;
-                cout << "       primaryKey 조회는 정확히 일치해야하며, '강의명' 또는 '강사 이름' 은 부분 조회가 가능합니다." << endl;
+                cout << "   'primaryKey' 또는 '강의명' 또는 '강사 닉네임(이름)' 을 입력하세요" << endl;
+                cout << "       primaryKey 조회는 정확히 일치해야하며, '강의명' 또는 '강사 닉네임(이름)' 은 부분 조회가 가능합니다." << endl;
                 cout << endl;
                 cout << "-1 : 취소" << endl;
                 cout << "검색 : ";
