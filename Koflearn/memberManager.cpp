@@ -167,8 +167,7 @@ Member* MemberManager::inputMember()
             cout << "'A' 키를 입력했으므로 일반 회원으로 가입을 계속 진행합니다." << endl;
             break;
         }
-        cout << getManagerKey() << endl;
-        cout << managerPassKey << endl;
+
         if (managerPassKey.compare(getManagerKey()) != 0) {
             cout << "관리자 키 값이 일치하지 않습니다. 다시 입력해주세요." << endl;
             cout << "일반 회원으로 가입을 계속 진행하실 경우 'A' 키를 누르고 [Enter] 를 입력해주세요. " << endl;
@@ -434,7 +433,6 @@ void MemberManager::allDeletedUserData(unsigned long long primaryKey) {
         return;
     }
     string userName = member->getNickName();
-    cout << "userName " << userName << endl;
 
     auto& lectureList = program_interface->getLectureManager().getLectureList();
     auto& instructorLectureList = program_interface->getEnrollManager().getInstructorLectureList();
