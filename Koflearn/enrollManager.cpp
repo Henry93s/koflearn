@@ -60,7 +60,7 @@ EnrollManager::EnrollManager(IKoflearnPlatManager* program)
                     studentLectureList.insert({ member->getPrimaryKey(), { lecture } });
                 }
             }
-        }
+        } 
     }
     file1.close();
 
